@@ -1,6 +1,6 @@
 ---
 name: project-init
-description: "Use at the very start of a new WordPress project built on this template: first ask the project type (new site / client site support / client redesign) and follow its route, interview the user about the site, stack, own code, workflow, SSH/WP-CLI, browser URLs and Figma, then write answers into project-base/INDEX.md and ACCESS.md and apply slugs/prefix. Triggers on 'старт проекта', 'новый проект', 'инициализация проекта', 'настрой шаблон под проект'."
+description: "Use at the very start of a new WordPress project built on this template: first ask the project type (new site needing design / new site with ready design / client site support / client redesign) and follow its route, interview the user about the site, stack, own code, workflow, SSH/WP-CLI, browser URLs and Figma, then write answers into project-base/INDEX.md and ACCESS.md and apply slugs/prefix. Triggers on 'старт проекта', 'новый проект', 'инициализация проекта', 'настрой шаблон под проект'."
 compatibility: "Этот шаблон. Разработка на сервере по SFTP. Язык — русский."
 ---
 
@@ -27,7 +27,7 @@ compatibility: "Этот шаблон. Разработка на сервере 
 
 ### 0) Тип проекта — первый вопрос
 
-До любых других вопросов — тип проекта: новый с нуля / клиентский — доработка / клиентский — редизайн.
+До любых других вопросов — тип проекта: новый — нужен дизайн / новый — дизайн есть / клиентский — доработка / клиентский — редизайн.
 Вопрос с вариантами, описания и маршрут каждого типа — [`types.md`](types.md).
 Тип задаёт порядок блоков A–F, предзаполнение, что пропустить и стеки по умолчанию; дальше идти по маршруту типа,
 общие правила блоков ниже действуют внутри него. Ответ — в `INDEX.md` → «Проект» → «Тип проекта».
