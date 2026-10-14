@@ -1,0 +1,52 @@
+# Whitelist: всё запрещено, разрешено только необходимое.
+# Репозиторий приватный: ACCESS.md, всё `.vscode/` и `project-base/` коммитим.
+# SSH-ключ (~/.ssh/…) в git не кладём.
+# Слаги темы/плагинов/mu-плагинов — из project-base/project.json:
+#   node .claude/skills/project-ops/scripts/gen-whitelist.mjs
+
+/*
+!/.gitignore
+!/.editorconfig
+!/.stylelintrc.json
+!/phpcs.xml.dist
+!/CLAUDE.md
+!/.mcp.json
+!/.claude/
+!/.claude/**
+!/.vscode/
+!/.vscode/**
+!/ACCESS.md
+!/project-base/
+!/project-base/**
+# >>> project.json (генерируется, не править вручную)
+!/wp-content/
+/wp-content/*
+!/wp-content/themes/
+/wp-content/themes/*
+!/wp-content/plugins/
+/wp-content/plugins/*
+!/wp-content/mu-plugins/
+/wp-content/mu-plugins/*
+# <<< project.json
+
+# Локальное состояние агента
+/.claude/.state/
+/.claude/settings.local.json
+
+# Мусор внутри разрешённых деревьев
+**/.DS_Store
+**/Thumbs.db
+**/desktop.ini
+**/*.log
+**/*.tmp
+**/*.temp
+**/*.bak
+**/node_modules/
+**/vendor/
+
+# Секреты — нигде
+**/*.pem
+**/*.key
+**/.env
+**/.env.*
+**/.ssh/

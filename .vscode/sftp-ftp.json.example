@@ -1,0 +1,53 @@
+{
+	"name": "Site Dev (FTP)",
+	"host": "",
+	"protocol": "ftp",
+	"port": 21,
+	"username": "",
+	"password": "",
+	"remotePath": "/httpdocs",
+	"context": ".",
+	"secure": false,
+	"passive": true,
+	"secureOptions": {
+		"rejectUnauthorized": false
+	},
+	"connectTimeout": 20000,
+	"remoteTimeOffsetInHours": 0,
+	"uploadOnSave": true,
+	"downloadOnOpen": false,
+	"syncMode": "full",
+	"ignore": [
+		"/*",
+		"!/wp-content",
+		"/wp-content/*",
+		"!/wp-content/themes",
+		"!/wp-content/plugins",
+		"!/wp-content/mu-plugins",
+		"/wp-content/themes/*",
+		"!/wp-content/themes/{theme-slug}",
+		"!/wp-content/themes/{theme-slug}/**",
+		"/wp-content/plugins/*",
+		"!/wp-content/plugins/{plugin-slug}",
+		"!/wp-content/plugins/{plugin-slug}/**",
+		"/wp-content/mu-plugins/*",
+		"!/wp-content/mu-plugins/{mu-plugin-slug}",
+		"!/wp-content/mu-plugins/{mu-plugin-slug}/**",
+		"**/.DS_Store",
+		"**/Thumbs.db",
+		"**/desktop.ini",
+		"**/*.log",
+		"**/*.tmp",
+		"**/*.temp",
+		"**/*.bak",
+		"**/node_modules/",
+		"**/vendor/",
+		"**/*.md"
+	],
+	"watcher": {
+		"files": "wp-content/{themes/{theme-slug}/assets/css/**,plugins/{plugin-slug}/assets/css/**,plugins/{plugin-slug}/blocks/{block-slug}/style.css,plugins/{plugin-slug}/blocks/{block-slug}/style.css.map}",
+		"autoUpload": true,
+		"autoDelete": false,
+		"delay": 5000
+	}
+}

@@ -1,0 +1,26 @@
+// Шрифты — enqueue в PHP, не @import url() в CSS.
+
+//========== Abstracts ==========//
+// CSS не дают. В каждом партиале: @use '../abstracts' as *;
+
+// ВНИМАНИЕ: этот файл — entry. Если в проекте уже есть свой
+// index.scss / main.scss, копировать его НЕ нужно: см. README.md.
+
+//========== Global ==========//
+@use 'global/layout';
+// @use 'global/global';
+// @use 'global/typography';
+// @use 'global/header';
+// @use 'global/footer';
+
+//========== Components ==========//
+// Один компонент — один партиал. Медиазапросы — внутри своего селектора.
+// @use 'components/button';
+// @use 'components/card';
+
+//========== Blocks ==========//
+// Стили своих Gutenberg-блоков, если они в теме, а не в плагине.
+// @use 'blocks/hero';
+
+//========== Page ==========//
+// @use 'pages/home';

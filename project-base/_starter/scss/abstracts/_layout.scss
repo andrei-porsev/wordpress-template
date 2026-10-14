@@ -1,0 +1,42 @@
+@use 'variables' as *;
+@use 'mixin' as *;
+
+// На ширину родителя. Бьёт 100vw / отрицательные margin у .alignfull ядра.
+@mixin full-parent {
+	width: 100%;
+	max-width: none;
+	margin-inline: 0;
+}
+
+// Контентная колонка. Для `{stem}-container`, если у блока нет обязательного __inner.
+@mixin content-container {
+	display: flex;
+	flex-direction: column;
+	width: var(--cltm-container-width, #{$cltm-container-width});
+	max-width: var(--cltm-container-max-width, #{$cltm-container-max-width});
+	margin-inline: auto;
+	margin-block: 0;
+	padding: 0;
+}
+
+// Оболочка секции. padding-block — отдельно (fluid или фиксированный).
+@mixin section-shell {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+
+	&.alignfull {
+		@include full-parent;
+	}
+
+	&__inner,
+	&__inner-container {
+		@include content-container;
+
+		> .alignfull {
+			@include full-parent;
+		}
+	}
+}

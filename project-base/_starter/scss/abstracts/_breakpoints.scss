@@ -1,0 +1,189 @@
+// max = следующий min минус 0.02px, чтобы диапазоны не пересекались.
+
+// 0 – 374.98px
+$bp-mobile-small-max: 374.98px !default;
+
+// 375px – 479.98px
+$bp-mobile-min: 375px !default;
+$bp-mobile-medium-max: 479.98px !default;
+
+// 480px – 767.98px
+$bp-mobile-medium-min: 480px !default;
+$bp-mobile-max: 767.98px !default;
+
+// 768px – 991.98px
+$bp-tablet-min: 768px !default;
+$bp-tablet-max: 991.98px !default;
+
+// 992px – 1023.98px
+$bp-tablet-large-min: 992px !default;
+$bp-tablet-large-max: 1023.98px !default;
+
+// 1024px – 1199.98px
+$bp-laptop-min: 1024px !default;
+$bp-laptop-max: 1199.98px !default;
+
+// 1200px – 1439.98px
+$bp-desktop-min: 1200px !default;
+$bp-desktop-max: 1439.98px !default;
+
+// ≥1440px
+$bp-widescreen-min: 1440px !default;
+
+@mixin up($width) {
+	@media (min-width: $width) {
+		@content;
+	}
+}
+
+@mixin down($width) {
+	@media (max-width: $width) {
+		@content;
+	}
+}
+
+@mixin between($min, $max) {
+	@media (min-width: $min) and (max-width: $max) {
+		@content;
+	}
+}
+
+// Сначала именованные (tabletUp, laptop…), сырые up/down/between — если ни один не подходит.
+
+// --- Up (mobile-first) ---
+
+@mixin mobileUp {
+	@include up($bp-mobile-min) {
+		@content;
+	}
+}
+
+@mixin mobileMediumUp {
+	@include up($bp-mobile-medium-min) {
+		@content;
+	}
+}
+
+@mixin tabletUp {
+	@include up($bp-tablet-min) {
+		@content;
+	}
+}
+
+@mixin tabletLargeUp {
+	@include up($bp-tablet-large-min) {
+		@content;
+	}
+}
+
+@mixin laptopUp {
+	@include up($bp-laptop-min) {
+		@content;
+	}
+}
+
+@mixin desktopUp {
+	@include up($bp-desktop-min) {
+		@content;
+	}
+}
+
+@mixin widescreenUp {
+	@include up($bp-widescreen-min) {
+		@content;
+	}
+}
+
+// --- Down (desktop-first) ---
+
+@mixin mobileSmallDown {
+	@include down($bp-mobile-small-max) {
+		@content;
+	}
+}
+
+@mixin mobileMediumDown {
+	@include down($bp-mobile-medium-max) {
+		@content;
+	}
+}
+
+@mixin mobileDown {
+	@include down($bp-mobile-max) {
+		@content;
+	}
+}
+
+@mixin tabletDown {
+	@include down($bp-tablet-max) {
+		@content;
+	}
+}
+
+@mixin tabletLargeDown {
+	@include down($bp-tablet-large-max) {
+		@content;
+	}
+}
+
+@mixin laptopDown {
+	@include down($bp-laptop-max) {
+		@content;
+	}
+}
+
+@mixin desktopDown {
+	@include down($bp-desktop-max) {
+		@content;
+	}
+}
+
+// --- Именованные диапазоны ---
+
+@mixin mobileSmall {
+	@include down($bp-mobile-small-max) {
+		@content;
+	}
+}
+
+@mixin mobile {
+	@include between($bp-mobile-min, $bp-mobile-medium-max) {
+		@content;
+	}
+}
+
+@mixin mobileMedium {
+	@include between($bp-mobile-medium-min, $bp-mobile-max) {
+		@content;
+	}
+}
+
+@mixin tablet {
+	@include between($bp-tablet-min, $bp-tablet-max) {
+		@content;
+	}
+}
+
+@mixin tabletLarge {
+	@include between($bp-tablet-large-min, $bp-tablet-large-max) {
+		@content;
+	}
+}
+
+@mixin laptop {
+	@include between($bp-laptop-min, $bp-laptop-max) {
+		@content;
+	}
+}
+
+@mixin desktop {
+	@include between($bp-desktop-min, $bp-desktop-max) {
+		@content;
+	}
+}
+
+@mixin widescreen {
+	@include up($bp-widescreen-min) {
+		@content;
+	}
+}

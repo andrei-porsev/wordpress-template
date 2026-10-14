@@ -1,0 +1,496 @@
+{
+	"core": [
+		"project-init",
+		"project-ops",
+		"project-structure"
+	],
+	"sources": {
+		"wordpress": {
+			"repo": "https://github.com/WordPress/agent-skills.git",
+			"ref": "trunk",
+			"license": "GPL-2.0-or-later"
+		},
+		"woocommerce": {
+			"repo": "https://github.com/woocommerce/woocommerce.git",
+			"ref": "trunk",
+			"license": "GPL-3.0-or-later"
+		},
+		"figma": {
+			"repo": "https://github.com/figma/mcp-server-guide.git",
+			"ref": "main",
+			"license": "см. репозиторий"
+		},
+		"marketing": {
+			"repo": "https://github.com/coreyhaines31/marketingskills.git",
+			"ref": "main",
+			"license": "MIT"
+		},
+		"web-quality": {
+			"repo": "https://github.com/addyosmani/web-quality-skills.git",
+			"ref": "main",
+			"license": "MIT"
+		},
+		"anthropic": {
+			"repo": "https://github.com/anthropics/skills.git",
+			"ref": "main",
+			"license": "Apache-2.0 (LICENSE.txt в папке скилла)"
+		},
+		"gsap": {
+			"repo": "https://github.com/greensock/gsap-skills.git",
+			"ref": "main",
+			"license": "MIT (скиллы); сама библиотека GSAP — GreenSock Standard No-Charge License"
+		}
+	},
+	"skills": {
+		"wp-block-development": {
+			"source": "wordpress",
+			"path": "skills/wp-block-development",
+			"commit": "20324d25ad9a92e16ff1b5b3df4c6c6a88a24e93",
+			"tree": "8a0e4def60f65cb26c81820a08efcbd83099a71f",
+			"hash": "8a6731e434e7c249",
+			"updated": "2026-07-08"
+		},
+		"wp-block-themes": {
+			"source": "wordpress",
+			"path": "skills/wp-block-themes",
+			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
+			"tree": "dc1a278ca5e02d543252f186286549ba9a24b8f9",
+			"hash": "cff62e4a437cfe7f",
+			"updated": "2026-10-08"
+		},
+		"wp-interactivity-api": {
+			"source": "wordpress",
+			"path": "skills/wp-interactivity-api",
+			"commit": "20324d25ad9a92e16ff1b5b3df4c6c6a88a24e93",
+			"tree": "f9ed5e434f60070d972ef3bb5186194defe7914e",
+			"hash": "e7be1a9f3d7a0a2d",
+			"updated": "2026-07-08"
+		},
+		"wp-patterns": {
+			"source": "wordpress",
+			"path": "skills/wp-patterns",
+			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
+			"tree": "fb3440d3d09fa6cd72f30ad3a2a95385356a8b89",
+			"hash": "6a6b322b5fa8eb23",
+			"updated": "2026-10-08"
+		},
+		"wp-performance": {
+			"source": "wordpress",
+			"path": "skills/wp-performance",
+			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
+			"tree": "cc74eb4667b662f5b5f25048f95f3ae48bcf3b8c",
+			"hash": "d438fb4ae1518979",
+			"updated": "2026-10-08"
+		},
+		"wp-phpstan": {
+			"source": "wordpress",
+			"path": "skills/wp-phpstan",
+			"commit": "20324d25ad9a92e16ff1b5b3df4c6c6a88a24e93",
+			"tree": "6a45570f4b24e6c69f738bac78ca79a4897ed999",
+			"hash": "f8febbb599bc7c12",
+			"updated": "2026-07-08"
+		},
+		"wp-playground": {
+			"source": "wordpress",
+			"path": "skills/wp-playground",
+			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
+			"tree": "d840051f37536475194d22a9ece6557391266975",
+			"hash": "7ca2f95ec2e3c13e",
+			"updated": "2026-10-08"
+		},
+		"wp-plugin-development": {
+			"source": "wordpress",
+			"path": "skills/wp-plugin-development",
+			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
+			"tree": "80b5aa0ab920f4635233a3b658cc25c563024ae1",
+			"hash": "1278055f22a8536d",
+			"updated": "2026-10-08"
+		},
+		"wp-rest-api": {
+			"source": "wordpress",
+			"path": "skills/wp-rest-api",
+			"commit": "20324d25ad9a92e16ff1b5b3df4c6c6a88a24e93",
+			"tree": "c745b5611c9587095117cbb478b1294312b6224b",
+			"hash": "d3d3125de94b1138",
+			"updated": "2026-07-08"
+		},
+		"wp-wpcli-and-ops": {
+			"source": "wordpress",
+			"path": "skills/wp-wpcli-and-ops",
+			"commit": "20324d25ad9a92e16ff1b5b3df4c6c6a88a24e93",
+			"tree": "de73719a1fae0215e994fe91bd392627dd1d7591",
+			"hash": "928b461b362d864a",
+			"updated": "2026-07-08"
+		},
+		"wordpress-router": {
+			"source": "wordpress",
+			"path": "skills/wordpress-router",
+			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
+			"tree": "bfb75a68f108e249891f204906bb6fa953d611f8",
+			"hash": "7625bcf572b17c55",
+			"updated": "2026-10-08"
+		},
+		"wp-project-triage": {
+			"source": "wordpress",
+			"path": "skills/wp-project-triage",
+			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
+			"tree": "ae37f5f5e02a2e280290abc2e093dad864415acd",
+			"hash": "8d309f62f8b4a6bd",
+			"updated": "2026-10-08"
+		},
+		"woocommerce": {
+			"source": "local"
+		},
+		"acf-blocks": {
+			"source": "local"
+		},
+		"classic-theme": {
+			"source": "local"
+		},
+		"page-builders": {
+			"source": "local"
+		},
+		"woocommerce-performance": {
+			"source": "woocommerce",
+			"path": ".ai/skills/woocommerce-performance",
+			"commit": "505cf8febd01f13b32b584af661f3ebfe3950324",
+			"tree": "087d6496bedbfeedd081ea18e676b578ad9e3919",
+			"hash": "a35c93d39a1b655d",
+			"updated": "2026-10-08"
+		},
+		"figma-use": {
+			"source": "figma",
+			"path": "skills/figma-use",
+			"commit": "b0bfad2ae63dfdc1af201c5542b5c8cf93778b33",
+			"tree": "3817239b29e623a7d1e630477fbabf1d061ac634",
+			"hash": "d4cc754c4c0a63fc",
+			"updated": "2026-10-14"
+		},
+		"figma-generate-design": {
+			"source": "figma",
+			"path": "skills/figma-generate-design",
+			"commit": "b0bfad2ae63dfdc1af201c5542b5c8cf93778b33",
+			"tree": "af778ebcefd9707a96dead42178f3030d14efd13",
+			"hash": "5fcdfbda0f26942d",
+			"updated": "2026-10-14"
+		},
+		"figma-generate-library": {
+			"source": "figma",
+			"path": "skills/figma-generate-library",
+			"commit": "b0bfad2ae63dfdc1af201c5542b5c8cf93778b33",
+			"tree": "55d414053f94884e0f4c17ba3a686549f190fb17",
+			"hash": "2245529f6a81a5db",
+			"updated": "2026-10-14"
+		},
+		"figma-create-new-file": {
+			"source": "figma",
+			"path": "skills/figma-create-new-file",
+			"commit": "f0493295acf5f7cbdebcbcc483c06de814420cb1",
+			"tree": "eb73eadb18d4547d819dc8d8ba581a4646c4d80d",
+			"hash": "39746bdc4f3c8da2",
+			"updated": "2026-10-08"
+		},
+		"figma-design-to-code": {
+			"source": "figma",
+			"path": "skills/figma-design-to-code",
+			"commit": "f0493295acf5f7cbdebcbcc483c06de814420cb1",
+			"tree": "4ee4f35d1fa6f581f556f486736fe203c01d8c11",
+			"hash": "904dff574c18f61d",
+			"updated": "2026-10-08"
+		},
+		"site-architecture": {
+			"source": "marketing",
+			"path": "skills/site-architecture",
+			"commit": "b9ba399dd88b082b926e261e8ccfb843d20aa066",
+			"tree": "64066e856d3697e6033a83f3029179b2003f58b5",
+			"hash": "780fdb8b1f021bd3",
+			"updated": "2026-10-08"
+		},
+		"content-strategy": {
+			"source": "marketing",
+			"path": "skills/content-strategy",
+			"commit": "b9ba399dd88b082b926e261e8ccfb843d20aa066",
+			"tree": "874a880a96da3649e1a1c93800b36e3499a70914",
+			"hash": "34f8dd854e57a79b",
+			"updated": "2026-10-08"
+		},
+		"copywriting": {
+			"source": "marketing",
+			"path": "skills/copywriting",
+			"commit": "c7d7dfb6b460fc376b4b2204b78a9c9fd5ca6467",
+			"tree": "08b81e848d49e4f34c7b9662d22fb43e6a4f6944",
+			"hash": "ff92dbc1303ad3eb",
+			"updated": "2026-10-14"
+		},
+		"copy-editing": {
+			"source": "marketing",
+			"path": "skills/copy-editing",
+			"commit": "b9ba399dd88b082b926e261e8ccfb843d20aa066",
+			"tree": "cc4fc03162c36b9985b1e5bfae58028171b3f4ac",
+			"hash": "b2637799d07a9992",
+			"updated": "2026-10-08"
+		},
+		"accessibility": {
+			"source": "web-quality",
+			"path": "skills/accessibility",
+			"commit": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+			"tree": "90b7b38a892c625d19408df411e46cca7ff3819d",
+			"hash": "73ee7c57f2b8ae67",
+			"updated": "2026-10-08"
+		},
+		"core-web-vitals": {
+			"source": "web-quality",
+			"path": "skills/core-web-vitals",
+			"commit": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+			"tree": "79f9fe00ddd0855b35e7498e3752c6d02304eb65",
+			"hash": "6571e7b4c9d250c9",
+			"updated": "2026-10-08"
+		},
+		"blueprint": {
+			"source": "wordpress",
+			"path": "skills/blueprint",
+			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
+			"tree": "0e64f8bc9f5b3ab7b4e71c9eca3f8ed74b50fe7c",
+			"hash": "3cf94fa45bb02f3c",
+			"updated": "2026-10-08"
+		},
+		"frontend-design": {
+			"source": "anthropic",
+			"path": "skills/frontend-design",
+			"commit": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+			"tree": "d79e2a5bb4df4a386c2adcdd9ab8709bba28c3f6",
+			"hash": "89a6e59de80320a3",
+			"updated": "2026-10-14"
+		},
+		"gsap-core": {
+			"source": "gsap",
+			"path": "skills/gsap-core",
+			"commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+			"tree": "135754edd728103e329a8df8b471b197375b370e",
+			"hash": "7d36aa032e06de20",
+			"updated": "2026-10-14"
+		},
+		"gsap-timeline": {
+			"source": "gsap",
+			"path": "skills/gsap-timeline",
+			"commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+			"tree": "37eb5d623c3e14367864d57160acb64f13950994",
+			"hash": "f81364a3eb4b8646",
+			"updated": "2026-10-14"
+		},
+		"gsap-scrolltrigger": {
+			"source": "gsap",
+			"path": "skills/gsap-scrolltrigger",
+			"commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+			"tree": "7838f515e05bfab0a79dd63368a409ddc7d76ee6",
+			"hash": "e1b1247edee93e0a",
+			"updated": "2026-10-14"
+		},
+		"gsap-plugins": {
+			"source": "gsap",
+			"path": "skills/gsap-plugins",
+			"commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+			"tree": "e31ccbdb75cf41f0e7df0fec567f6e07956eaca9",
+			"hash": "72bc047824b18253",
+			"updated": "2026-10-14"
+		},
+		"gsap-utils": {
+			"source": "gsap",
+			"path": "skills/gsap-utils",
+			"commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+			"tree": "3f7aa617dd2dc7ebf21f30349b9c7b6d8640d789",
+			"hash": "356ca9fb6078c3e0",
+			"updated": "2026-10-14"
+		},
+		"gsap-performance": {
+			"source": "gsap",
+			"path": "skills/gsap-performance",
+			"commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+			"tree": "34dec2f051872f8d02df06de97450e448bac9c5e",
+			"hash": "d919813acee16857",
+			"updated": "2026-10-14"
+		}
+	},
+	"stacks": {
+		"fse": {
+			"title": "FSE / block theme",
+			"skills": [
+				"wp-block-themes",
+				"wp-patterns"
+			],
+			"rules": [
+				"fse-theme"
+			]
+		},
+		"blocks": {
+			"title": "Нативные Gutenberg-блоки",
+			"skills": [
+				"wp-block-development"
+			],
+			"rules": [
+				"blocks"
+			]
+		},
+		"interactivity": {
+			"title": "Интерактив на фронте (Interactivity API)",
+			"skills": [
+				"wp-interactivity-api"
+			]
+		},
+		"classic": {
+			"title": "Classic / child-тема",
+			"skills": [
+				"classic-theme"
+			],
+			"rules": [
+				"classic-theme"
+			]
+		},
+		"builder": {
+			"title": "Page builder",
+			"skills": [
+				"page-builders"
+			],
+			"rules": [
+				"page-builders"
+			]
+		},
+		"acf": {
+			"title": "Блоки на ACF",
+			"skills": [
+				"acf-blocks"
+			],
+			"rules": [
+				"acf"
+			]
+		},
+		"woo": {
+			"title": "WooCommerce",
+			"skills": [
+				"woocommerce",
+				"woocommerce-performance"
+			],
+			"rules": [
+				"woocommerce"
+			]
+		},
+		"plugin": {
+			"title": "Свой плагин",
+			"skills": [
+				"wp-plugin-development"
+			]
+		},
+		"rest": {
+			"title": "REST API",
+			"skills": [
+				"wp-rest-api"
+			]
+		},
+		"wpcli": {
+			"title": "WP-CLI на сервере (обязателен при WP-CLI = да)",
+			"skills": [
+				"wp-wpcli-and-ops"
+			]
+		},
+		"perf": {
+			"title": "Профилирование WP (сервер, БД, кеш)",
+			"skills": [
+				"wp-performance"
+			]
+		},
+		"phpstan": {
+			"title": "PHPStan",
+			"skills": [
+				"wp-phpstan"
+			]
+		},
+		"playground": {
+			"title": "WordPress Playground",
+			"skills": [
+				"wp-playground",
+				"blueprint"
+			]
+		},
+		"triage": {
+			"title": "Разбор незнакомого WP-репозитория (только project-init, шаг 0)",
+			"skills": [
+				"wordpress-router",
+				"wp-project-triage"
+			]
+		},
+		"figma": {
+			"title": "Дизайн в Figma и вёрстка по макету",
+			"skills": [
+				"figma-use",
+				"figma-generate-design",
+				"figma-generate-library",
+				"figma-create-new-file",
+				"figma-design-to-code"
+			],
+			"rules": [
+				"figma-design"
+			],
+			"note": "MCP figma — в .mcp.json (project-init, блок F3), авторизация через /mcp. Запись на канвас — платный seat Dev/Full."
+		},
+		"content": {
+			"title": "Контент: структура сайта и тексты",
+			"skills": [
+				"site-architecture",
+				"content-strategy",
+				"copywriting",
+				"copy-editing"
+			],
+			"rules": [
+				"content"
+			],
+			"note": "Бриф бренда для этих скиллов — .claude/product-marketing.md (заполняется в project-init, блок A)."
+		},
+		"quality": {
+			"title": "Доступность и Core Web Vitals",
+			"skills": [
+				"accessibility",
+				"core-web-vitals"
+			]
+		},
+		"design": {
+			"title": "Дизайн: эстетика, Claude Design как источник макета",
+			"skills": [
+				"frontend-design"
+			],
+			"rules": [
+				"design"
+			],
+			"note": "Макет из Claude Design: ссылку и экспорт — в ACCESS.md → Дизайн (решение 023)."
+		},
+		"motion": {
+			"title": "Анимации (GSAP)",
+			"skills": [
+				"gsap-core",
+				"gsap-timeline",
+				"gsap-scrolltrigger",
+				"gsap-plugins",
+				"gsap-utils",
+				"gsap-performance"
+			],
+			"rules": [
+				"motion"
+			],
+			"note": "Библиотека — локальная копия в теме, не CDN (решение 024). Скиллы gsap-react и gsap-frameworks не нужны: тема на vanilla JS."
+		},
+		"seo": {
+			"title": "SEO/GEO-аудит, индексация, картинки",
+			"plugins": [
+				{
+					"id": "claude-seo@agricidaniel-claude-seo",
+					"marketplace": {
+						"name": "agricidaniel-claude-seo",
+						"repo": "AgriciDaniel/claude-seo"
+					}
+				}
+			],
+			"note": "Плагин: Python 3.10+; Google API (Search Console, PageSpeed, CrUX) и Gemini для картинок — /seo setup, факт подключения в ACCESS.md → SEO. Автообновление маркетплейса включить в /plugin → Marketplaces."
+		}
+	},
+	"active": [],
+	"$comment": "Источник правды по скиллам шаблона. Правится скриптом project-ops/scripts/skills-sync.mjs (update, add, activate, ignore); вручную — только sources, stacks и core. Решение 022."
+}

@@ -1,0 +1,12 @@
+{
+	"name": "project-ops",
+	"private": true,
+	"type": "module",
+	"dependencies": {
+		"basic-ftp": "^5.0.5",
+		"ssh2": "^1.16.0",
+		"ssh2-sftp-client": "^11.2.3",
+		"stylelint": "^17.15.0",
+		"stylelint-config-standard-scss": "^17.0.0"
+	}
+}

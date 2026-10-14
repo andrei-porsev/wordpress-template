@@ -1,0 +1,265 @@
+{
+	// Подключение abstracts — в начале каждого партиала
+	"use abstracts": {
+		"prefix": ["use-abstracts", "@usea"],
+		"scope": "scss",
+		"body": ["@use '${1:../abstracts}' as ${2|*|,a|};"],
+		"description": "@use abstracts — миксины и брейкпоинты. as * или as a при конфликте имён"
+	},
+
+	// --- up / down / between (произвольная ширина) ---
+	"up": {
+		"prefix": ["@up"],
+		"scope": "scss",
+		"body": ["@include up(${1:768px}) {\n\t$0\n}"],
+		"description": "up($width) — min-width, круглое число (768px, не 767.98)"
+	},
+	"down": {
+		"prefix": ["@down"],
+		"scope": "scss",
+		"body": ["@include down(${1:767.98px}) {\n\t$0\n}"],
+		"description": "down($width) — max-width, на 0.02px ниже следующего min"
+	},
+	"between": {
+		"prefix": ["@bet", "between"],
+		"scope": "scss",
+		"body": ["@include between(${1:768px}, ${2:991.98px}) {\n\t$0\n}"],
+		"description": "between($min, $max) — диапазон min-width and max-width"
+	},
+
+	// --- Именованные диапазоны ---
+	"mobileSmall": {
+		"prefix": ["mobileSmall", "@mobs"],
+		"scope": "scss",
+		"body": ["@include mobileSmall {\n\t$0\n}"],
+		"description": "mobileSmall — только 0–374.98px"
+	},
+	"mobile": {
+		"prefix": ["mobile", "@mob"],
+		"scope": "scss",
+		"body": ["@include mobile {\n\t$0\n}"],
+		"description": "mobile — только 375–479.98px"
+	},
+	"mobileMedium": {
+		"prefix": ["mobileMedium", "@mobm"],
+		"scope": "scss",
+		"body": ["@include mobileMedium {\n\t$0\n}"],
+		"description": "mobileMedium — только 480–767.98px"
+	},
+	"tablet": {
+		"prefix": ["tablet", "@tab"],
+		"scope": "scss",
+		"body": ["@include tablet {\n\t$0\n}"],
+		"description": "tablet — только 768–991.98px"
+	},
+	"tabletLarge": {
+		"prefix": ["tabletLarge", "@tabl"],
+		"scope": "scss",
+		"body": ["@include tabletLarge {\n\t$0\n}"],
+		"description": "tabletLarge — только 992–1023.98px"
+	},
+	"laptop": {
+		"prefix": ["laptop", "@lap"],
+		"scope": "scss",
+		"body": ["@include laptop {\n\t$0\n}"],
+		"description": "laptop — только 1024–1199.98px"
+	},
+	"desktop": {
+		"prefix": ["desktop", "@dsk"],
+		"scope": "scss",
+		"body": ["@include desktop {\n\t$0\n}"],
+		"description": "desktop — только 1200–1439.98px"
+	},
+	"widescreen": {
+		"prefix": ["widescreen", "@wide"],
+		"scope": "scss",
+		"body": ["@include widescreen {\n\t$0\n}"],
+		"description": "widescreen — от 1440px и выше"
+	},
+
+	// --- Up (mobile-first, от и выше) ---
+	"mobileUp": {
+		"prefix": ["mobileUp", "@mobu"],
+		"scope": "scss",
+		"body": ["@include mobileUp {\n\t$0\n}"],
+		"description": "mobileUp — от 375px и выше"
+	},
+	"mobileMediumUp": {
+		"prefix": ["mobileMediumUp", "@mobmu"],
+		"scope": "scss",
+		"body": ["@include mobileMediumUp {\n\t$0\n}"],
+		"description": "mobileMediumUp — от 480px и выше"
+	},
+	"tabletUp": {
+		"prefix": ["tabletUp", "@tabu"],
+		"scope": "scss",
+		"body": ["@include tabletUp {\n\t$0\n}"],
+		"description": "tabletUp — от 768px и выше"
+	},
+	"tabletLargeUp": {
+		"prefix": ["tabletLargeUp", "@tablu"],
+		"scope": "scss",
+		"body": ["@include tabletLargeUp {\n\t$0\n}"],
+		"description": "tabletLargeUp — от 992px и выше"
+	},
+	"laptopUp": {
+		"prefix": ["laptopUp", "@lapu"],
+		"scope": "scss",
+		"body": ["@include laptopUp {\n\t$0\n}"],
+		"description": "laptopUp — от 1024px и выше"
+	},
+	"desktopUp": {
+		"prefix": ["desktopUp", "@dsku"],
+		"scope": "scss",
+		"body": ["@include desktopUp {\n\t$0\n}"],
+		"description": "desktopUp — от 1200px и выше"
+	},
+	"widescreenUp": {
+		"prefix": ["widescreenUp", "@wideu"],
+		"scope": "scss",
+		"body": ["@include widescreenUp {\n\t$0\n}"],
+		"description": "widescreenUp — от 1440px и выше"
+	},
+
+	// --- Down (desktop-first, до и ниже) ---
+	"mobileSmallDown": {
+		"prefix": ["mobileSmallDown", "@mobsd"],
+		"scope": "scss",
+		"body": ["@include mobileSmallDown {\n\t$0\n}"],
+		"description": "mobileSmallDown — до 374.98px"
+	},
+	"mobileMediumDown": {
+		"prefix": ["mobileMediumDown", "@mobmd"],
+		"scope": "scss",
+		"body": ["@include mobileMediumDown {\n\t$0\n}"],
+		"description": "mobileMediumDown — до 479.98px"
+	},
+	"mobileDown": {
+		"prefix": ["mobileDown", "@mobd"],
+		"scope": "scss",
+		"body": ["@include mobileDown {\n\t$0\n}"],
+		"description": "mobileDown — до 767.98px"
+	},
+	"tabletDown": {
+		"prefix": ["tabletDown", "@tabd"],
+		"scope": "scss",
+		"body": ["@include tabletDown {\n\t$0\n}"],
+		"description": "tabletDown — до 991.98px"
+	},
+	"tabletLargeDown": {
+		"prefix": ["tabletLargeDown", "@tabld"],
+		"scope": "scss",
+		"body": ["@include tabletLargeDown {\n\t$0\n}"],
+		"description": "tabletLargeDown — до 1023.98px"
+	},
+	"laptopDown": {
+		"prefix": ["laptopDown", "@lapd"],
+		"scope": "scss",
+		"body": ["@include laptopDown {\n\t$0\n}"],
+		"description": "laptopDown — до 1199.98px"
+	},
+	"desktopDown": {
+		"prefix": ["desktopDown", "@dskd"],
+		"scope": "scss",
+		"body": ["@include desktopDown {\n\t$0\n}"],
+		"description": "desktopDown — до 1439.98px"
+	},
+
+	// --- Fluid (вместо adaptive / fontsize) ---
+	"fluid": {
+		"prefix": ["fluid", "@fluid", "@adapt"],
+		"scope": "scss",
+		"body": ["@include fluid('${1:margin-bottom}', ${2:16}, ${3:40});"],
+		"description": "fluid($property, $from, $to) — любое свойство clamp, моб → десктоп"
+	},
+	"fluid-fs": {
+		"prefix": ["fluid-fs", "@ffs", "@fonz", "@exfonz"],
+		"scope": "scss",
+		"body": ["@include fluid-fs(${1:16}, ${2:20});"],
+		"description": "fluid-fs($from, $to) — font-size clamp. Не фиксированный px и не несколько брейков"
+	},
+	"fluid-var": {
+		"prefix": ["fluid-var", "@fluidvar"],
+		"scope": "scss",
+		"body": ["@include fluid-var('${1:font-size}', '${2:--cltm-min}', '${3:--cltm-max}', ${4:16}, ${5:20});"],
+		"description": "fluid-var — clamp из CSS-переменных редактора + fallback px"
+	},
+	"fluid-fs-var": {
+		"prefix": ["fluid-fs-var", "@ffsvar"],
+		"scope": "scss",
+		"body": ["@include fluid-fs-var('${1:--cltm-fs-min}', '${2:--cltm-fs-max}', ${3:28}, ${4:64});"],
+		"description": "fluid-fs-var — кегль из --stem-fs-min / --stem-fs-max (поля блока)"
+	},
+
+	// --- Утилиты ---
+	"line-clamp": {
+		"prefix": ["line-clamp", "@linec"],
+		"scope": "scss",
+		"body": ["@include line-clamp(${1:3});"],
+		"description": "line-clamp($lines) — обрезка текста по числу строк"
+	},
+	"full-block-image": {
+		"prefix": ["full-block-image", "@fullimg"],
+		"scope": "scss",
+		"body": ["@include full-block-image(${1:400}, ${2:225});"],
+		"description": "full-block-image($width, $height) — обложка блока, aspect-ratio + object-fit"
+	},
+
+	// --- Анимации ---
+	"smooth-scale": {
+		"prefix": ["smooth-scale", "@scale"],
+		"scope": "scss",
+		"body": ["@include smooth-scale(${1:1}, ${2:1.1});"],
+		"description": "smooth-scale($from, $to) — пульсация масштаба"
+	},
+	"smooth-wave": {
+		"prefix": ["smooth-wave", "@wave"],
+		"scope": "scss",
+		"body": ["@include smooth-wave(${1:8deg});"],
+		"description": "smooth-wave($angle) — покачивание. Обёртки: smooth-wave-8deg / 45deg"
+	},
+	"smooth-wave-8deg": {
+		"prefix": ["smooth-wave-8deg", "@wave8"],
+		"scope": "scss",
+		"body": ["@include smooth-wave-8deg;"],
+		"description": "smooth-wave-8deg — покачивание ±8deg"
+	},
+	"smooth-wave-45deg": {
+		"prefix": ["smooth-wave-45deg", "@wave45"],
+		"scope": "scss",
+		"body": ["@include smooth-wave-45deg;"],
+		"description": "smooth-wave-45deg — покачивание ±45deg"
+	},
+	"rotate": {
+		"prefix": ["@rot"],
+		"scope": "scss",
+		"body": ["@include rotate(${1:360deg});"],
+		"description": "rotate($to) — вращение до угла. Обёртки: rotate-normal / rotate-reverse"
+	},
+	"rotate-normal": {
+		"prefix": ["rotate-normal", "@rotn"],
+		"scope": "scss",
+		"body": ["@include rotate-normal;"],
+		"description": "rotate-normal — вращение по часовой, 360deg"
+	},
+	"rotate-reverse": {
+		"prefix": ["rotate-reverse", "@rotr"],
+		"scope": "scss",
+		"body": ["@include rotate-reverse;"],
+		"description": "rotate-reverse — вращение против часовой"
+	},
+	"stretch-x": {
+		"prefix": ["stretch-x", "@stretch"],
+		"scope": "scss",
+		"body": ["@include stretch-x(${1:1.1});"],
+		"description": "stretch-x($scale) — пульсация по горизонтали"
+	},
+
+	// Сырой @media — только если нет подходящего up/down/between
+	"custom media": {
+		"prefix": ["@media"],
+		"scope": "scss",
+		"body": ["@media (${1|max-width,min-width|}: ${2:1600px}) {\n\t$0\n}"],
+		"description": "Сырой @media. Для сетки проекта — up/down/tabletUp, не это"
+	}
+}

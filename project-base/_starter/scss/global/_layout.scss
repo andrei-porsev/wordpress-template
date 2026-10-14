@@ -1,0 +1,6 @@
+@use '../abstracts' as *;
+
+// Fallback, если у блока нет обязательного __inner. Иначе колонка — на &__inner (section-shell).
+.cltm-container {
+	@include content-container;
+}

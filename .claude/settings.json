@@ -1,0 +1,192 @@
+{
+	"language": "russian",
+	"permissions": {
+		"allow": [
+			"Bash(node .claude/skills/project-ops/scripts/compile-scss.mjs*)",
+			"Bash(node .claude/skills/project-ops/scripts/gen-whitelist.mjs*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs test*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs download*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs upload*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs sync-down*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs test*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage test*)",
+			"Bash(npm install --prefix .claude/skills/project-ops)",
+			"mcp__playwright",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp plugin list*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp theme list*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp option get*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp core version*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp user list*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp post list*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp cache flush*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp rewrite flush*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp db export*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp db check*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp plugin list*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp theme list*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp option get*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp core version*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp user list*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp post list*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp cache flush*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp rewrite flush*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp db export*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp db check*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs check*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs list*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs update*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs ignore*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs activate*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs deactivate*)",
+			"Bash(git status:*)",
+			"Bash(git diff:*)",
+			"Bash(git log:*)",
+			"Bash(git show:*)",
+			"Bash(git add:*)",
+			"Bash(git commit:*)",
+			"Bash(npm run build:*)",
+			"Bash(npm run start:*)",
+			"Bash(php -l:*)",
+			"Bash(php -v:*)",
+			"Bash(node -v:*)",
+			"Bash(npm -v:*)",
+			"Bash(node .claude/hooks/selftest.mjs:*)",
+			"WebFetch(domain:developer.wordpress.org)",
+			"WebFetch(domain:wordpress.org)",
+			"WebFetch(domain:make.wordpress.org)",
+			"WebFetch(domain:developer.woocommerce.com)",
+			"WebFetch(domain:woocommerce.com)",
+			"WebFetch(domain:www.advancedcustomfields.com)",
+			"WebFetch(domain:developer.mozilla.org)"
+		],
+		"deny": [
+			"Read(/project-base/dumps/**)",
+			"Read(**/*.sql)",
+			"Read(**/*.sql.gz)",
+			"Read(**/*.map)",
+			"Read(**/*.min.js)",
+			"Read(**/*.min.css)",
+			"Read(**/.env)",
+			"Read(**/*.pem)",
+			"Read(**/*.key)",
+			"Read(/.vscode/sftp-ftp.json)",
+			"Edit(/wp-config.php)",
+			"Edit(/wp-admin/**)",
+			"Edit(/wp-includes/**)",
+			"Bash(ssh:*)",
+			"Bash(scp:*)",
+			"Bash(sftp:*)",
+			"Bash(rsync:*)",
+			"Bash(plink:*)",
+			"Bash(pscp:*)",
+			"Bash(winscp:*)",
+			"Edit(/.claude/hooks/**)",
+			"Edit(/.claude/settings.json)",
+			"Edit(/.claude/settings.local.json)",
+			"Edit(/.git/**)",
+			"Bash(rm -r:*)",
+			"Bash(rm -fr:*)",
+			"PowerShell(Remove-Item*-Recurse*)",
+			"Bash(git reset --hard:*)",
+			"Bash(git clean:*)",
+			"Bash(git push --force:*)",
+			"Bash(git push -f:*)",
+			"Bash(git push --force-with-lease:*)",
+			"Bash(npm publish:*)",
+			"Bash(curl:*)",
+			"Bash(wget:*)",
+			"PowerShell(Invoke-WebRequest*)",
+			"PowerShell(iwr*)",
+			"PowerShell(Invoke-Expression*)",
+			"PowerShell(iex*)",
+			"Bash(sudo:*)"
+		],
+		"defaultMode": "acceptEdits",
+		"ask": [
+			"Edit(/.mcp.json)",
+			"Edit(/.vscode/sftp.json)",
+			"Edit(/.vscode/ssh.json)",
+			"Edit(/.vscode/sftp-stage.json)",
+			"Edit(/.vscode/ssh-stage.json)",
+			"Bash(git push:*)",
+			"Bash(git checkout --:*)",
+			"Bash(git restore:*)",
+			"Bash(git stash drop:*)",
+			"Bash(git stash clear:*)",
+			"Bash(git branch -D:*)",
+			"Bash(cmd:*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs *--apply*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs *--force*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs add*)",
+			"PowerShell(Remove-Item*-Force*)"
+		]
+	},
+	"enabledMcpjsonServers": [
+		"playwright"
+	],
+	"hooks": {
+		"SessionStart": [
+			{
+				"matcher": "startup|resume",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"$CLAUDE_PROJECT_DIR/.claude/skills/project-ops/scripts/skills-sync.mjs\" check --hook",
+						"timeout": 60
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Write|Edit|MultiEdit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-paths.mjs\""
+					}
+				]
+			},
+			{
+				"matcher": "Bash|PowerShell",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-wpcli.mjs\""
+					}
+				]
+			},
+			{
+				"matcher": "Bash|PowerShell",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.mjs\""
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "Write|Edit|MultiEdit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit.mjs\"",
+						"timeout": 180
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-map.mjs\""
+					}
+				]
+			}
+		]
+	}
+}

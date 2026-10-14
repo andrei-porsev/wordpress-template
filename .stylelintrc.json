@@ -1,0 +1,36 @@
+{
+	"extends": [
+		"stylelint-config-standard-scss"
+	],
+	"ignoreFiles": [
+		"**/node_modules/**",
+		"**/vendor/**",
+		"**/build/**",
+		"**/assets/css/**"
+	],
+	"rules": {
+		"selector-class-pattern": [
+			"^[a-z][a-z0-9]*(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?(--[a-z0-9]+(-[a-z0-9]+)*)?$",
+			{
+				"message": "Класс должен быть BEM в kebab-case: block__element--modifier"
+			}
+		],
+		"selector-max-id": 0,
+		"declaration-no-important": true,
+		"max-nesting-depth": [
+			4,
+			{
+				"ignoreAtRules": [
+					"include",
+					"media"
+				]
+			}
+		],
+		"no-descending-specificity": null,
+		"scss/at-mixin-pattern": "^_?[a-z][a-zA-Z0-9-]*$",
+		"scss/at-function-pattern": "^_?[a-z][a-zA-Z0-9-]*$",
+		"scss/dollar-variable-pattern": "^_?[a-z][a-zA-Z0-9-]*$",
+		"scss/double-slash-comment-whitespace-inside": null,
+		"scss/double-slash-comment-empty-line-before": null
+	}
+}

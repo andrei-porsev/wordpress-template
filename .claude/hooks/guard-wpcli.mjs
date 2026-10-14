@@ -1,0 +1,212 @@
+/**
+ * PreToolUse (Bash): охранник команд, которые идут на сервер через ssh-exec.mjs.
+ * Код правится только локально (заливает хук post-edit), поэтому на сервере запись в файлы запрещена.
+ *  - deny: запись в файлы (>, tee, sed -i, cp, mv, rm…), чтение секретов (wp-config, .env, ключи),
+ *          разрушающие WP-CLI (db drop/reset/clean, site empty/delete, DROP/TRUNCATE), sudo;
+ *  - allow: чтение логов и каталогов (tail, cat, ls, grep… и их конвейер |), php -v/-l;
+ *  - ask: WP-CLI, меняющий сайт или БД (search-replace без --dry-run, db import, update/delete…),
+ *         eval, составные команды (; && ||), прочие команды;
+ *  - без решения: чтение WP-CLI — дальше permissions.allow.
+ * Перед первым ask по WP-CLI за сессию хук сам делает дамп БД (wp db export ../claude-backup-<время>.sql).
+ * Решения (кроме allow) пишутся в журнал .claude/.state/audit.log.
+ * Сбой хука: exit 0. Поэтому 'allow' даём только самим хуком, а в permissions.allow — точечные команды чтения.
+ */
+import { spawnSync } from 'node:child_process';
+import { join } from 'node:path';
+import { audit, firstWord, hasFileRedirect, loadState, readInput, repoRoot, safe, saveState, unquoted } from './lib.mjs';
+
+const READ_VERBS = new Set( [
+	'list', 'get', 'status', 'version', 'is-active', 'is-installed', 'exists', 'check', 'info',
+	'search', 'path', 'count', 'verify-checksums', 'check-update', 'structure', 'tables', 'size',
+	'export', 'flush',
+] );
+
+// Команды оболочки, которые только читают.
+const READ_CMDS = new Set( [ 'tail', 'head', 'cat', 'ls', 'wc', 'grep', 'pwd', 'date', 'df', 'du', 'stat', 'sort', 'uniq', 'cut' ] );
+
+// Команды, которые пишут в файлы или ставят что-то на сервер.
+const WRITE_CMDS = new Set( [
+	'tee', 'cp', 'mv', 'rm', 'rmdir', 'mkdir', 'touch', 'chmod', 'chown', 'ln', 'truncate', 'dd', 'install',
+	'vi', 'vim', 'nano', 'ed', 'wget', 'unzip', 'tar', 'zip', 'git', 'composer', 'npm', 'pip',
+] );
+
+const SECRETS = /wp-config|\.env\b|\.ssh|id_rsa|id_ed25519|\.pem\b|\.htpasswd/i;
+const DUMP_HINT = 'Перед изменением БД сделай дамп: wp db export.';
+
+// Контекст текущего вызова: нужен для журнала и автодампа.
+const ctx = { root: process.cwd(), input: {}, command: '', remote: '', wp: false };
+
+// Дамп БД на сервере перед первой изменяющей командой WP-CLI за сессию.
+function dumpOnce() {
+	const { root, input, command } = ctx;
+	const state = loadState( root, input.session_id );
+	if ( state.dumped ) {
+		return `Дамп в этой сессии уже сделан: ${ state.dumped }.`;
+	}
+	const stamp = new Date().toISOString().replace( /[-:T]/g, '' ).slice( 0, 14 );
+	const file = `../claude-backup-${ stamp }.sql`;
+	const script = join( root, '.claude', 'skills', 'project-ops', 'scripts', 'ssh-exec.mjs' );
+	const flag = command.includes( ' --stage' ) ? [ '--stage' ] : [];
+	const r = spawnSync( process.execPath, [ script, ...flag, '--', `wp db export ${ file }` ], { cwd: root, encoding: 'utf8', timeout: 120000 } );
+	if ( r.status === 0 ) {
+		state.dumped = file;
+		saveState( root, input.session_id, state );
+		audit( root, 'db-dump', { file } );
+		return `Дамп БД сделан автоматически: ${ file } (на сервере, на уровень выше каталога сайта).`;
+	}
+	audit( root, 'db-dump-failed', { out: `${ r.stdout || '' }${ r.stderr || '' }`.slice( 0, 200 ) } );
+	return 'Автодамп НЕ удался — сделай дамп вручную (wp db export) до подтверждения.';
+}
+
+function decide( decision, reason ) {
+	let text = reason;
+	if ( decision === 'ask' && ctx.wp ) {
+		text = `${ reason } ${ dumpOnce() }`;
+	}
+	if ( decision !== 'allow' ) {
+		audit( ctx.root, `wpcli-${ decision }`, { remote: ctx.remote.slice( 0, 200 ) } );
+	}
+	process.stdout.write( JSON.stringify( {
+		hookSpecificOutput: {
+			hookEventName: 'PreToolUse',
+			permissionDecision: decision,
+			permissionDecisionReason: text,
+		},
+	} ) );
+	process.exit( 0 );
+}
+// Команда на сервере: всё после « -- » у ssh-exec.mjs, без внешних кавычек.
+function remoteCommand( command ) {
+	// Только реальный вызов «node …ssh-exec.mjs» в начале команды или после && ; ||.
+	// Упоминание в тексте (heredoc, echo, документация) не считается.
+	const call = /(?:^|&&|;|\|\|)\s*node\s+["']?[^\s"']*ssh-exec\.mjs/.exec( command );
+	if ( ! call ) {
+		return null;
+	}
+	const dash = command.indexOf( ' -- ', call.index );
+	if ( dash < 0 ) {
+		return null;
+	}
+	let rest = command.slice( dash + 4 ).trim();
+	const q = rest[ 0 ];
+	if ( ( q === '"' || q === "'" ) && rest.endsWith( q ) ) {
+		rest = rest.slice( 1, -1 );
+	}
+	return rest;
+}
+
+// Запись в файл на сервере: одна из сегментов конвейера/цепочки пишет.
+function findWrite( remote ) {
+	if ( hasFileRedirect( remote ) ) {
+		return 'перенаправление вывода в файл (>)';
+	}
+	for ( const segment of unquoted( remote ).split( /&&|\|\||;|\||\n/ ) ) {
+		const word = firstWord( segment ).replace( /^.*\//, '' );
+		if ( WRITE_CMDS.has( word ) ) {
+			return word;
+		}
+		if ( word === 'sed' && /\s-[A-Za-z]*i/.test( segment ) ) {
+			return 'sed -i';
+		}
+		if ( word === 'curl' && /\s(-[A-Za-z]*[oO]\b|--output|--remote-name)/.test( segment ) ) {
+			return 'curl -o';
+		}
+		if ( word === 'find' && /\s-(delete|exec|ok|fprint)/.test( segment ) ) {
+			return 'find -delete/-exec';
+		}
+	}
+	return null;
+}
+
+// Конвейер только из команд чтения (php -v/-l считаются чтением).
+function isReadPipeline( remote ) {
+	if ( /&&|\|\||;|\n|`|\$\(/.test( unquoted( remote ) ) ) {
+		return false;
+	}
+	return unquoted( remote ).split( '|' ).every( ( seg ) => {
+		const words = seg.trim().split( /\s+/ );
+		const word = firstWord( seg );
+		if ( word === 'php' ) {
+			return [ '-v', '--version', '-l', '-m' ].includes( words[ words.indexOf( 'php' ) + 1 ] );
+		}
+		return READ_CMDS.has( word );
+	} );
+}
+
+await safe( () => {
+	const input = readInput();
+	const command = String( input.tool_input?.command || '' );
+	const remote = remoteCommand( command );
+	if ( remote === null ) {
+		return;
+	}
+	ctx.root = repoRoot( input );
+	ctx.input = input;
+	ctx.command = command;
+	ctx.remote = remote;
+
+	if ( /\bsudo\b|\bmkfs\b|>\s*\/dev\/(sd|nvme)/i.test( remote ) ) {
+		decide( 'deny', 'Заблокировано: sudo и разрушающие команды на сервере запрещены.' );
+	}
+	const write = findWrite( remote );
+	if ( write ) {
+		decide( 'deny', `Заблокировано: на сервере файлы не пишем (${ write }). Код правится локально, на сервер его заливает хук post-edit или sftp-sync upload.` );
+	}
+	if ( SECRETS.test( remote ) ) {
+		decide( 'deny', 'Заблокировано: чтение секретов на сервере (wp-config, .env, ключи).' );
+	}
+
+	// Чтение оболочкой: логи, каталоги, версия PHP.
+	if ( isReadPipeline( remote ) ) {
+		decide( 'allow', 'Чтение на сервере (логи, каталоги, версия PHP).' );
+	}
+
+	if ( /[;&|`]|\$\(/.test( remote ) ) {
+		decide( 'ask', 'Составная команда на сервере (; & | ` $()): подтверди.' );
+	}
+
+	const tokens = remote.split( /\s+/ ).filter( Boolean );
+	if ( tokens[ 0 ] !== 'wp' && ! tokens[ 0 ].endsWith( '/wp' ) && ! tokens[ 0 ].endsWith( '.phar' ) ) {
+		decide( 'ask', 'Не WP-CLI и не чтение на сервере: подтверди.' );
+	}
+
+	ctx.wp = true;
+
+	// Слова подкоманды без глобальных флагов (--path=…, --url=…, --allow-root).
+	const words = tokens.slice( 1 ).filter( ( t ) => ! t.startsWith( '-' ) );
+	const [ group = '', verb = '' ] = words;
+	const dry = tokens.includes( '--dry-run' );
+
+	if ( group === 'db' && [ 'drop', 'reset', 'clean' ].includes( verb ) ) {
+		decide( 'deny', `Заблокировано: wp db ${ verb } уничтожает БД. ${ DUMP_HINT }` );
+	}
+	if ( group === 'site' && [ 'empty', 'delete' ].includes( verb ) ) {
+		decide( 'deny', `Заблокировано: wp site ${ verb } удаляет данные сайта.` );
+	}
+	if ( group === 'db' && verb === 'query' ) {
+		if ( /\b(drop|truncate)\b/i.test( remote ) ) {
+			decide( 'deny', 'Заблокировано: DROP / TRUNCATE в wp db query.' );
+		}
+		if ( /\b(delete|update|insert|alter|replace|create|grant)\b/i.test( remote ) ) {
+			decide( 'ask', `Запрос меняет БД: подтверди. ${ DUMP_HINT }` );
+		}
+		return;
+	}
+	if ( group === 'search-replace' ) {
+		if ( dry ) {
+			return;
+		}
+		decide( 'ask', `search-replace без --dry-run меняет БД: сначала прогон с --dry-run, потом подтверди. ${ DUMP_HINT }` );
+	}
+	if ( group === 'db' && verb === 'import' ) {
+		decide( 'ask', `wp db import перезаписывает БД: подтверди. ${ DUMP_HINT }` );
+	}
+	if ( [ 'eval', 'eval-file', 'shell', 'config', 'package', 'cli' ].includes( group ) ) {
+		decide( 'ask', `wp ${ group } выполняет произвольный код или меняет конфиг: подтверди.` );
+	}
+
+	if ( READ_VERBS.has( verb ) ) {
+		return;
+	}
+	decide( 'ask', `wp ${ words.join( ' ' ) } меняет сайт: подтверди. ${ DUMP_HINT }` );
+} );

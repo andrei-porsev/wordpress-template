@@ -1,0 +1,110 @@
+{
+	// --- Editor Settings ---
+	"workbench.tree.indent": 20,
+	"workbench.tree.renderIndentGuides": "always",
+	"editor.insertSpaces": false,
+	"editor.tabSize": 4,
+	"editor.detectIndentation": false,
+	"editor.trimAutoWhitespace": false,
+	"editor.formatOnSave": false,
+	"files.trimTrailingWhitespace": false,
+	// --- PHP Tools (Devsense) Settings ---
+	"php.version": "8.3",
+	"php.executablePath": "D:/OSPanel/modules/PHP-8.3/php.exe",
+	"php.format.codeStyle": "WordPress", // Встроенная поддержка стандартов WordPress
+	"php.problems.exclude": {
+		"**/OpenServer Old/**": true
+	}, // Исключаем старые проекты из анализа
+	"php.stubs": [
+		"wordpress",
+		"apache",
+		"bcmath",
+		"ctype",
+		"curl",
+		"date",
+		"dom",
+		"fileinfo",
+		"filter",
+		"gd",
+		"hash",
+		"json",
+		"libxml",
+		"mbstring",
+		"mysqli",
+		"openssl",
+		"pcre",
+		"session",
+		"SimpleXML",
+		"SPL",
+		"standard",
+		"tokenizer",
+		"xml",
+		"zip"
+	], // Список ресурсов для индексации
+	// --- Live Sass Compile ---
+	"liveSassCompile.settings.showOutputWindowOn": "None",
+	"liveSassCompile.settings.formats": [
+		{
+			"format": "expanded",
+			"extensionName": ".css",
+			"savePath": "~/../css"
+		}
+	],
+	"liveSassCompile.settings.excludeList": [
+		"/**/.git/**",
+		"/**/.idea/**",
+		"/**/.vscode/**",
+		"/**/.cache/**",
+		"/**/.npm/**",
+		"/**/.yarn/**",
+		"/**/node_modules/**",
+		"/**/wp-admin/**",
+		"/**/wp-includes/**",
+		"/**/wp-content/plugins/**",
+		"/**/wp-content/upgrade/**",
+		"/**/wp-content/upgrade-temp-backup/**",
+		"/**/wp-content/updraft/**",
+		"/**/wp-content/uploads/**",
+		"/**/wp-content/cache/**"
+	],
+	"liveSassCompile.settings.includeItems": [
+		"/wp-content/themes/theme-child/assets/scss/index.scss"
+	],
+	"liveSassCompile.settings.generateMap": true,
+	// --- Stylelint (CSS/SCSS linting) ---
+	"css.validate": false,
+	"scss.validate": false,
+	"stylelint.validate": [
+		"css",
+		"scss"
+	],
+	// --- Default Formatters ---
+	// PHP Tools теперь форматирует PHP, HTML, JS и CSS внутри .php файлов
+	"[php]": {
+		"editor.defaultFormatter": "DEVSENSE.phptools-vscode"
+	},
+	"[html]": {
+		"editor.defaultFormatter": "DEVSENSE.phptools-vscode"
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "DEVSENSE.phptools-vscode"
+	},
+	"[scss]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+	"[json]": {
+		"editor.defaultFormatter": "vscode.json-language-features"
+	},
+	// --- РАЗНОЕ ---
+	"emmet.includeLanguages": {
+		"php": "html"
+	},
+	"files.associations": {
+		"*.php": "php"
+	},
+	"php.suggest.basic": false,
+	"php.validate.executablePath": "D:/OSPanel/modules/PHP-8.3/php.exe",
+	// Отключаем встроенную валидацию VS Code, чтобы не дублировать PHP Tools
+	"php.validate.enable": false
+}

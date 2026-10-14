@@ -1,0 +1,221 @@
+@use 'sass:list';
+@use 'sass:math';
+@use 'breakpoints' as *;
+
+// Меняет свойство линейно между брейками; снаружи диапазона — clamp().
+// $from — на $bp-min (планшет), $to — на $bp-max (widescreen).
+@mixin fluid(
+	$property,
+	$from,
+	$to,
+	$important: false,
+	$unit: px,
+	$bp-min: $bp-tablet-min,
+	$bp-max: $bp-widescreen-min
+) {
+	$imp: if($important, ' !important', '');
+	$delta-prop: $to - $from;
+	$delta-width: math.div($bp-max - $bp-min, 1px);
+
+	@if $delta-width == 0 {
+		#{$property}: #{$to}#{$unit}#{$imp};
+	} @else {
+		$prop-min: math.min($from, $to);
+		$prop-max: math.max($from, $to);
+
+		#{$property}: clamp(
+			#{$prop-min}#{$unit},
+			calc(#{$from}#{$unit} + #{$delta-prop} * ((100vw - #{$bp-min}) / #{$delta-width})),
+			#{$prop-max}#{$unit}
+		)#{$imp};
+	}
+}
+
+@mixin fluid-fs($from, $to, $important: false, $unit: px) {
+	@include fluid('font-size', $from, $to, $important, $unit);
+}
+
+// То же, что fluid(), но пара min/max — CSS-переменные с полей редактора.
+@mixin fluid-var(
+	$property,
+	$var-min,
+	$var-max,
+	$fallback-min,
+	$fallback-max,
+	$bp-min: $bp-tablet-min,
+	$bp-max: $bp-widescreen-min
+) {
+	$min: var(#{$var-min}, #{$fallback-min}px);
+	$max: var(#{$var-max}, #{$fallback-max}px);
+	$delta-width: math.div($bp-max - $bp-min, 1px);
+
+	// min()/max() — если редактор задал пару в обратном порядке
+	#{$property}: clamp(
+		min(#{$min}, #{$max}),
+		calc(#{$min} + (#{$max} - #{$min}) * ((100vw - #{$bp-min}) / #{$delta-width})),
+		max(#{$min}, #{$max})
+	);
+}
+
+@mixin fluid-fs-var($var-min, $var-max, $fallback-min, $fallback-max) {
+	@include fluid-var('font-size', $var-min, $var-max, $fallback-min, $fallback-max);
+}
+
+// !important бьёт width/height, которые WP вешает на img.
+@mixin full-block-image($width: 400, $height: 225) {
+	position: relative;
+	display: block;
+	width: 100%;
+	max-width: #{$width}px;
+	height: auto;
+	aspect-ratio: #{$width} / #{$height};
+	overflow: clip;
+
+	img {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		// stylelint-disable-next-line declaration-no-important
+		width: 100% !important;
+		// stylelint-disable-next-line declaration-no-important
+		height: 100% !important;
+		object-fit: cover;
+		transform: translate(-50%, -50%);
+	}
+}
+
+@mixin line-clamp($lines: 3) {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: $lines;
+	line-clamp: $lines;
+	overflow: hidden;
+}
+
+// Keyframes один раз и на корне: иначе дубли и вложенность в селектор/@media.
+$_emitted-keyframes: ();
+
+@mixin _keyframes($name) {
+	@if not list.index($_emitted-keyframes, $name) {
+		$_emitted-keyframes: list.append($_emitted-keyframes, $name) !global;
+
+		@at-root (without: all) {
+			@content;
+		}
+	}
+}
+
+@mixin smooth-scale($from: 1, $to: 1.1, $duration: 2s, $delay: 0s) {
+	--cltm-scale-from: #{$from};
+	--cltm-scale-to: #{$to};
+
+	@include _keyframes(smooth-scale) {
+		@keyframes cltm-smooth-scale {
+			0%,
+			100% {
+				transform: scale(var(--cltm-scale-from, 1));
+			}
+
+			50% {
+				transform: scale(var(--cltm-scale-to, 1.1));
+			}
+		}
+	}
+
+	animation: cltm-smooth-scale $duration linear $delay infinite;
+}
+
+@mixin smooth-wave(
+	$angle: 8deg,
+	$duration: 2.5s,
+	$delay: 0s,
+	$infinite: true,
+	$origin: bottom center
+) {
+	--cltm-wave-angle: #{$angle};
+
+	@include _keyframes(smooth-wave) {
+		@keyframes cltm-smooth-wave {
+			0%,
+			100% {
+				transform: rotate(calc(var(--cltm-wave-angle, 8deg) * -1));
+			}
+
+			50% {
+				transform: rotate(var(--cltm-wave-angle, 8deg));
+			}
+		}
+	}
+
+	transform-origin: $origin;
+	animation: cltm-smooth-wave $duration linear $delay if($infinite, infinite, 1);
+}
+
+@mixin smooth-wave-8deg($duration: 2.5s, $delay: 0s, $infinite: true, $origin: bottom center) {
+	@include smooth-wave(8deg, $duration, $delay, $infinite, $origin);
+}
+
+@mixin smooth-wave-45deg($duration: 2.5s, $delay: 0s, $infinite: true, $origin: bottom center) {
+	@include smooth-wave(45deg, $duration, $delay, $infinite, $origin);
+}
+
+@mixin rotate(
+	$to: 360deg,
+	$duration: 4s,
+	$delay: 0s,
+	$infinite: true,
+	$timing: linear,
+	$origin: center center
+) {
+	--cltm-rotate-to: #{$to};
+
+	@include _keyframes(rotate) {
+		@keyframes cltm-rotate {
+			from {
+				transform: rotate(0deg);
+			}
+
+			to {
+				transform: rotate(var(--cltm-rotate-to, 360deg));
+			}
+		}
+	}
+
+	transform-origin: $origin;
+	animation: cltm-rotate $duration $timing $delay if($infinite, infinite, 1);
+}
+
+@mixin rotate-normal($duration: 4s, $delay: 0s, $infinite: true, $timing: linear, $origin: center center) {
+	@include rotate(360deg, $duration, $delay, $infinite, $timing, $origin);
+}
+
+@mixin rotate-reverse($duration: 4s, $delay: 0s, $infinite: true, $timing: linear, $origin: center center) {
+	@include rotate(-360deg, $duration, $delay, $infinite, $timing, $origin);
+}
+
+@mixin stretch-x(
+	$scale: 1.1,
+	$duration: 2s,
+	$delay: 0s,
+	$infinite: true,
+	$timing: linear,
+	$origin: center center
+) {
+	--cltm-stretch-x: #{$scale};
+
+	@include _keyframes(stretch-x) {
+		@keyframes cltm-stretch-x {
+			0%,
+			100% {
+				transform: scaleX(1);
+			}
+
+			50% {
+				transform: scaleX(var(--cltm-stretch-x, 1.1));
+			}
+		}
+	}
+
+	transform-origin: $origin;
+	animation: cltm-stretch-x $duration $timing $delay if($infinite, infinite, 1);
+}

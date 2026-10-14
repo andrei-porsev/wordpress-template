@@ -1,0 +1,8 @@
+// Единая точка входа для переменных и миксинов.
+// В любом партиале: @use '../abstracts' as *;
+// Только @forward — CSS на выходе быть не должно (keyframes эмитятся из миксинов).
+
+@forward 'variables';
+@forward 'breakpoints';
+@forward 'mixin';
+@forward 'layout';
