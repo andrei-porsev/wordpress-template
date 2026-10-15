@@ -132,7 +132,8 @@ compatibility: "Этот шаблон. Язык — русский."
    Папки `project-base/design/` (`approved.md`, `client/`, `export/`) и `project-base/content/` — только если нужны по типу или пакетам.
 6. `project-base/DECISIONS.md` — выборы и отказы с причиной (архитектура, билдер, «продолжить на риск»…).
 7. SCSS-заготовка: перенос по `project-base/_starter/README.md` (новый — папка `scss/` целиком, `cltm` → `{stem}`; есть SCSS — только `abstracts/` после проверки конфликтов;
-   существующий сайт без SCSS — в том числе на билдере с обычным CSS — не внедрять без просьбы); `.vscode/settings.json` → `liveSassCompile.settings.includeItems` — путь к entry.
+   существующий сайт без SCSS — в том числе на билдере с обычным CSS — не внедрять без просьбы); `.vscode/settings.json` → `liveSassCompile.settings.includeItems` — путь к entry
+   (FSE — шаблон `.../assets/scss/*.scss`: общий `index.scss` + entry на блок, решение 029).
 8. Базовые плагины (этап 5) — WP-CLI после «да», если сайт уже стоит. Сайта ещё нет — список в `INDEX.md` → «Важные моменты» («поставить: …»), установка — когда сайт появится.
 9. Коммит «init: настройка проекта» — отдельно от baseline и чужих правок.
 10. Удалить `.claude/.state/init.json`.

@@ -19,7 +19,8 @@
 // @use 'components/card';
 
 //========== Blocks ==========//
-// Стили своих Gutenberg-блоков, если они в теме, а не в плагине.
+// Classic: стили своих Gutenberg-блоков, если они в теме, а не в плагине.
+// FSE: core-блоки — отдельные entry block-<namespace>--<имя>.scss рядом с этим файлом, не здесь (README.md).
 // @use 'blocks/hero';
 
 //========== Page ==========//

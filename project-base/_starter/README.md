@@ -17,8 +17,8 @@ project-base/_starter/scss/
 ```
 
 Ключевое разделение: `abstracts/` не даёт CSS на выходе, поэтому добавляется
-в любой проект без побочных эффектов. `index.scss` — точка входа, и вторая
-точка входа в проекте не нужна.
+в любой проект без побочных эффектов. `index.scss` — общая точка входа.
+Classic и билдер — второй точки входа не нужно; FSE — плюс entry на каждый доработанный core-блок (сценарий 1, «FSE»).
 
 ---
 
@@ -62,6 +62,50 @@ project-base/_starter/scss/
 	}
 }
 ```
+
+### FSE: CSS на блок
+
+Сначала `theme.json` и вариации стилей (правило `fse-theme`, решение 029). Не хватило — файл на блок, плоско рядом с `index.scss`:
+
+```
+assets/scss/
+  abstracts/                     из заготовки
+  global/                        партиалы общего файла
+  index.scss                     общее: сбросы, каркас секции, утилиты
+  block-core--navigation.scss    доработка core/navigation
+  block-core--button.scss        доработка core/button
+```
+
+Имя: `block-<namespace>--<имя блока>` — двойной дефис отделяет пространство имён (`woocommerce--product-price` → `woocommerce/product-price`).
+В каждом entry блока — `@use 'abstracts' as *;`. Live Sass и `compile-scss.mjs` собирают всё по шаблону:
+`.vscode/settings.json` → `liveSassCompile.settings.includeItems`: `"/wp-content/themes/{тема}/assets/scss/*.scss"`.
+
+Подключение в теме (`inc/block-styles.php`, `cltm` → `{stem}`):
+
+```php
+/**
+ * CSS доработанных core-блоков: assets/css/block-<namespace>--<имя>.css грузится только на страницах с блоком.
+ */
+function cltm_enqueue_block_styles() {
+	foreach ( glob( get_theme_file_path( 'assets/css/block-*--*.css' ) ) as $path ) {
+		$file  = basename( $path, '.css' );
+		$block = str_replace( '--', '/', substr( $file, strlen( 'block-' ) ) );
+
+		wp_enqueue_block_style(
+			$block,
+			array(
+				'handle' => 'cltm-' . $file,
+				'src'    => get_theme_file_uri( 'assets/css/' . $file . '.css' ),
+				'path'   => $path,
+				'ver'    => (string) filemtime( $path ),
+			)
+		);
+	}
+}
+add_action( 'init', 'cltm_enqueue_block_styles' );
+```
+
+`path` нужен, чтобы маленькие стили WordPress встроил прямо в страницу. Общий `index.css` — на `wp_enqueue_scripts` и в редактор через `add_editor_style( 'assets/css/index.css' )`.
 
 ## Сценарий 2. В проекте уже есть SCSS
 
@@ -139,7 +183,7 @@ grep -rn "\$bp-" .
 → `compile-scss.md` (тот же entry из `settings.json`).
 
 Live Sass: entry указывается в `.vscode/settings.json` →
-`liveSassCompile.settings.includeItems`. При смене слага темы поправить путь.
+`liveSassCompile.settings.includeItems` (FSE — шаблон `assets/scss/*.scss`). При смене слага темы поправить путь.
 
 На сервер уезжает скомпилированный CSS. Исходный SCSS хранится в git —
 он и есть источник правды, править собранный CSS нельзя.

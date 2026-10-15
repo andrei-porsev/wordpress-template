@@ -14,6 +14,9 @@ node .claude/skills/project-ops/scripts/compile-scss.mjs
 
 Берёт `liveSassCompile.settings.includeItems`, `formats`, `generateMap`. Типичный вывод: `assets/scss/index.scss` → `assets/css/index.css` (+ `.map`, если map включён).
 
+`*` в имени файла — несколько entry (как в Live Sass): FSE — `"/wp-content/themes/<slug>/assets/scss/*.scss"` собирает `index.scss` и каждый `block-<namespace>--<имя>.scss`
+в свой CSS; партиалы `_*.scss` пропускаются. Entry лежат плоско в `assets/scss/` — из подпапки `savePath: "~/../css"` увёл бы CSS не туда.
+
 Пустой `includeItems` или нет файла entry — остановиться, не угадывать другой путь. Entry правит `project-init` / человек.
 
 ## После компиляции

@@ -2,7 +2,7 @@
  * Компиляция entry из Live Sass settings — тот же путь, что у человека в редакторе.
  */
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { parseJsonc } from './jsonc.mjs';
 
@@ -24,6 +24,26 @@ function outPath( scssFile, savePath, ext ) {
 	return resolve( dir, rel, name );
 }
 
+// Entry по пути из includeItems; `*` — только в имени файла, партиалы (`_*.scss`) пропускаются, как в Live Sass.
+function expandItem( root, item ) {
+	const input = resolve( root, String( item ).replace( /^\//, '' ) );
+	const name = basename( input );
+	if ( ! name.includes( '*' ) ) {
+		if ( ! existsSync( input ) ) {
+			throw new Error( `Нет entry: ${ item }` );
+		}
+		return [ input ];
+	}
+	const dir = dirname( input );
+	if ( ! existsSync( dir ) ) {
+		throw new Error( `Нет папки entry: ${ item }` );
+	}
+	const pattern = new RegExp( '^' + name.replace( /[.+?^${}()|[\]\\]/g, '\\$&' ).replace( /\*/g, '.*' ) + '$' );
+	return readdirSync( dir )
+		.filter( ( f ) => pattern.test( f ) && ! f.startsWith( '_' ) )
+		.map( ( f ) => join( dir, f ) );
+}
+
 try {
 	const root = repoRoot();
 	const settings = parseJsonc(
@@ -39,12 +59,13 @@ try {
 		throw new Error( 'includeItems пуст — пропиши entry SCSS в .vscode/settings.json.' );
 	}
 
+	const inputs = items.flatMap( ( item ) => expandItem( root, item ) );
+	if ( ! inputs.length ) {
+		throw new Error( 'По includeItems не найдено ни одного entry.' );
+	}
+
 	const written = [];
-	for ( const item of items ) {
-		const input = resolve( root, String( item ).replace( /^\//, '' ) );
-		if ( ! existsSync( input ) ) {
-			throw new Error( `Нет entry: ${ item }` );
-		}
+	for ( const input of inputs ) {
 		for ( const fmt of formats ) {
 			const ext = fmt.extensionName || '.css';
 			const output = outPath( input, fmt.savePath, ext );
