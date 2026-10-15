@@ -110,7 +110,7 @@ FTP / FTPS — конфиг `.vscode/sftp-ftp.json` заполняет чело�
 до неё: копию делает человек (импорт архива в LocalWP, Duplicator в OSPanel), тема — junction из проекта:
 `New-Item -ItemType Junction -Path "<сайт>\wp-content\themes\<slug>" -Target "<проект>\wp-content\themes\<slug>"` (после «да»).
 
-## 5. SEO и аналитика (F6)
+## 5. SEO и аналитика
 
 Только при пакете «Базовое SEO» или типе «SEO и скорость». Ключи хранит плагин `claude-seo` (`/seo setup`), в `ACCESS.md` — факт и идентификаторы.
 

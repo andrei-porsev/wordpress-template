@@ -34,7 +34,7 @@ node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp plugin list
 
 Нет SSH/SFTP (host пустой) — не заливать. Хук в этом случае молчит, режим фактически `manual`.
 
-При **«старт проекта»** поля SSH/WP-CLI собирает `project-init` → `access.md` (блок F1). Ниже — если доступ дали позже в чате.
+При **«старт проекта»** поля SSH/WP-CLI собирает `project-init` → `access.md` (помощник SSH, диагностика — там же). Ниже — если доступ дали позже в чате.
 
 ## Что записать, когда дали доступ
 

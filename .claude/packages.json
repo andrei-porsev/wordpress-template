@@ -32,7 +32,7 @@
 				"en": "We set the site up for search engines: page titles and descriptions, sitemap, structured data, Search Console and internal links."
 			},
 			"stacks": [ "seo" ],
-			"questions": [ "SEO и аналитика (access.md → F6)" ],
+			"questions": [ "SEO и аналитика (access.md → раздел 5)" ],
 			"deliverables": [ "отчёт /seo audit до и после" ],
 			"handoff": [ "мета у всех страниц", "карта сайта отправлена в Search Console", "robots.txt проверен", "разметка без ошибок" ],
 			"defaults": [ "redesign", "seo", "migration" ]

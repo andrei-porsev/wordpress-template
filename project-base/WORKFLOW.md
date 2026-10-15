@@ -12,28 +12,27 @@
 
 ### 1.1. Настроить шаблон под проект
 
-Быстрый путь: команда агенту **«старт проекта»** — skill `project-init` задаст вопросы
-по проекту и доступам (WP-CLI, URL, браузер, Figma), запишет `INDEX.md` + `ACCESS.md`
-и сам подставит слаги и префикс в конфиги.
-Первый вопрос — тип проекта (новый / доработка / редизайн); от него зависит порядок шагов (`project-init` → `types.md`).
-Ниже — тот же список для ручного прохода.
+Команда агенту **«старт проекта»** — skill `project-init` ведёт опрос по 10 этапам с ветвлением по типу проекта
+(новый: нужен дизайн / дизайн есть; существующий: доработка / редизайн / переезд / SEO и скорость), показывает одну сводку
+и после «да» записывает профиль в `INDEX.md`, `ACCESS.md`, `project.json`, подключает наборы скиллов. Изменить настройки позже — «поменяй настройки проекта».
+Ниже — что делается по шагам (для ручного прохода и понимания).
 
-1. Доступы — блок F в `project-init` (`access.md`): SFTP, SSH, WP-CLI, URL сайта, админка, браузер, Figma, режим заливки.
-   Запись в `ACCESS.md` и `.vscode/ssh.json` / `sftp.json` в том же ходе; SSH = да — сразу `ssh-exec.mjs test`.
+1. Доступы и окружения — `project-init` → `access.md`: хостинг, данные для входа (секреты сразу в `.vscode/ssh.json` / `sftp.json`), проверка SSH, SFTP, WP-CLI, stage, локальная копия.
    Операции потом — skill `project-ops` (`sftp.md`, `ssh.md`). Что в ACCESS заполнено — не переспрашивать.
-2. Слаги темы, своих плагинов, mu-плагинов, блоков и префикс `{stem}` — в `project-base/project.json`.
+2. Существующий сайт — разведка и проверка безопасности **до скачивания** (`project-init` → `recon.md`), затем 1.2.
+3. Слаги темы, своих плагинов, mu-плагинов, блоков и префикс `{stem}` — в `project-base/project.json`.
    Затем `node .claude/skills/project-ops/scripts/gen-whitelist.mjs`: обновит whitelist в `.gitignore`
    и `ignore` / `watcher` в `.vscode/sftp.json`. Родительскую тему не добавлять.
-3. Скиллы и правила под стек — `node .claude/skills/project-ops/scripts/skills-sync.mjs activate <стек…>`
-   (таблица в `project-init` → шаг 3.6; WP-CLI = да → обязательно `wpcli`), затем `check` — обновить устаревшее.
+4. Скиллы и правила под стек и пакеты — `node .claude/skills/project-ops/scripts/skills-sync.mjs activate <стек…>`
+   (таблица в `project-init` → `stack.md`, пакеты — `.claude/packages.json`; WP-CLI = да → обязательно `wpcli`), затем `check` — обновить устаревшее.
    Подробно — `project-ops` → `skills.md`, решение 022. Ядро: `project-init`, `project-structure`, `project-ops`.
-4. Режим заливки в `ACCESS.md`: `guarded-auto` / `stage-auto` / `manual`.
-5. Окружение и проверка (Node, зависимости, PHP, MCP, хуки, связь, тест заливки) — `project-init` → шаг 4, агент ведёт сам.
-6. Перенести SCSS-заготовку в тему/плагин по инструкции `project-base/_starter/README.md`.
+5. Режим заливки в `ACCESS.md`: `guarded-auto` / `stage-auto` / `manual` (локальная копия — `manual (local)`).
+6. Окружение и проверка (Node, зависимости, PHP, MCP, хуки, связь, тест заливки) — `project-init` → `SKILL.md` → этап 10, агент ведёт сам.
+7. Перенести SCSS-заготовку в тему/плагин по инструкции `project-base/_starter/README.md`.
    Проект с нуля — папка `scss/` целиком; в проекте уже есть SCSS — только
    `abstracts/`, предварительно проверив конфликты имён, `@use` против `@import`
    и дубли брейкпоинтов.
-7. Поправить путь к entry в `.vscode/settings.json` →
+8. Поправить путь к entry в `.vscode/settings.json` →
    `liveSassCompile.settings.includeItems` под слаг темы.
 
 ### 1.2. Скачать сайт и зафиксировать baseline
@@ -83,7 +82,7 @@ wp db export backup-baseline.sql
 ### 1.4. Сайт под ключ: этапы
 
 Для greenfield-сайта (FSE). Каждый этап закрывается подтверждением пользователя: следующий строится на утверждённом.
-В скобках — стек скиллов (`project-init` → шаг 3.6).
+В скобках — стек скиллов (`project-init` → `stack.md`, пакеты — `.claude/packages.json`).
 
 | № | Этап | Что на выходе | Стек |
 |---|------|---------------|------|

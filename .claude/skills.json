@@ -412,7 +412,7 @@
 			]
 		},
 		"triage": {
-			"title": "Разбор незнакомого WP-репозитория (только project-init, шаг 0)",
+			"title": "Разбор незнакомого WP-репозитория (только project-init, этап 4)",
 			"skills": [
 				"wordpress-router",
 				"wp-project-triage"
@@ -430,7 +430,7 @@
 			"rules": [
 				"figma-design"
 			],
-			"note": "MCP figma — в .mcp.json (project-init, блок F3), авторизация через /mcp. Запись на канвас — платный seat Dev/Full."
+			"note": "MCP figma — в .mcp.json (project-init → site.md), авторизация через /mcp. Запись на канвас — платный seat Dev/Full."
 		},
 		"content": {
 			"title": "Контент: структура сайта и тексты",
@@ -443,7 +443,7 @@
 			"rules": [
 				"content"
 			],
-			"note": "Бриф бренда для этих скиллов — .claude/product-marketing.md (заполняется в project-init, блок A)."
+			"note": "Бриф бренда для этих скиллов — .claude/product-marketing.md (заполняется в project-init → brief.md)."
 		},
 		"quality": {
 			"title": "Доступность и Core Web Vitals",
