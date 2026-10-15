@@ -30,10 +30,9 @@ compatibility: "WordPress themes/plugins via SFTP. Documentation language: Russi
 project-base/
   WORKFLOW.md                 # процедура работы: git, откат (не трогать при съёмке карты)
   INDEX.md                    # уровень 1: пакеты и слои
-  DECISIONS.md
+  DECISIONS.md                # решения этого сайта
   _starter/                   # SCSS-заготовка, копируется в тему/плагин
   screenshots/                # скрины старого сайта при редизайне
-  dumps/                      # дампы БД, в git
   themes/
     {theme-slug}/             # одна папка на свою тему, имя = слаг
       INDEX.md                # файлы этой темы по слоям + инструкции
@@ -80,7 +79,7 @@ Gutenberg-блок часто оба слоя: регистрация → `back/
 
 Не документировать содержимое ядра WP, `vendor`, `node_modules`, uploads/cache, minified.  
 Чужие плагины (Woo core, Elementor…) — в INDEX одна строка: не редактируем; без разбора их функций.  
-`_starter/`, `dumps/`, `screenshots/` — не карта кода, в INDEX не разбирать.
+`_starter/`, `screenshots/`, `plans/` — не карта кода, в INDEX не разбирать.
 
 Фокус: свои темы, свой SCSS/JS entry, `inc/`, overrides Woo в теме, свои плагины, ACF проекта.
 

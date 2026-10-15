@@ -95,6 +95,6 @@
 Процедура работы, коммиты и откат — [`WORKFLOW.md`](./WORKFLOW.md).  
 SFTP, SSH, компиляция SCSS, сборка блоков — skill `project-ops`.  
 Доступы, WP-CLI, URL сайта, браузер и Figma (не переспрашивать) — [`ACCESS.md`](../ACCESS.md).  
-Почему сделано так, а не иначе — [`DECISIONS.md`](./DECISIONS.md).  
+Почему так по этому сайту — [`DECISIONS.md`](./DECISIONS.md); по самому шаблону — [`.claude/template/DECISIONS.md`](../.claude/template/DECISIONS.md).  
 SCSS-заготовка — [`_starter/`](./_starter/).  
-Скрины старого сайта — `screenshots/` (по мере надобности). Дампы БД — `dumps/` (в git).
+Скрины старого сайта — `screenshots/` (по мере надобности). Дампы БД — только на сервере, не в git.

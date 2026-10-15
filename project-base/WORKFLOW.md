@@ -313,7 +313,7 @@ git checkout before-woo-update -- .
 | Чтение исходников | Read / Grep / Glob (правило `read-code`) | Не парсеры, не `detect_*.mjs`, не обход через Shell |
 | SCSS-заготовка | `project-base/_starter/` | Копируется в тему/плагин при старте |
 | Скрины редизайна | `project-base/screenshots/` | Референс старого сайта, в git |
-| Дампы БД | `project-base/dumps/` | В git; агент не индексирует |
+| Дампы БД | на сервере (`../claude-backup-<время>.sql`, бэкап хостинга) | Не в git (персональные данные); агент не читает |
 | SFTP/FTP-конфиг | `.vscode/sftp.json`, `.vscode/sftp-ftp.json` | В git |
 | Слаги и префикс | `project-base/project.json` | Источник для whitelist в `.gitignore` и `sftp.json` |
 | Хуки и разрешения агента | `.claude/settings.json`, `.claude/hooks/` | Границы правок, заливка, напоминание о карте; защищены от правки агентом |
@@ -326,6 +326,7 @@ git checkout before-woo-update -- .
 | Хронология изменений | git log | История и откат |
 | Контекст активной задачи | `project-base/tasks/<slug>.md` | Живёт до конца задачи |
 | Архитектурные решения, «почему так» | `project-base/DECISIONS.md` | Редко, надолго; агент им следует |
+| Почему так устроен шаблон | `.claude/template/DECISIONS.md` | Обновляется вместе с шаблоном |
 
 Хронологию работ **не** вести в markdown: агент будет её перечитывать и тратить
 контекст на то, что уже есть в `git log`.

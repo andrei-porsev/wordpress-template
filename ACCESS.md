@@ -26,7 +26,7 @@ WP-CLI — на сервере через `ssh-exec.mjs`, не локальны�
 
 ## Заливка
 
-Как правки агента попадают на сервер. Подробности — `project-init` → `access.md` → F5, решение 012 в `project-base/DECISIONS.md`.
+Как правки агента попадают на сервер. Подробности — `project-init` → `access.md` → F5, решение 012 в `.claude/template/DECISIONS.md`.
 
 - Режим заливки: guarded-auto (guarded-auto / stage-auto / manual)
 - Stage-конфиг: — (для `stage-auto`: `.vscode/sftp-stage.json`, при других доступах `.vscode/ssh-stage.json`)
