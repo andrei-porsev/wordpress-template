@@ -724,6 +724,11 @@ export async function cmdPut( cfg, local, rel ) {
 		await api.uploadFile( resolve( local ), remoteOf( cfg, rel ) );
 		console.log( 'OK put', toPosix( rel ) );
 	} );
+	// На сервере теперь известное содержимое (откат хука) — снимок должен это знать, иначе следующая правка примет откат за чужую.
+	const root = repoRoot();
+	const snap = loadSnapshot( root, cfg ) || { files: {} };
+	remember( snap, toPosix( rel ), hashOf( readFileSync( resolve( local ) ) ), { size: null, mtime: null } );
+	saveSnapshot( root, cfg, snap );
 }
 
 // Удалить файл на сервере (откат новой заливки).
@@ -738,6 +743,12 @@ export async function cmdRemove( cfg, rel ) {
 		}
 		console.log( 'OK remove', toPosix( rel ) );
 	} );
+	const root = repoRoot();
+	const snap = loadSnapshot( root, cfg );
+	if ( snap?.files?.[ toPosix( rel ) ] ) {
+		delete snap.files[ toPosix( rel ) ];
+		saveSnapshot( root, cfg, snap );
+	}
 }
 
 // Скачать с сервера только изменённое там; незалитые локальные правки и конфликты не трогать (--force — перезаписать всё).
