@@ -45,6 +45,20 @@
 **/node_modules/
 **/vendor/
 
+# Дампы БД — только на сервере (персональные данные, GDPR)
+/project-base/dumps/
+
+# Тяжёлые исходники и медиа — в облачной папке, ссылка в ACCESS.md
+/project-base/**/*.psd
+/project-base/**/*.ai
+/project-base/**/*.fig
+/project-base/**/*.sketch
+/project-base/**/*.xd
+/project-base/**/*.mp4
+/project-base/**/*.mov
+/project-base/**/*.zip
+/project-base/**/*.raw
+
 # Секреты — нигде
 **/*.pem
 **/*.key
