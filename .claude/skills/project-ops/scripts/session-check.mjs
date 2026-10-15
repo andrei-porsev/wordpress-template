@@ -45,6 +45,22 @@ function accessField( root, name ) {
 	return v === '—' ? '' : v;
 }
 
+// Незакрытые ручные шаги из INDEX.md → «Сделать вручную».
+function manualSteps( root ) {
+	const path = join( root, 'project-base', 'INDEX.md' );
+	if ( ! existsSync( path ) ) {
+		return;
+	}
+	const text = readFileSync( path, 'utf8' );
+	const block = ( text.split( /^## Сделать вручную\s*$/m )[ 1 ] || '' ).split( /^## /m )[ 0 ];
+	const open = block.split( '\n' ).map( ( l ) => l.trim() ).filter( ( l ) => /^- (\[ \] )?/.test( l ) && ! /^- \[x\]/i.test( l ) && l !== '- —' );
+	if ( open.length ) {
+		say( `## 🖐 Сделать вручную (${ open.length }) — напомнить пользователю` );
+		open.forEach( ( l ) => say( `  ${ l }` ) );
+		say();
+	}
+}
+
 // 0. Локальное состояние.
 function localState( root ) {
 	say( '## Локально' );
@@ -286,6 +302,7 @@ try {
 	ensureDeps();
 	const root = repoRoot();
 	const onlyStage = process.argv.includes( '--stage' );
+	manualSteps( root );
 	localState( root );
 	say();
 	if ( ! onlyStage ) {
