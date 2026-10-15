@@ -5,42 +5,13 @@
  *   node .claude/skills/project-ops/scripts/session-check.mjs [--stage]
  */
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { diffState, ensureDeps, entryType, git, GROUP_TITLES, KIND_TITLES, loadConfig, remoteOf, repoRoot, rootsOrThrow, withClient } from './remote.mjs';
+import { checkCoreKeyFiles, coreChecksums, rootExtraPhp, splitUploadPhp, uploadsPhpBySftp } from './security.mjs';
 
 const scriptsDir = dirname( fileURLToPath( import.meta.url ) );
-
-// Файлы ядра, совпадение которых с оригиналом проверяем каждую сессию (version.php не берём — отличается у локализаций).
-const CORE_KEY_FILES = [
-	'index.php', 'wp-load.php', 'wp-settings.php', 'wp-login.php', 'wp-blog-header.php', 'xmlrpc.php',
-	'wp-includes/load.php', 'wp-includes/plugin.php', 'wp-includes/pluggable.php', 'wp-admin/index.php', 'wp-admin/admin.php',
-];
-const CORE_ROOT_PHP = new Set( [
-	'index.php', 'wp-activate.php', 'wp-blog-header.php', 'wp-comments-post.php', 'wp-config.php', 'wp-config-sample.php', 'wp-cron.php',
-	'wp-links-opml.php', 'wp-load.php', 'wp-login.php', 'wp-mail.php', 'wp-settings.php', 'wp-signup.php', 'wp-trackback.php', 'xmlrpc.php',
-] );
-
-// PHP в uploads, который пишут сами плагины (скомпилированные шаблоны) — не тревога, но считается.
-const KNOWN_UPLOAD_PHP = [
-	{ prefix: 'wp-content/uploads/cache/wpml/twig/', label: 'кеш шаблонов WPML' },
-];
-
-function splitUploadPhp( files ) {
-	const known = {};
-	const unknown = [];
-	for ( const f of files ) {
-		const k = KNOWN_UPLOAD_PHP.find( ( x ) => f.startsWith( x.prefix ) );
-		if ( k ) {
-			known[ k.label ] = ( known[ k.label ] || 0 ) + 1;
-		} else {
-			unknown.push( f );
-		}
-	}
-	return { known, unknown };
-}
 
 const out = [];
 const say = ( line = '' ) => out.push( line );
@@ -229,32 +200,17 @@ async function quickSecurity( api, cfg, root, core, viaSsh ) {
 	const info = [];
 	// Ядро: контрольные суммы ключевых файлов с wordpress.org.
 	if ( core ) {
-		let sums = null;
-		try {
-			const res = await fetch( `https://api.wordpress.org/core/checksums/1.0/?version=${ encodeURIComponent( core ) }&locale=en_US` );
-			sums = ( await res.json() ).checksums || null;
-		} catch {
-			sums = null;
-		}
-		if ( sums ) {
-			for ( const rel of CORE_KEY_FILES ) {
-				try {
-					const md5 = createHash( 'md5' ).update( await api.read( remoteOf( cfg, rel ) ) ).digest( 'hex' );
-					if ( sums[ rel ] && md5 !== sums[ rel ] ) {
-						warn.push( `ядро: ${ rel } отличается от оригинала WordPress ${ core }` );
-					}
-				} catch {
-					warn.push( `ядро: ${ rel } не читается` );
-				}
-			}
-			info.push( `ядро: ${ CORE_KEY_FILES.length } ключевых файлов сверены с оригиналом` );
+		const res = await checkCoreKeyFiles( api, cfg, await coreChecksums( core ) );
+		if ( res ) {
+			res.modified.forEach( ( rel ) => warn.push( `ядро: ${ rel } отличается от оригинала WordPress ${ core }` ) );
+			res.unreadable.forEach( ( rel ) => warn.push( `ядро: ${ rel } не читается` ) );
+			info.push( `ядро: ${ res.checked } ключевых файлов сверены с оригиналом` );
 		} else {
 			info.push( 'ядро: контрольные суммы wordpress.org недоступны — не сверено' );
 		}
 	}
 	// Корень: PHP-файлы, которых нет в ядре.
-	const rootList = ( await api.list( remoteOf( cfg, '' ) ) ) || [];
-	const extra = rootList.filter( ( i ) => entryType( i ) !== 'dir' && i.name.endsWith( '.php' ) && ! CORE_ROOT_PHP.has( i.name ) ).map( ( i ) => i.name );
+	const extra = await rootExtraPhp( api, cfg );
 	if ( extra.length ) {
 		warn.push( `корень сайта: PHP не из ядра — ${ extra.join( ', ' ) }` );
 	}
@@ -272,26 +228,8 @@ async function quickSecurity( api, cfg, root, core, viaSsh ) {
 		const files = ( r.stdout || '' ).split( '\n' ).map( ( l ) => l.trim() ).filter( ( l ) => l.endsWith( '.php' ) && ! l.endsWith( '/index.php' ) );
 		reportUploads( files, 'проверено по SSH' );
 	} else {
-		const found = [];
-		let dirs = 0;
-		const walk = async ( rel, depth ) => {
-			const list = ( await api.list( remoteOf( cfg, rel ) ) ) || [];
-			dirs++;
-			for ( const i of list ) {
-				if ( i.name.startsWith( '.' ) ) {
-					continue;
-				}
-				if ( entryType( i ) === 'dir' ) {
-					if ( depth < 2 && dirs < 300 ) {
-						await walk( `${ rel }/${ i.name }`, depth + 1 );
-					}
-				} else if ( i.name.endsWith( '.php' ) && i.name !== 'index.php' ) {
-					found.push( `${ rel }/${ i.name }` );
-				}
-			}
-		};
-		await walk( 'wp-content/uploads', 0 );
-		reportUploads( found, `обход SFTP на 2 уровня (${ dirs } папок) — глубже не проверено` );
+		const { files, dirs } = await uploadsPhpBySftp( api, cfg );
+		reportUploads( files, `обход SFTP на 2 уровня (${ dirs } папок) — глубже не проверено` );
 	}
 	say( warn.length ? `🟡 Требует внимания (полная проверка — project-init → recon.md):` : '🟢 Признаков вмешательства не найдено.' );
 	warn.forEach( ( w ) => say( `  ${ w }` ) );

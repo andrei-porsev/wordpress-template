@@ -801,16 +801,26 @@ export function lastDeployTag( root ) {
 	return git( root, 'tag', '--list', 'baseline' ) ? 'baseline' : '';
 }
 
-export async function siteStatus( url ) {
+// GET сайта; httpAuth из конфига ({ user, password }) — защита каталога на stage, без пароля в адресе.
+export async function httpGet( url, cfg = {}, withBody = false ) {
 	try {
 		const ctrl = new AbortController();
 		const timer = setTimeout( () => ctrl.abort(), 20000 );
-		const res = await fetch( `${ url }/?claude-check=${ Date.now() }`, { signal: ctrl.signal, redirect: 'follow' } );
+		const headers = {};
+		if ( cfg.httpAuth?.user ) {
+			headers.Authorization = 'Basic ' + Buffer.from( `${ cfg.httpAuth.user }:${ cfg.httpAuth.password || '' }` ).toString( 'base64' );
+		}
+		const res = await fetch( url, { signal: ctrl.signal, redirect: 'follow', headers } );
+		const body = withBody ? await res.text() : '';
 		clearTimeout( timer );
-		return res.status;
+		return { status: res.status, headers: res.headers, body };
 	} catch {
-		return null;
+		return { status: null, headers: null, body: '' };
 	}
+}
+
+export async function siteStatus( url, cfg = {} ) {
+	return ( await httpGet( `${ url }/?claude-check=${ Date.now() }`, cfg ) ).status;
 }
 
 export function phpLint( root, rels ) {
@@ -930,7 +940,7 @@ export async function cmdDeploy( cfg, root, yes, stage ) {
 		}
 
 		const url = stage ? accessUrl( root, 'Stage / dev URL' ) : accessUrl( root, 'Публичный URL' );
-		const status = url ? await siteStatus( url ) : null;
+		const status = url ? await siteStatus( url, cfg ) : null;
 		if ( status !== null && status >= 500 ) {
 			throw new Error( `Сайт отвечает HTTP ${ status } — откат всей пачки:\n${ await rollback() }` );
 		}
@@ -946,7 +956,8 @@ export async function cmdDeploy( cfg, root, yes, stage ) {
 			tag = `deploy-${ stamp }`;
 			git( root, 'tag', tag );
 		}
-		console.log( `Сайт: ${ url ? ( status === null ? 'нет ответа (сеть или защита — не откатываем)' : `HTTP ${ status }` ) : 'URL нет в ACCESS.md — не проверен' }` );
+		const authNote = status === 401 ? ' — закрыт паролем: проверка не видит сайт, добавить httpAuth в конфиг' : '';
+		console.log( `Сайт: ${ url ? ( status === null ? 'нет ответа (сеть или защита — не откатываем)' : `HTTP ${ status }${ authNote }` ) : 'URL нет в ACCESS.md — не проверен' }` );
 		console.log( `OK deploy: залито ${ toUpload.length }, удалено ${ toRemove.length }${ tag ? `, тег ${ tag } (git push --tags)` : '' }. Бэкап: .claude/.state/deploy-backup/${ stamp }` );
 	} );
 }
