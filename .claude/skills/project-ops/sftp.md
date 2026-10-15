@@ -18,6 +18,7 @@ node .claude/skills/project-ops/scripts/install-deps.mjs
 node .claude/skills/project-ops/scripts/sftp-sync.mjs test
 node .claude/skills/project-ops/scripts/sftp-sync.mjs list [<rel>]
 node .claude/skills/project-ops/scripts/sftp-sync.mjs compare [--json]
+node .claude/skills/project-ops/scripts/sftp-sync.mjs deploy [--yes]
 node .claude/skills/project-ops/scripts/sftp-sync.mjs download <rel> [<rel>...]
 node .claude/skills/project-ops/scripts/sftp-sync.mjs upload <rel> [<rel>...]
 node .claude/skills/project-ops/scripts/sftp-sync.mjs sync-down [--force]
@@ -36,6 +37,7 @@ Stage: флаг `--stage` (любая команда `sftp-sync.mjs` / `ssh-exec
 | `test` | Проверить, что host/логин живые. После заполнения конфига — первым делом. |
 | `list [<rel>]` | Листинг папки на сервере (тип, размер, время) — без SSH. |
 | `compare [--json]` | Сверка своего кода (whitelist) без перезаписи: совпадают / изменены на сервере (чужие) / изменены локально (не залиты) / конфликт / отличаются без снимка. Перед задачей и перед выкаткой. |
+| `deploy [--yes]` | «Выкати на прод»: изменения в git от последнего тега `deploy-*` (первый раз — от `baseline`) по своему коду. Стоп: незакоммиченное, чужие правки или конфликт на сервере, ошибка `php -l`. Без `--yes` — план (показать пользователю), с `--yes` — бэкап, заливка и удаление пачкой, проверка сайта (HTTP < 500); ошибка — откат всей пачки; успех — тег `deploy-<время>` (на stage тег не ставится). После — проверка в браузере и `git push --tags`. |
 | `download` | Забрать конкретные файлы с сервера (папка — рекурсивно). Родительская тема и сторонние плагины для чтения — ложатся вне git, править не даст `guard-paths`. |
 | `upload` | Залить указанные пути; обновляет снимок. В `guarded-auto` / `stage-auto` заливает хук; вручную — режим `manual` по команде или «да» (см. `ssh.md`). |
 | `fetch <rel> <файл>` | Забрать серверную версию в произвольный локальный файл (бэкап хука). Нет на сервере — вывод `MISSING`, код 3. |

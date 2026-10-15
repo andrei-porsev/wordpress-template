@@ -3,6 +3,7 @@
  * Пароль в stdout/stderr не пишем — иначе всплывёт в чат агента.
  * Снимок последней синхронизации — .claude/.state/sync-<конфиг>.json: по нему compare отличает чужие правки от своих.
  */
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
 	existsSync,
@@ -773,12 +774,190 @@ async function cmdSyncUp( cfg, root ) {
 	console.log( 'OK sync-up', files.length );
 }
 
+function git( root, ...args ) {
+	const r = spawnSync( 'git', args, { cwd: root, encoding: 'utf8' } );
+	if ( r.status !== 0 ) {
+		throw new Error( `git ${ args.join( ' ' ) }: ${ ( r.stderr || '' ).trim() }` );
+	}
+	return r.stdout.trim();
+}
+
+// Значение поля «- Имя: значение» из ACCESS.md, первый URL в нём.
+function accessUrl( root, name ) {
+	const path = join( root, 'ACCESS.md' );
+	if ( ! existsSync( path ) ) {
+		return '';
+	}
+	const line = readFileSync( path, 'utf8' ).split( '\n' ).find( ( l ) => l.trim().startsWith( `- ${ name }:` ) ) || '';
+	const m = line.match( /https?:\/\/[^\s`()]+/ );
+	return m ? m[ 0 ].replace( /\/+$/, '' ) : '';
+}
+
+function lastDeployTag( root ) {
+	const tags = git( root, 'tag', '--list', 'deploy-*', '--sort=-creatordate' ).split( '\n' ).filter( Boolean );
+	if ( tags.length ) {
+		return tags[ 0 ];
+	}
+	return git( root, 'tag', '--list', 'baseline' ) ? 'baseline' : '';
+}
+
+async function siteStatus( url ) {
+	try {
+		const ctrl = new AbortController();
+		const timer = setTimeout( () => ctrl.abort(), 20000 );
+		const res = await fetch( `${ url }/?claude-check=${ Date.now() }`, { signal: ctrl.signal, redirect: 'follow' } );
+		clearTimeout( timer );
+		return res.status;
+	} catch {
+		return null;
+	}
+}
+
+function phpLint( root, rels ) {
+	if ( spawnSync( 'php', [ '-v' ], { encoding: 'utf8' } ).status !== 0 ) {
+		return { skipped: true, errors: [] };
+	}
+	const errors = [];
+	for ( const rel of rels.filter( ( r ) => r.endsWith( '.php' ) ) ) {
+		const r = spawnSync( 'php', [ '-l', localOf( root, rel ) ], { encoding: 'utf8' } );
+		if ( r.status !== 0 ) {
+			errors.push( `${ rel }: ${ ( r.stdout + r.stderr ).trim().split( '\n' )[ 0 ] }` );
+		}
+	}
+	return { skipped: false, errors };
+}
+
+/*
+ * Выкатка: изменения в git от последнего тега deploy-* (или baseline) по своему коду → сервер пачкой.
+ * Без --yes — только план. С --yes — бэкап, заливка, проверка сайта; ошибка — откат всей пачки; успех — тег deploy-<время>.
+ */
+async function cmdDeploy( cfg, root, yes, stage ) {
+	const roots = rootsOrThrow( cfg );
+	const inRoots = ( rel ) => roots.some( ( r ) => rel === r || rel.startsWith( r + '/' ) );
+	const from = lastDeployTag( root );
+	if ( ! from ) {
+		throw new Error( 'Нет тега baseline и deploy-* — не от чего считать выкатку (WORKFLOW.md → 1.2).' );
+	}
+	const dirty = git( root, 'status', '--porcelain', '--', ...roots ).split( '\n' ).filter( Boolean );
+	if ( dirty.length ) {
+		throw new Error( `Незакоммиченные правки в своём коде — сначала коммит:\n${ dirty.join( '\n' ) }` );
+	}
+	const changes = git( root, 'diff', '--name-status', '--no-renames', `${ from }..HEAD` ).split( '\n' ).filter( Boolean )
+		.map( ( l ) => {
+			const [ st, rel ] = l.split( '\t' );
+			return { st, rel: toPosix( rel ) };
+		} )
+		.filter( ( c ) => inRoots( c.rel ) );
+	const toUpload = changes.filter( ( c ) => c.st !== 'D' ).map( ( c ) => c.rel );
+	const toRemove = changes.filter( ( c ) => c.st === 'D' ).map( ( c ) => c.rel );
+	const target = stage ? 'stage' : 'прод';
+	if ( ! toUpload.length && ! toRemove.length ) {
+		console.log( `Нечего выкатывать: с ${ from } изменений в своём коде нет.` );
+		return;
+	}
+
+	await withClient( cfg, async ( api ) => {
+		const { groups } = await diffState( api, cfg, root, roots );
+		// Расхождение по файлам выкатки — ожидаемо; чужие правки и конфликты где угодно — стоп.
+		const foreign = [ ...groups.remote, ...groups.conflict, ...groups.unknown ];
+		if ( foreign.length ) {
+			throw new Error( `На сервере (${ target }) есть правки не из git — сначала sync-down и разбор:\n${ foreign.map( ( i ) => `  ${ i.rel } — ${ KIND_TITLES[ i.kind ] || i.kind }` ).join( '\n' ) }` );
+		}
+		const planned = new Set( [ ...toUpload, ...toRemove ] );
+		const outside = groups.local.filter( ( i ) => ! planned.has( i.rel ) );
+		if ( outside.length ) {
+			console.log( `Внимание: на сервере нет ещё ${ outside.length } файлов вне плана (изменены до ${ from }, не залиты):` );
+			outside.forEach( ( i ) => console.log( `  ${ i.rel } — ${ KIND_TITLES[ i.kind ] || i.kind }` ) );
+		}
+		const lint = phpLint( root, toUpload );
+		if ( lint.errors.length ) {
+			throw new Error( `php -l — ошибки, ничего не залито:\n${ lint.errors.join( '\n' ) }` );
+		}
+
+		console.log( `Выкатка на ${ target } от ${ from }: залить ${ toUpload.length }, удалить ${ toRemove.length }` );
+		toUpload.forEach( ( r ) => console.log( `  ↑ ${ r }` ) );
+		toRemove.forEach( ( r ) => console.log( `  ✕ ${ r }` ) );
+		if ( lint.skipped ) {
+			console.log( 'php -l: локального PHP нет — синтаксис не проверен.' );
+		}
+		if ( ! yes ) {
+			console.log( 'ПЛАН: показать пользователю; после «да» — тот же запуск с --yes.' );
+			return;
+		}
+
+		const stamp = new Date().toISOString().replace( /[-:]/g, '' ).replace( 'T', '-' ).slice( 0, 15 );
+		const backupDir = join( root, '.claude', '.state', 'deploy-backup', stamp );
+		const had = {};
+		for ( const rel of [ ...toUpload, ...toRemove ] ) {
+			had[ rel ] = await api.existsType( remoteOf( cfg, rel ) ) === 'file';
+			if ( had[ rel ] ) {
+				await api.downloadFile( remoteOf( cfg, rel ), join( backupDir, rel ) );
+			}
+		}
+
+		const done = [];
+		const rollback = async () => {
+			const lines = [];
+			for ( const rel of done.reverse() ) {
+				try {
+					if ( had[ rel ] ) {
+						await api.uploadFile( join( backupDir, rel ), remoteOf( cfg, rel ) );
+					} else if ( await api.existsType( remoteOf( cfg, rel ) ) === 'file' ) {
+						await api.remove( remoteOf( cfg, rel ) );
+					}
+					lines.push( `  ↺ ${ rel }` );
+				} catch ( e ) {
+					lines.push( `  ОТКАТ НЕ УДАЛСЯ: ${ rel } — ${ e.message }` );
+				}
+			}
+			return lines.join( '\n' );
+		};
+
+		const snap = loadSnapshot( root, cfg ) || { files: {} };
+		try {
+			for ( const rel of toUpload ) {
+				done.push( rel );
+				await api.uploadFile( localOf( root, rel ), remoteOf( cfg, rel ) );
+			}
+			for ( const rel of toRemove ) {
+				done.push( rel );
+				if ( had[ rel ] ) {
+					await api.remove( remoteOf( cfg, rel ) );
+				}
+			}
+		} catch ( e ) {
+			throw new Error( `Заливка прервана (${ e.message }) — откат всей пачки:\n${ await rollback() }` );
+		}
+
+		const url = stage ? accessUrl( root, 'Stage / dev URL' ) : accessUrl( root, 'Публичный URL' );
+		const status = url ? await siteStatus( url ) : null;
+		if ( status !== null && status >= 500 ) {
+			throw new Error( `Сайт отвечает HTTP ${ status } — откат всей пачки:\n${ await rollback() }` );
+		}
+
+		for ( const rel of toUpload ) {
+			remember( snap, rel, hashOf( readFileSync( localOf( root, rel ) ) ), { size: null, mtime: null } );
+		}
+		toRemove.forEach( ( rel ) => delete snap.files[ rel ] );
+		saveSnapshot( root, cfg, snap );
+
+		let tag = '';
+		if ( ! stage ) {
+			tag = `deploy-${ stamp }`;
+			git( root, 'tag', tag );
+		}
+		console.log( `Сайт: ${ url ? ( status === null ? 'нет ответа (сеть или защита — не откатываем)' : `HTTP ${ status }` ) : 'URL нет в ACCESS.md — не проверен' }` );
+		console.log( `OK deploy: залито ${ toUpload.length }, удалено ${ toRemove.length }${ tag ? `, тег ${ tag } (git push --tags)` : '' }. Бэкап: .claude/.state/deploy-backup/${ stamp }` );
+	} );
+}
+
 // --stage: конфиг sftp-stage.json / ssh-stage.json вместо боевого.
 if ( process.argv.includes( '--stage' ) ) {
 	process.env.SFTP_CONFIG = 'sftp-stage.json';
 	process.env.SSH_CONFIG = 'ssh-stage.json';
 }
-const flags = new Set( process.argv.filter( ( a ) => [ '--force', '--json' ].includes( a ) ) );
+const isStage = process.argv.includes( '--stage' );
+const flags = new Set( process.argv.filter( ( a ) => [ '--force', '--json', '--yes' ].includes( a ) ) );
 const [ , , cmd, ...args ] = process.argv.filter( ( a ) => a !== '--stage' && ! flags.has( a ) );
 
 try {
@@ -816,8 +995,11 @@ try {
 		case 'list':
 			await cmdList( cfg, args[ 0 ] );
 			break;
+		case 'deploy':
+			await cmdDeploy( cfg, root, flags.has( '--yes' ), isStage );
+			break;
 		default:
-			throw new Error( 'Команда: test | list | compare | download | upload | fetch | put | remove | sync-down | sync-up' );
+			throw new Error( 'Команда: test | list | compare | deploy | download | upload | fetch | put | remove | sync-down | sync-up' );
 	}
 } catch ( err ) {
 	const msg = err instanceof Error ? err.message : String( err );
