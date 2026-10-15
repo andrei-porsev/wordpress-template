@@ -56,7 +56,7 @@ WP-CLI — на сервере через `ssh-exec.mjs`, не локальны�
 
 Как правки агента попадают на сервер. Подробности — `project-init` → `SKILL.md` → этап 8, решение 012 в `.claude/template/DECISIONS.md`.
 
-- Режим заливки: guarded-auto (guarded-auto / stage-auto / manual / local)
+- Режим заливки: guarded-auto (guarded-auto / stage-auto / manual; работа на локальной копии — `manual (local)`: хук не знает `local` и без `manual` в начале строки заливает на прод)
 - Последняя выкатка на прод: — (тег `deploy-<дата>`)
 
 ## Сайт и браузер
