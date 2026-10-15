@@ -451,13 +451,13 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 | A. Основа — **выполнено** | `.gitattributes`, профиль проекта, `CLAUDE.md` до ядра, `DECISIONS.md` на два файла (`.claude/template/` + `project-base/`), исключения тяжёлых файлов и дампов (026, 027) | 19 (кроме наборов для типов и пакетов — часть B), 20, 50 (кроме проверки `core.autocrlf` — часть C), 53 |
 | B. Новая инициализация — **выполнено** (решение 028) | `project-init`: файл на этап, типы, бриф, сводка, прогресс, повторный запуск, пакеты `.claude/packages.json`, наборы плагинов, новый `ACCESS.md`; шаги, зависящие от C, — с запасным путём | 23, 29–31, 37, 40, 41, 44–48, 51, 52, 54 |
 | C. Скрипты `project-ops` — **выполнено** | `remote.mjs` / `sftp-sync` (compare, list, безопасный sync-down, deploy), `session-check`, `recon` + `security.mjs`, `connect` + `connect-check`, `machine-check`, `stage-config`, `local-exec`; документы `stage.md`, `no-wpcli.md`, `local.md`, `packages/*.md`; ручные шаги `manual-steps.md`; тесты `project-ops/tests/` | 1–7, 10, 13–18, 24–27 (проверка версии шаблона — в E), 32–36, 38, 39, 42, 43, 49 |
-| D. Хуки — правит пользователь | описание правок: `SessionStart`, `post-edit` (`debug.log` по SFTP/FTP, стоп без PHP, стоп при изменении на сервере, режим `local`), `guard-wpcli` для stage | 9, 11, 12, 28 |
+| D. Хуки — **выполнено** (решение 030) | описание правок: `SessionStart`, `post-edit` (`debug.log` по SFTP/FTP, стоп без PHP, стоп при изменении на сервере, режим `local`), `guard-wpcli` для stage | 9, 11, 12, 28 |
 | E. Обновление старых проектов | `template.json`, скрипт обновления, миграция с Cursor, пилот | 21, 22 |
 | F. Plesk | сервисный план «Stage» вместе с пользователем | 8 |
 
 ### Часть D — что собралось по итогам C (правит пользователь, агент готовит описание)
 
-**Подготовлено:** патч [`part-d.patch`](part-d.patch) и описание [`part-d.md`](part-d.md) (проверено: selftest 62 / 62, `test-post-edit` 11 / 11). Ждёт применения пользователем.
+**Подготовлено:** патч [`part-d.patch`](part-d.patch) и описание [`part-d.md`](part-d.md) (проверено: selftest 62 / 62, `test-post-edit` 11 / 11). **Применено** (c831b50), все тесты `project-ops/tests/` прошли; решение 030.
 
 | Где | Правка | Почему |
 |-----|--------|--------|

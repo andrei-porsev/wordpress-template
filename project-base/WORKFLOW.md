@@ -26,7 +26,7 @@
 4. Скиллы и правила под стек и пакеты — `node .claude/skills/project-ops/scripts/skills-sync.mjs activate <стек…>`
    (таблица в `project-init` → `stack.md`, пакеты — `.claude/packages.json`; WP-CLI = да → обязательно `wpcli`), затем `check` — обновить устаревшее.
    Подробно — `project-ops` → `skills.md`, решение 022. Ядро: `project-init`, `project-structure`, `project-ops`.
-5. Режим заливки в `ACCESS.md`: `guarded-auto` / `stage-auto` / `manual` (локальная копия — `manual (local)`).
+5. Режим заливки в `ACCESS.md`: `guarded-auto` / `stage-auto` / `manual` / `local` (локальная копия).
 6. Окружение и проверка (Node, зависимости, PHP, MCP, хуки, связь, тест заливки) — `project-init` → `SKILL.md` → этап 10, агент ведёт сам.
 7. Перенести SCSS-заготовку в тему/плагин по инструкции `project-base/_starter/README.md`.
    Проект с нуля — папка `scss/` целиком; в проекте уже есть SCSS — только
