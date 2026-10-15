@@ -304,7 +304,7 @@ git checkout before-woo-update -- .
 
 Всё в `.claude/settings.json`, коммитится. Логика: агент работает самостоятельно, границы держат хуки и `deny`.
 
-**Режим:** `defaultMode: acceptEdits` — правки файлов без запроса; куда можно писать, решает `guard-paths` (свои пакеты из `project.json`).
+**Режим:** `defaultMode: auto` (решение 031) — действия без запроса, `deny`, `ask` и хуки действуют; куда можно писать, решает `guard-paths` (свои пакеты из `project.json`).
 
 **Без запроса (`allow`):** `compile-scss`, `gen-whitelist`, `skills-sync` (кроме `--apply`, он с подтверждением), `sftp-sync test|download|upload|sync-down`, `ssh-exec test`, WP-CLI на чтение
 (`plugin list`, `theme list`, `option get`, `core version`, `user list`, `post list`, `cache flush`, `rewrite flush`, `db export`, `db check`; с `--stage` и без),
