@@ -18,6 +18,7 @@ compatibility: "Этот шаблон. Разработка на сервере 
 
 | Задача | Читать и делать |
 |--------|-----------------|
+| Локальная копия (LocalWP, OSPanel): перенос, WP-CLI, junction | [local.md](local.md), `local-exec.mjs` |
 | Проверить машину (один раз): Node, PHP, phpcs, git, SSH-ключ | `machine-check.mjs` → `project-init` → этап 10 |
 | Stage по профилю своего сервера; после переезда stage → прод | `stage-config.mjs build <project>` / `promote` → `project-init` → `access.md`, `types.md` |
 | Проверить подключение: SSH / SFTP / FTP, ключ, путь к сайту, диагностика | `connect-check.mjs` → `project-init` → `access.md` |
