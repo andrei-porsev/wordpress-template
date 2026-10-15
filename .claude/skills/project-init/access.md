@@ -127,10 +127,9 @@ node .claude/skills/project-ops/scripts/stage-config.mjs build <project> --yes  
 
 **Пароль на stage** (защита каталога) — логин и пароль в `ACCESS.md` → «Окружения»; браузеру — без пароля в адресе (`site.md`).
 
-**Локально** — `ACCESS.md` → «Локально»: инструмент, локальный URL, путь, WP-CLI.
-Локального WP-CLI под охранником пока нет (часть C) — команды `wp` для локального сайта агент даёт, выполняет человек: LocalWP → «Open site shell», OSPanel — его консоль. Перенос сайта на локальный сервер — отдельная команда (`project-ops`, после части C);
-до неё: копию делает человек (импорт архива в LocalWP, Duplicator в OSPanel), тема — junction из проекта:
-`New-Item -ItemType Junction -Path "<сайт>\wp-content\themes\<slug>" -Target "<проект>\wp-content\themes\<slug>"` (после «да»).
+**Локально** — процедура `project-ops` → `local.md`: копию делает человек (импорт архива в LocalWP, Duplicator в OSPanel),
+затем `local-exec.mjs detect <корень WP>` → `.vscode/local.json`, `status`, при проекте отдельно от сайта — `link` (junction).
+WP-CLI локального сайта — `local-exec.mjs -- wp …` (меняющее — с `--yes` после «да», с дампом). `ACCESS.md` → «Локально»: инструмент, URL, путь, `WP-CLI: local-exec.mjs`.
 
 ## 5. SEO и аналитика
 
