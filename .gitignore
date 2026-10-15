@@ -6,6 +6,7 @@
 
 /*
 !/.gitignore
+!/.gitattributes
 !/.editorconfig
 !/.stylelintrc.json
 !/phpcs.xml.dist
