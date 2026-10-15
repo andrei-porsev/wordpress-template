@@ -1,0 +1,16 @@
+{
+	"$comment": "Образец профиля своих серверов. Скопировать в ~/.wp-template/servers.json (вне проектов, не в git) и заполнить. Читает только stage-config.mjs. {project} — имя проекта из команды (латиница, например siteb).",
+	"servers": {
+		"vps": {
+			"title": "Свой VPS (IONOS + Plesk) — stage и промежуточные копии",
+			"host": "",
+			"port": 22,
+			"username": "{project}_dev",
+			"privateKeyPath": "",
+			"remotePath": "/httpdocs",
+			"stageUrl": "https://{project}.stage.example.com",
+			"httpAuth": { "user": "", "password": "" },
+			"$notes": "Plesk: подписка на проект — свой системный пользователь; при входе по ключу добавить один публичный ключ в каждую подписку — пароль не нужен. remotePath: chroot — /httpdocs, без chroot — /var/www/vhosts/<домен>/httpdocs. httpAuth — защита каталога stage (одна на все stage или пусто)."
+		}
+	}
+}

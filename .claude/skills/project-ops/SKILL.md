@@ -18,6 +18,8 @@ compatibility: "Этот шаблон. Разработка на сервере 
 
 | Задача | Читать и делать |
 |--------|-----------------|
+| Проверить машину (один раз): Node, PHP, phpcs, git, SSH-ключ | `machine-check.mjs` → `project-init` → этап 10 |
+| Stage по профилю своего сервера; после переезда stage → прод | `stage-config.mjs build <project>` / `promote` → `project-init` → `access.md`, `types.md` |
 | Проверить подключение: SSH / SFTP / FTP, ключ, путь к сайту, диагностика | `connect-check.mjs` → `project-init` → `access.md` |
 | Запуск сессии: локально, сверка, версии, безопасность, обновления | `session-check.mjs` → [sftp.md](sftp.md), `WORKFLOW.md` → 2.1 |
 | Разведка, полная проверка безопасности, окружение | `recon.mjs` → `project-init` → `recon.md` |

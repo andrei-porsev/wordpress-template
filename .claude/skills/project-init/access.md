@@ -111,8 +111,16 @@ FTP / FTPS — конфиг `.vscode/sftp-ftp.json` заполняет чело�
 - `stage`: `у клиента` (данные как для прода → `sftp-stage.json` / `ssh-stage.json`) / `на моём VPS` / `нет`;
 - `локально`: LocalWP / OSPanel.
 
-**Stage на своём VPS.** Профиль VPS — `~/.wp-template/servers.json` (заполняет пользователь, читает только скрипт).
-До части C плана (скрипт автосборки) — данные спросить как для stage у клиента.
+**Stage на своём VPS.** Профиль VPS — `~/.wp-template/servers.json` (заполняет пользователь по `.claude/skills/project-ops/servers.example.json`, читает только скрипт):
+
+```bash
+node .claude/skills/project-ops/scripts/stage-config.mjs build <project>          # план
+node .claude/skills/project-ops/scripts/stage-config.mjs build <project> --yes    # после «да»
+```
+
+Собирает `sftp-stage.json` и `ssh-stage.json`: хост, пользователь и URL — по шаблонам профиля (`{project}_dev`, `https://{project}.stage…`), `ignore` / `watcher` — из `sftp.json` проекта.
+Вход по ключу — пароль не нужен; по паролю — пароль подписки вписать в `sftp-stage.json`. Профиля нет — данные спросить как для stage у клиента.
+Затем `connect-check.mjs --stage` и `ACCESS.md` → «Окружения», `Stage / dev URL`.
 **Копию существующего сайта на stage — только после проверки безопасности** (этап 4, 🟢 или 🟡 без подозрительных файлов): здесь только отметить «будет stage»,
 создание — в конце этапа 4. Создать stage — человек в Plesk (подписка, WP Toolkit: клон или импорт), агент даёт шаги.
 После создания — чек-лист «безопасный stage» (`recon.md`).
