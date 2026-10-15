@@ -18,7 +18,9 @@ compatibility: "Этот шаблон. Разработка на сервере 
 
 | Задача | Читать и делать |
 |--------|-----------------|
-| Скачать, sync | [sftp.md](sftp.md) |
+| Запуск сессии: локально, сверка, версии, безопасность, обновления | `session-check.mjs` → [sftp.md](sftp.md), `WORKFLOW.md` → 2.1 |
+| Скачать, сверить, sync | [sftp.md](sftp.md) |
+| Выкатить на прод | `deploy` → [sftp.md](sftp.md) |
 | Залить файлы / SSH / WP-CLI | [ssh.md](ssh.md), заливка — скрипт в [sftp.md](sftp.md) |
 | Компиляция SCSS → CSS | [compile-scss.md](compile-scss.md) |
 | Сборка Gutenberg-блоков (`src/` → `build/`) | [build-blocks.md](build-blocks.md) |
@@ -49,9 +51,9 @@ WP-CLI (`wp cache flush` и т.п.) — только по команде или 
 
 ## Цикл с сервером
 
-1. Перед задачей: [sftp.md](sftp.md) → `sync-down`, затем `git status` (чужое — отдельный коммит).
+1. Перед задачей: `session-check.mjs` (`WORKFLOW.md` → 2.1); чужие правки — `sync-down` (только их), отдельный коммит; конфликты — с пользователем.
 2. Правка кода. SCSS — [compile-scss.md](compile-scss.md). `src/` блока — [build-blocks.md](build-blocks.md).
-3. На сервер — по режиму выше. Коммит — после проверки в браузере.
+3. На сервер — по режиму выше; со stage или локальной копии на прод — `deploy`. Коммит — после проверки в браузере.
 
 ## Не делать
 

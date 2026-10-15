@@ -28,6 +28,9 @@ node .claude/skills/project-ops/scripts/sftp-sync.mjs put <файл> <rel>
 node .claude/skills/project-ops/scripts/sftp-sync.mjs remove <rel>
 ```
 
+Запуск сессии — `node .claude/skills/project-ops/scripts/session-check.mjs [--stage]`: локальное состояние, `compare`, версии против прошлой сессии,
+быстрая проверка безопасности, обновления скиллов (`WORKFLOW.md` → 2.1). Только чтение. Снимки — `.claude/.state/sync-*.json`, `versions-*.json`.
+
 Stage: флаг `--stage` (любая команда `sftp-sync.mjs` / `ssh-exec.mjs`) берёт `.vscode/sftp-stage.json` и `ssh-stage.json` вместо боевых. Хук `post-edit` в режиме `stage-auto` делает то же через переменные `SFTP_CONFIG` / `SSH_CONFIG`.
 
 `rel` — путь от корня репо, как в git (`wp-content/themes/…/functions.php`). Каталог — рекурсивно, `node_modules`/`vendor` пропускаются.
