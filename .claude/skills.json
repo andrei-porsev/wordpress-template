@@ -169,10 +169,10 @@
 		"figma-generate-design": {
 			"source": "figma",
 			"path": "skills/figma-generate-design",
-			"commit": "b0bfad2ae63dfdc1af201c5542b5c8cf93778b33",
-			"tree": "af778ebcefd9707a96dead42178f3030d14efd13",
-			"hash": "5fcdfbda0f26942d",
-			"updated": "2026-10-14"
+			"commit": "f2789420e7e8b4e2465dfeb1e12e1fc6a31397e5",
+			"tree": "5702f09e8f8ac71c56ba605055e7f29f8eb540d6",
+			"hash": "3ce4de9236d0eb6a",
+			"updated": "2026-10-15"
 		},
 		"figma-generate-library": {
 			"source": "figma",
@@ -217,18 +217,18 @@
 		"copywriting": {
 			"source": "marketing",
 			"path": "skills/copywriting",
-			"commit": "c7d7dfb6b460fc376b4b2204b78a9c9fd5ca6467",
-			"tree": "08b81e848d49e4f34c7b9662d22fb43e6a4f6944",
-			"hash": "ff92dbc1303ad3eb",
-			"updated": "2026-10-14"
+			"commit": "365b412152b9542499ca1439426f7fc3cc92bb65",
+			"tree": "5de411655b1692373f8950f56d50991bd5294a8e",
+			"hash": "11d447a14127604e",
+			"updated": "2026-10-15"
 		},
 		"copy-editing": {
 			"source": "marketing",
 			"path": "skills/copy-editing",
-			"commit": "b9ba399dd88b082b926e261e8ccfb843d20aa066",
-			"tree": "cc4fc03162c36b9985b1e5bfae58028171b3f4ac",
-			"hash": "b2637799d07a9992",
-			"updated": "2026-10-08"
+			"commit": "365b412152b9542499ca1439426f7fc3cc92bb65",
+			"tree": "b1b144c16000ab7cfac005c73788a2e0eb719fed",
+			"hash": "f0df5093d055f097",
+			"updated": "2026-10-15"
 		},
 		"accessibility": {
 			"source": "web-quality",
