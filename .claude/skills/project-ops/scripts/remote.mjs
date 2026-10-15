@@ -17,6 +17,7 @@ import {
 import { dirname, join, posix, relative, resolve, sep } from 'node:path';
 import { PassThrough } from 'node:stream';
 import { fileURLToPath } from 'node:url';
+import { assertAuthAllowed, checkKeyFile, diagnose, hostKeyError, hostVerifier, isAuthError, recordAuth } from './connect.mjs';
 import { parseJsonc } from './jsonc.mjs';
 
 export const skillDir = resolve( dirname( fileURLToPath( import.meta.url ) ), '..' );
@@ -240,7 +241,26 @@ export function authOpts( cfg ) {
 export async function withSftp( cfg, fn ) {
 	const SftpClient = ( await import( 'ssh2-sftp-client' ) ).default;
 	const sftp = new SftpClient();
-	await sftp.connect( authOpts( cfg ) );
+	const root = repoRoot();
+	const keyProblem = checkKeyFile( cfg );
+	if ( keyProblem ) {
+		throw new Error( keyProblem );
+	}
+	assertAuthAllowed( root, cfg );
+	const hk = {};
+	try {
+		await sftp.connect( { ...authOpts( cfg ), hostVerifier: hostVerifier( root, cfg, hk ) } );
+		recordAuth( root, cfg, true );
+	} catch ( e ) {
+		if ( hk.hostKeyChanged ) {
+			throw hostKeyError( cfg, hk );
+		}
+		if ( isAuthError( e ) ) {
+			recordAuth( root, cfg, false );
+		}
+		const why = diagnose( e, cfg );
+		throw new Error( why ? `${ e.message } — ${ why }` : e.message );
+	}
 	try {
 		return await fn( {
 			async existsType( remote ) {
@@ -287,14 +307,26 @@ export async function withFtp( cfg, fn ) {
 	const { Client } = await import( 'basic-ftp' );
 	const client = new Client( cfg.connectTimeout || 20000 );
 	const secure = cfg.protocol === 'ftps' || cfg.secure === true;
-	await client.access( {
-		host: cfg.host,
-		port: cfg.port || 21,
-		user: cfg.username,
-		password: cfg.password,
-		secure,
-		secureOptions: cfg.secureOptions,
-	} );
+	const root = repoRoot();
+	assertAuthAllowed( root, cfg );
+	try {
+		await client.access( {
+			host: cfg.host,
+			port: cfg.port || 21,
+			user: cfg.username,
+			password: cfg.password,
+			secure,
+			secureOptions: cfg.secureOptions,
+		} );
+		recordAuth( root, cfg, true );
+	} catch ( e ) {
+		client.close();
+		if ( isAuthError( e ) ) {
+			recordAuth( root, cfg, false );
+		}
+		const why = diagnose( e, { ...cfg, port: cfg.port || 21 } );
+		throw new Error( why ? `${ e.message } — ${ why }` : e.message );
+	}
 	try {
 		return await fn( {
 			async existsType( remote ) {

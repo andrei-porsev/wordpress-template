@@ -5,6 +5,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertAuthAllowed, checkKeyFile, diagnose, hostKeyError, hostVerifier, isAuthError, recordAuth } from './connect.mjs';
 
 // --stage: конфиг sftp-stage.json / ssh-stage.json вместо боевого.
 if ( process.argv.includes( '--stage' ) ) {
@@ -100,10 +101,17 @@ function shQuote( s ) {
 	return `'${ String( s ).replace( /'/g, `'\\''` ) }'`;
 }
 
-function execRemote( cfg, command, Client ) {
+function execRemote( root, cfg, command, Client ) {
+	const keyProblem = checkKeyFile( cfg );
+	if ( keyProblem ) {
+		return Promise.reject( new Error( keyProblem ) );
+	}
+	assertAuthAllowed( root, cfg );
+	const hk = {};
 	return new Promise( ( resolve, reject ) => {
 		const conn = new Client();
 		conn.on( 'ready', () => {
+			recordAuth( root, cfg, true );
 			const full = `cd ${ shQuote( cfg.cwd ) } && ${ command }`;
 			conn.exec( full, ( err, stream ) => {
 				if ( err ) {
@@ -135,8 +143,18 @@ function execRemote( cfg, command, Client ) {
 				} );
 			} );
 		} );
-		conn.on( 'error', reject );
-		conn.connect( authOpts( cfg ) );
+		conn.on( 'error', ( e ) => {
+			if ( hk.hostKeyChanged ) {
+				reject( hostKeyError( cfg, hk ) );
+				return;
+			}
+			if ( isAuthError( e ) ) {
+				recordAuth( root, cfg, false );
+			}
+			const why = diagnose( e, cfg );
+			reject( new Error( why ? `${ e.message } — ${ why }` : e.message ) );
+		} );
+		conn.connect( { ...authOpts( cfg ), hostVerifier: hostVerifier( root, cfg, hk ) } );
 	} );
 }
 
@@ -167,10 +185,10 @@ try {
 			'pwd',
 			`if command -v ${ cfg.wpCli } >/dev/null 2>&1; then echo WP-CLI:yes; ${ cfg.wpCli } --info | head -n 5; else echo WP-CLI:no; fi`,
 		].join( '; ' );
-		await execRemote( cfg, probe, Client );
+		await execRemote( root, cfg, probe, Client );
 		console.log( 'OK', cfg.host, cfg.cwd );
 	} else {
-		await execRemote( cfg, args.cmd, Client );
+		await execRemote( root, cfg, args.cmd, Client );
 	}
 } catch ( err ) {
 	const msg = err instanceof Error ? err.message : String( err );
