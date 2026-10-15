@@ -457,6 +457,8 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 ### Часть D — что собралось по итогам C (правит пользователь, агент готовит описание)
 
+**Подготовлено:** патч [`part-d.patch`](part-d.patch) и описание [`part-d.md`](part-d.md) (проверено: selftest 62 / 62, `test-post-edit` 11 / 11). Ждёт применения пользователем.
+
 | Где | Правка | Почему |
 |-----|--------|--------|
 | `settings.json` → `permissions.allow` | новые команды: `sftp-sync.mjs compare / list / deploy` (без `--yes`), `session-check.mjs`, `recon.mjs`, `connect-check.mjs`, `machine-check.mjs`, `stage-config.mjs` (без `--yes`), `local-exec.mjs status / detect` и `-- wp` чтение, `install-deps.mjs` | иначе запрос на каждую; меняющие (`--yes`) — оставить с подтверждением |
