@@ -9,7 +9,7 @@
 Из корня репозитория. Если скрипт пишет «Нет зависимостей» — один раз:
 
 ```bash
-npm install --prefix .claude/skills/project-ops
+node .claude/skills/project-ops/scripts/install-deps.mjs
 ```
 
 Дальше:

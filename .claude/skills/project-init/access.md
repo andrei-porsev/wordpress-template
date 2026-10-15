@@ -21,7 +21,7 @@
 **3. Агент проверяет сам** (вопросов нет):
 
 ```bash
-npm install --prefix .claude/skills/project-ops
+node .claude/skills/project-ops/scripts/install-deps.mjs
 node .claude/skills/project-ops/scripts/sftp-sync.mjs test
 node .claude/skills/project-ops/scripts/ssh-exec.mjs test
 ```

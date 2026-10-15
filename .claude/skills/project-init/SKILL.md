@@ -161,7 +161,7 @@ Node 20+ · локальный PHP · phpcs + WPCS · SSH-ключ · git (им�
 
 ### Проект — при каждой инициализации
 
-1. `npm install --prefix .claude/skills/project-ops`, если нет `node_modules` (ставит и `stylelint`).
+1. `node .claude/skills/project-ops/scripts/install-deps.mjs`, если нет `node_modules` (ставит и `stylelint`).
 2. `node .claude/hooks/selftest.mjs` — ожидается «N из N прошли», код 0. Любой FAIL — стоп, разобраться. Хуки не запущены — пользователь одобряет проектные хуки при первом запуске.
 3. MCP: инструменты `mcp__playwright__*` есть? Нет — пользователь `/mcp` → одобрить `playwright` (и `figma`). Одобрение — на каждый проект.
 4. Связь с сервером — проверена на этапе 3; свежая — не повторять.

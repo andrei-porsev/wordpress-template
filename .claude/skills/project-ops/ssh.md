@@ -9,7 +9,7 @@
 
 ## Скрипт
 
-Из корня. Зависимости те же, что у SFTP (`npm install --prefix .claude/skills/project-ops`).
+Из корня. Зависимости те же, что у SFTP (`node .claude/skills/project-ops/scripts/install-deps.mjs`).
 
 ```bash
 node .claude/skills/project-ops/scripts/ssh-exec.mjs test

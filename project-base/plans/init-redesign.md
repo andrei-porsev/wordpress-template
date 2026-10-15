@@ -236,7 +236,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 Делать до команды `compare` — иначе CRLF / LF даёт ложные отличия с сервером.
 
 **Проверка проекта — при инициализации:**
-1. `npm install --prefix .claude/skills/project-ops`, если нет `node_modules`.
+1. `node .claude/skills/project-ops/scripts/install-deps.mjs`, если нет `node_modules`.
 2. `node .claude/hooks/selftest.mjs`; сбой — стоп.
 3. MCP проекта: одобрить `playwright` (и `figma`) через `/mcp` — одобрение на каждый проект.
 4. Связь с сервером — проверена на этапе 3, свежая — не повторять.

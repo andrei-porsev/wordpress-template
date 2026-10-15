@@ -10,7 +10,7 @@ compatibility: "Этот шаблон. Разработка на сервере 
 
 Запускать скрипты **из корня репозитория**. Пароль, ключ, `sftp-ftp.json` в чат не писать и файлы секретов не открывать.
 
-Первый раз в проекте: `npm install --prefix .claude/skills/project-ops`.
+Первый раз в проекте: `node .claude/skills/project-ops/scripts/install-deps.mjs`.
 
 Доступы: сначала [`ACCESS.md`](../../../ACCESS.md) (SSH, WP-CLI, URL, админка, браузер, Figma). Новое от пользователя — сразу туда и в `ssh.json`/`sftp.json`, не переспрашивать. Сбор при старте — `project-init` → `access.md`.
 

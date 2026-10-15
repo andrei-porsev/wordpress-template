@@ -28,7 +28,7 @@ function ensureDeps() {
 		return;
 	}
 	throw new Error(
-		'Нет зависимостей. Один раз: npm install --prefix .claude/skills/project-ops'
+		'Нет зависимостей. Один раз: node .claude/skills/project-ops/scripts/install-deps.mjs'
 	);
 }
 
