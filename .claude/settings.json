@@ -11,6 +11,20 @@
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs test*)",
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage test*)",
 			"Bash(npm install --prefix .claude/skills/project-ops)",
+			"Bash(node .claude/skills/project-ops/scripts/install-deps.mjs*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs list*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs compare*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs deploy*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs --stage list*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs --stage compare*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs --stage test*)",
+			"Bash(node .claude/skills/project-ops/scripts/session-check.mjs*)",
+			"Bash(node .claude/skills/project-ops/scripts/recon.mjs*)",
+			"Bash(node .claude/skills/project-ops/scripts/connect-check.mjs*)",
+			"Bash(node .claude/skills/project-ops/scripts/machine-check.mjs*)",
+			"Bash(node .claude/skills/project-ops/scripts/stage-config.mjs*)",
+			"Bash(node .claude/skills/project-ops/scripts/local-exec.mjs*)",
+			"Bash(node .claude/skills/project-ops/tests/*)",
 			"mcp__playwright",
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp plugin list*)",
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs -- wp theme list*)",
@@ -108,6 +122,14 @@
 			"Edit(/.vscode/ssh.json)",
 			"Edit(/.vscode/sftp-stage.json)",
 			"Edit(/.vscode/ssh-stage.json)",
+			"Edit(/.vscode/playwright-mcp.json)",
+			"Edit(/.vscode/local.json)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs *--yes*)",
+			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs *--force*)",
+			"Bash(node .claude/skills/project-ops/scripts/stage-config.mjs *--yes*)",
+			"Bash(node .claude/skills/project-ops/scripts/local-exec.mjs *--yes*)",
+			"Bash(node .claude/skills/project-ops/scripts/connect-check.mjs *--reset-auth*)",
+			"Bash(node .claude/skills/project-ops/scripts/connect-check.mjs *--forget-host*)",
 			"Bash(git push:*)",
 			"Bash(git checkout --:*)",
 			"Bash(git restore:*)",
@@ -133,6 +155,11 @@
 						"type": "command",
 						"command": "node \"$CLAUDE_PROJECT_DIR/.claude/skills/project-ops/scripts/skills-sync.mjs\" check --hook",
 						"timeout": 60
+					},
+					{
+						"type": "command",
+						"command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.mjs\"",
+						"timeout": 10
 					}
 				]
 			}

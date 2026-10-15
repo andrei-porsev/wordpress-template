@@ -4,7 +4,8 @@
  *  - deny: запись в файлы (>, tee, sed -i, cp, mv, rm…), чтение секретов (wp-config, .env, ключи),
  *          разрушающие WP-CLI (db drop/reset/clean, site empty/delete, DROP/TRUNCATE), sudo;
  *  - allow: чтение логов и каталогов (tail, cat, ls, grep… и их конвейер |), php -v/-l;
- *  - ask: WP-CLI, меняющий сайт или БД (search-replace без --dry-run, db import, update/delete…),
+ *  - ask: WP-CLI, меняющий сайт или БД (search-replace без --dry-run, db import, update/delete…);
+ *    на stage (--stage) — allow после автодампа, кроме db import и произвольного кода; local-exec.mjs — разбирается так же,
  *         eval, составные команды (; && ||), прочие команды;
  *  - без решения: чтение WP-CLI — дальше permissions.allow.
  * Перед первым ask по WP-CLI за сессию хук сам делает дамп БД (wp db export ../claude-backup-<время>.sql).
@@ -34,14 +35,18 @@ const SECRETS = /wp-config|\.env\b|\.ssh|id_rsa|id_ed25519|\.pem\b|\.htpasswd/i;
 const DUMP_HINT = 'Перед изменением БД сделай дамп: wp db export.';
 
 // Контекст текущего вызова: нужен для журнала и автодампа.
-const ctx = { root: process.cwd(), input: {}, command: '', remote: '', wp: false };
+// local — local-exec.mjs (дамп делает сам скрипт); stage — --stage; strict — подтверждение и на stage.
+const ctx = { root: process.cwd(), input: {}, command: '', remote: '', wp: false, local: false, stage: false, strict: false };
 
-// Дамп БД на сервере перед первой изменяющей командой WP-CLI за сессию.
+const state = () => loadState( ctx.root, ctx.input.session_id );
+
+// Дамп БД на сервере перед первой изменяющей командой WP-CLI за сессию (отдельно для прода и stage).
 function dumpOnce() {
 	const { root, input, command } = ctx;
-	const state = loadState( root, input.session_id );
-	if ( state.dumped ) {
-		return `Дамп в этой сессии уже сделан: ${ state.dumped }.`;
+	const st = state();
+	const key = ctx.stage ? 'dumpedStage' : 'dumped';
+	if ( st[ key ] ) {
+		return `Дамп в этой сессии уже сделан: ${ st[ key ] }.`;
 	}
 	const stamp = new Date().toISOString().replace( /[-:T]/g, '' ).slice( 0, 14 );
 	const file = `../claude-backup-${ stamp }.sql`;
@@ -49,8 +54,8 @@ function dumpOnce() {
 	const flag = command.includes( ' --stage' ) ? [ '--stage' ] : [];
 	const r = spawnSync( process.execPath, [ script, ...flag, '--', `wp db export ${ file }` ], { cwd: root, encoding: 'utf8', timeout: 120000 } );
 	if ( r.status === 0 ) {
-		state.dumped = file;
-		saveState( root, input.session_id, state );
+		st[ key ] = file;
+		saveState( root, input.session_id, st );
 		audit( root, 'db-dump', { file } );
 		return `Дамп БД сделан автоматически: ${ file } (на сервере, на уровень выше каталога сайта).`;
 	}
@@ -60,8 +65,16 @@ function dumpOnce() {
 
 function decide( decision, reason ) {
 	let text = reason;
-	if ( decision === 'ask' && ctx.wp ) {
+	if ( decision === 'ask' && ctx.wp && ! ctx.local ) {
 		text = `${ reason } ${ dumpOnce() }`;
+		// Stage — копия для правок: меняющее WP-CLI без подтверждения, но после дампа; разрушающее и произвольный код — как на проде.
+		if ( ctx.stage && ! ctx.strict && state().dumpedStage ) {
+			decision = 'allow';
+			text = `Stage: ${ text }`;
+		}
+	}
+	if ( decision === 'ask' && ctx.local ) {
+		text = `${ reason } Локальный сайт: local-exec.mjs сам сделает дамп перед изменением (нужен --yes после «да» пользователя).`;
 	}
 	if ( decision !== 'allow' ) {
 		audit( ctx.root, `wpcli-${ decision }`, { remote: ctx.remote.slice( 0, 200 ) } );
@@ -75,14 +88,15 @@ function decide( decision, reason ) {
 	} ) );
 	process.exit( 0 );
 }
-// Команда на сервере: всё после « -- » у ssh-exec.mjs, без внешних кавычек.
+// Команда на сервере: всё после « -- » у ssh-exec.mjs (или local-exec.mjs — локальный сайт), без внешних кавычек.
 function remoteCommand( command ) {
 	// Только реальный вызов «node …ssh-exec.mjs» в начале команды или после && ; ||.
 	// Упоминание в тексте (heredoc, echo, документация) не считается.
-	const call = /(?:^|&&|;|\|\|)\s*node\s+["']?[^\s"']*ssh-exec\.mjs/.exec( command );
+	const call = /(?:^|&&|;|\|\|)\s*node\s+["']?[^\s"']*(ssh|local)-exec\.mjs/.exec( command );
 	if ( ! call ) {
 		return null;
 	}
+	ctx.local = call[ 1 ] === 'local';
 	const dash = command.indexOf( ' -- ', call.index );
 	if ( dash < 0 ) {
 		return null;
@@ -144,6 +158,7 @@ await safe( () => {
 	ctx.input = input;
 	ctx.command = command;
 	ctx.remote = remote;
+	ctx.stage = ! ctx.local && / --stage\b/.test( command );
 
 	if ( /\bsudo\b|\bmkfs\b|>\s*\/dev\/(sd|nvme)/i.test( remote ) ) {
 		decide( 'deny', 'Заблокировано: sudo и разрушающие команды на сервере запрещены.' );
@@ -198,10 +213,13 @@ await safe( () => {
 		}
 		decide( 'ask', `search-replace без --dry-run меняет БД: сначала прогон с --dry-run, потом подтверди. ${ DUMP_HINT }` );
 	}
+	// Перезапись БД и произвольный код — подтверждение и на stage.
 	if ( group === 'db' && verb === 'import' ) {
+		ctx.strict = true;
 		decide( 'ask', `wp db import перезаписывает БД: подтверди. ${ DUMP_HINT }` );
 	}
 	if ( [ 'eval', 'eval-file', 'shell', 'config', 'package', 'cli' ].includes( group ) ) {
+		ctx.strict = true;
 		decide( 'ask', `wp ${ group } выполняет произвольный код или меняет конфиг: подтверди.` );
 	}
 

@@ -2,6 +2,7 @@
  * Общее для хуков: stdin, пути, project.json, ACCESS.md, состояние сессии.
  * Хуки не должны ломать работу: любой сбой внутри хука — exit 0 (см. safe()).
  */
+import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 
@@ -71,10 +72,10 @@ export function firstUrl( text ) {
 	return '';
 }
 
-// guarded-auto | stage-auto | manual. Не задан — guarded-auto (решение 012).
+// guarded-auto | stage-auto | manual | local. Не задан — guarded-auto (решение 012). «manual (local)» — manual.
 export function deployMode( root ) {
 	const v = accessField( root, 'Режим заливки' ).toLowerCase();
-	for ( const m of [ 'guarded-auto', 'stage-auto', 'manual' ] ) {
+	for ( const m of [ 'guarded-auto', 'stage-auto', 'manual', 'local' ] ) {
 		if ( v.startsWith( m ) ) {
 			return m;
 		}
@@ -82,14 +83,36 @@ export function deployMode( root ) {
 	return 'guarded-auto';
 }
 
-// Есть ли в sftp.json хост (без него заливать нечем).
-export function deployConfigured( root, configName = 'sftp.json' ) {
+// Конфиг заливки (.vscode/sftp.json и т.п.) или null.
+export function deployConfig( root, configName = 'sftp.json' ) {
 	try {
 		const raw = JSON.parse( readFileSync( join( root, '.vscode', configName ), 'utf8' ) );
-		const cfg = Array.isArray( raw ) ? raw[ 0 ] : raw;
-		return Boolean( cfg && String( cfg.host || '' ).trim() );
+		return Array.isArray( raw ) ? raw[ 0 ] : raw;
 	} catch {
-		return false;
+		return null;
+	}
+}
+
+// Есть ли в конфиге хост (без него заливать нечем); protocol local — «сервер» в папке.
+export function deployConfigured( root, configName = 'sftp.json' ) {
+	const cfg = deployConfig( root, configName );
+	return Boolean( cfg && ( String( cfg.host || '' ).trim() || cfg.protocol === 'local' ) );
+}
+
+// Хеш содержимого как в снимке синхронизации (sftp-sync): у текста CRLF → LF.
+export function syncHash( buf ) {
+	const text = ! buf.subarray( 0, 8000 ).includes( 0 );
+	const data = text ? Buffer.from( buf.toString( 'utf8' ).replace( /\r\n/g, '\n' ), 'utf8' ) : buf;
+	return createHash( 'sha1' ).update( data ).digest( 'hex' );
+}
+
+// Хеш файла в снимке последней синхронизации (.claude/.state/sync-<конфиг>.json) или null.
+export function snapshotHash( root, configName, rel ) {
+	try {
+		const snap = JSON.parse( readFileSync( join( root, '.claude', '.state', `sync-${ configName.replace( /\.json$/, '' ) }.json` ), 'utf8' ) );
+		return snap.files?.[ rel ]?.hash || null;
+	} catch {
+		return null;
 	}
 }
 

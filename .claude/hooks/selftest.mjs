@@ -109,6 +109,34 @@ for ( const [ c, want ] of [
 	check( `guard-wpcli ${ c.split( '\n' )[ 0 ].replace( S, 'SSH' ) }`, run( 'guard-wpcli.mjs', sh( c ) ), want );
 }
 
+// guard-wpcli: stage — без сервера автодамп не удаётся, поэтому меняющее остаётся ask (allow — только после дампа);
+// db import и произвольный код — ask и на stage.
+for ( const [ c, want ] of [
+	[ `${ S } --stage -- wp option update blogname x`, 'ask' ],
+	[ `${ S } --stage -- wp db import a.sql`, 'ask' ],
+	[ `${ S } --stage -- wp eval "echo 1;"`, 'ask' ],
+	[ `${ S } --stage -- wp db drop --yes`, 'deny' ],
+	[ `${ S } --stage -- wp plugin list`, 'pass' ],
+] ) {
+	check( `guard-wpcli ${ c.replace( S, 'SSH' ) }`, run( 'guard-wpcli.mjs', sh( c ) ), want );
+}
+
+// guard-wpcli: локальный сайт (local-exec.mjs) разбирается так же, как сервер.
+const L = 'node .claude/skills/project-ops/scripts/local-exec.mjs';
+for ( const [ c, want ] of [
+	[ `${ L } -- wp plugin list`, 'pass' ],
+	[ `${ L } -- wp option update blogname x --yes`, 'ask' ],
+	[ `${ L } -- wp db drop --yes`, 'deny' ],
+	[ `${ L } -- wp search-replace a b --dry-run`, 'pass' ],
+	[ `${ L } status`, 'pass' ],
+] ) {
+	check( `guard-wpcli ${ c.replace( L, 'LOCAL' ) }`, run( 'guard-wpcli.mjs', sh( c ) ), want );
+}
+
+// session-start: напоминание есть всегда (проект настроен — сверка, нет — project-init).
+const ss = spawnSync( process.execPath, [ join( hooks, 'session-start.mjs' ) ], { input: JSON.stringify( { cwd: root } ), encoding: 'utf8', env, timeout: 30000 } );
+check( 'session-start: напоминание project-init для ненастроенного проекта', /project-init/.test( ss.stdout ) ? 'pass' : 'fail', 'pass' );
+
 rmSync( root, { recursive: true, force: true } );
 console.log( `\n${ total - failed } из ${ total } прошли` );
 process.exit( failed ? 1 : 0 );

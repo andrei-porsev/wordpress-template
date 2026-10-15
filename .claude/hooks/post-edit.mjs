@@ -1,17 +1,19 @@
 /**
  * PostToolUse (Write|Edit|MultiEdit):
  *  1. помечает структурные правки для Stop-хука (карта project-base);
- *  2. режимы guarded-auto / stage-auto: php -l → бэкап файла с сервера → заливка →
- *     проверка сайта (HTTP, debug.log) → откат при ошибке. manual — не заливает, только php -l и отчёт phpcs/stylelint.
+ *  2. режимы guarded-auto / stage-auto: php -l → бэкап файла с сервера (изменён после сверки — стоп) → заливка →
+ *     проверка сайта (HTTP, debug.log по SSH или SFTP) → откат при ошибке.
+ *     manual — не заливает, только php -l и отчёт phpcs/stylelint; local — то же + проверка локального сайта.
  * Проверку в браузере делает агент.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
 	accessField,
 	audit,
 	block,
+	deployConfig,
 	deployConfigured,
 	deployMode,
 	firstUrl,
@@ -21,8 +23,25 @@ import {
 	repoRoot,
 	safe,
 	saveState,
+	snapshotHash,
+	syncHash,
 	toRel,
 } from './lib.mjs';
+
+// GET сайта без 5xx-проверки внутри; httpAuth — защита каталога stage (пароль не в адресе).
+async function siteStatus( url, auth ) {
+	try {
+		const ctrl = new AbortController();
+		const timer = setTimeout( () => ctrl.abort(), 20000 );
+		const headers = auth?.user ? { Authorization: 'Basic ' + Buffer.from( `${ auth.user }:${ auth.password || '' }` ).toString( 'base64' ) } : {};
+		const res = await fetch( `${ url }/?claude-check=${ Date.now() }`, { signal: ctrl.signal, redirect: 'follow', headers } );
+		clearTimeout( timer );
+		return res.status;
+	} catch {
+		// Нет ответа — не откатываем: сеть или защита сайта.
+		return null;
+	}
+}
 
 const STRUCTURAL = [
 	/\b(function|class|interface|trait)\s+[A-Za-z_]/,
@@ -134,18 +153,31 @@ await safe( async () => {
 
 	const quality = qualityReport( root, rel );
 	const mode = deployMode( root );
-	if ( mode === 'manual' ) {
-		// manual не заливает, но синтаксис PHP проверяет до запроса на заливку.
+	if ( mode === 'manual' || mode === 'local' ) {
+		// manual / local не заливают, но синтаксис PHP проверяют до запроса на заливку.
 		const lint = rel.endsWith( '.php' ) ? localLint( root, rel ) : null;
 		if ( lint ) {
 			audit( root, 'lint-fail', { rel } );
 			block( `php -l: ошибка синтаксиса в ${ rel }. Исправь до запроса на заливку.\n${ lint }${ quality ? `\n${ quality }` : '' }` );
 		}
+		if ( mode === 'local' && rel.endsWith( '.php' ) ) {
+			// Локальный сайт видит правку сразу (проект в папке сайта или junction): ловим fatal без заливки.
+			const local = deployConfig( root, 'local.json' );
+			const url = firstUrl( local?.url || '' ) || firstUrl( accessField( root, 'Локальный URL' ) );
+			const status = url ? await siteStatus( url ) : null;
+			if ( status !== null && status >= 500 ) {
+				audit( root, 'local-fail', { rel, status } );
+				block( `${ rel }: локальный сайт отвечает HTTP ${ status } после правки — исправь (на сервер ничего не заливалось).${ quality ? `\n${ quality }` : '' }` );
+			}
+			emit( `Локально: ${ rel }${ status ? `; сайт HTTP ${ status }` : url ? '; сайт не ответил (запущен ли в LocalWP / OSPanel?)' : '' }. Проверь правку в браузере.${ quality ? `\n${ quality }` : '' }` );
+			return;
+		}
 		emit( quality );
 		return;
 	}
 	const stage = mode === 'stage-auto';
-	if ( ! deployConfigured( root, stage ? 'sftp-stage.json' : 'sftp.json' ) ) {
+	const configName = stage ? 'sftp-stage.json' : 'sftp.json';
+	if ( ! deployConfigured( root, configName ) ) {
 		emit( quality );
 		return;
 	}
@@ -186,22 +218,44 @@ await safe( async () => {
 		}
 	}
 
-	// 2) Хвост debug.log до заливки, чтобы потом увидеть только новые ошибки.
+	// 2) Хвост debug.log до заливки, чтобы потом увидеть только новые ошибки: по SSH — число строк, без SSH — копия файла по SFTP.
 	let logBase = null;
+	let logCopy = null;
+	const stateDir = join( root, '.claude', '.state', 'backup', sessionId || 'default' );
 	if ( isPhp ) {
 		const r = run( 'ssh-exec.mjs', [ '--', 'wc -l < wp-content/debug.log 2>/dev/null || echo 0' ] );
 		if ( r.status === 0 ) {
 			logBase = parseInt( r.stdout, 10 ) || 0;
+		} else {
+			// Нет SSH и нет локального PHP — синтаксис проверить нечем: не заливаем вслепую.
+			if ( ! localPhp ) {
+				audit( root, 'lint-unavailable', { rel } );
+				block( `${ rel }: синтаксис PHP проверить нечем — нет локального PHP, SSH не ответил. На сервер НЕ залито.\n` +
+					'Настроить PHP локально (machine-check.mjs → «PHP в PATH») или SSH (connect-check.mjs), затем повторить правку.' );
+			}
+			logCopy = join( stateDir, '_debug.log.before' );
+			const f = run( 'sftp-sync.mjs', [ 'fetch', 'wp-content/debug.log', logCopy ] );
+			if ( f.status !== 0 ) {
+				logCopy = f.status === 3 ? '' : null;
+			}
 		}
 	}
 
 	// 3) Бэкап серверной версии (код 3 — файла на сервере ещё нет).
-	const backup = join( root, '.claude', '.state', 'backup', sessionId || 'default', rel );
+	const backup = join( stateDir, rel );
 	const fetched = run( 'sftp-sync.mjs', [ 'fetch', rel, backup ] );
 	if ( fetched.status !== 0 && fetched.status !== 3 ) {
 		fail( `Заливка ${ rel } не выполнена: нет связи с сервером.\n${ outOf( fetched ) }` );
 	}
 	const hadRemote = fetched.status === 0;
+
+	// 3а) Файл на сервере изменён после последней сверки — чужая правка: заливка поверх её затрёт.
+	const known = snapshotHash( root, configName, rel );
+	if ( known && ( ! hadRemote || syncHash( readFileSync( backup ) ) !== known ) ) {
+		audit( root, 'server-changed', { rel, mode } );
+		block( `${ rel }: на сервере файл ${ hadRemote ? 'изменён' : 'удалён' } после последней сверки — НЕ залито, чтобы не затереть чужую правку.\n` +
+			'Сначала: sftp-sync.mjs compare → разобраться с пользователем (sync-down или решение по конфликту), потом повторить правку.' );
+	}
 
 	const rollback = () => {
 		const r = hadRemote ? run( 'sftp-sync.mjs', [ 'put', backup, rel ] ) : run( 'sftp-sync.mjs', [ 'remove', rel ] );
@@ -231,21 +285,13 @@ await safe( async () => {
 		|| firstUrl( accessField( root, 'Публичный URL' ) );
 	let status = null;
 	if ( isPhp && url ) {
-		try {
-			const ctrl = new AbortController();
-			const timer = setTimeout( () => ctrl.abort(), 20000 );
-			const res = await fetch( `${ url }/?claude-check=${ Date.now() }`, { signal: ctrl.signal, redirect: 'follow' } );
-			clearTimeout( timer );
-			status = res.status;
-			if ( status >= 500 ) {
-				problems.push( `сайт отвечает HTTP ${ status }` );
-			}
-		} catch {
-			// Нет ответа — не откатываем: сеть или защита сайта.
+		status = await siteStatus( url, deployConfig( root, configName )?.httpAuth );
+		if ( status !== null && status >= 500 ) {
+			problems.push( `сайт отвечает HTTP ${ status }` );
 		}
 	}
 
-	// 7) Новые PHP Fatal / Parse в debug.log.
+	// 7) Новые PHP Fatal / Parse в debug.log: по SSH — хвост после logBase, без SSH — разница копий по SFTP.
 	if ( isPhp && logBase !== null && ! problems.length ) {
 		const r = run( 'ssh-exec.mjs', [
 			'--',
@@ -253,6 +299,15 @@ await safe( async () => {
 		] );
 		if ( r.status === 0 && r.stdout.trim() ) {
 			problems.push( `в debug.log: ${ r.stdout.trim() }` );
+		}
+	} else if ( isPhp && logCopy !== null && ! problems.length ) {
+		const after = join( stateDir, '_debug.log.after' );
+		if ( run( 'sftp-sync.mjs', [ 'fetch', 'wp-content/debug.log', after ] ).status === 0 ) {
+			const before = logCopy && existsSync( logCopy ) ? readFileSync( logCopy, 'utf8' ) : '';
+			const fresh = readFileSync( after, 'utf8' ).slice( before.length ).split( '\n' ).filter( ( l ) => /PHP (Fatal|Parse)/.test( l ) );
+			if ( fresh.length ) {
+				problems.push( `в debug.log: ${ fresh.slice( -3 ).join( '\n' ) }` );
+			}
 		}
 	}
 
