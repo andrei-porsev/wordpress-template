@@ -79,8 +79,28 @@ function build() {
 	writeJson( vs( 'sftp-stage.json' ), sftp );
 	writeJson( vs( 'ssh-stage.json' ), ssh );
 	console.log( 'OK: .vscode/sftp-stage.json, .vscode/ssh-stage.json записаны.' );
+	if ( sftp.httpAuth && url ) {
+		writePlaywrightConfig( url, sftp.httpAuth );
+	}
 	console.log( `Дальше: ACCESS.md → «Окружения» (Stage: свой VPS, Stage-конфиг) и «Stage / dev URL: ${ url || '—' }»; проверка — connect-check.mjs --stage.` );
 	sftp.privateKeyPath || console.log( 'Пароль подписки — в .vscode/sftp-stage.json → password (в чат не писать).' );
+}
+
+/*
+ * Пароль stage для браузера агента: конфиг Playwright MCP с httpCredentials только для origin stage — без пароля в адресе.
+ * Подключение — `--config .vscode/playwright-mcp.json` в args playwright в .mcp.json и переподключение MCP (человек: /mcp).
+ */
+function writePlaywrightConfig( url, auth ) {
+	const path = vs( 'playwright-mcp.json' );
+	const cfg = existsSync( path ) ? readJson( path ) : {};
+	cfg.browser = cfg.browser || {};
+	cfg.browser.contextOptions = { ...( cfg.browser.contextOptions || {} ), httpCredentials: { username: auth.user, password: auth.password || '', origin: new URL( url ).origin } };
+	writeJson( path, cfg );
+	const mcp = existsSync( join( root, '.mcp.json' ) ) ? readFileSync( join( root, '.mcp.json' ), 'utf8' ) : '';
+	console.log( 'OK: .vscode/playwright-mcp.json — пароль stage для браузера (только для его адреса).' );
+	if ( ! mcp.includes( 'playwright-mcp.json' ) ) {
+		console.log( 'СДЕЛАТЬ ВРУЧНУЮ (после «да» агент может дописать сам): .mcp.json → playwright → args: "--config", ".vscode/playwright-mcp.json"; затем /mcp → переподключить playwright.' );
+	}
 }
 
 function promote() {

@@ -18,6 +18,9 @@ compatibility: "Этот шаблон. Разработка на сервере 
 
 | Задача | Читать и делать |
 |--------|-----------------|
+| Stage: создать, «безопасный stage», пароль для скриптов и браузера | [stage.md](stage.md) |
+| Без WP-CLI: что делает человек вместо команды | [no-wpcli.md](no-wpcli.md) |
+| Пакеты: сопровождение, перенос контента, интеграции, обучение клиента | `packages/*.md` (поле `procedure` в `.claude/packages.json`) |
 | Локальная копия (LocalWP, OSPanel): перенос, WP-CLI, junction | [local.md](local.md), `local-exec.mjs` |
 | Проверить машину (один раз): Node, PHP, phpcs, git, SSH-ключ | `machine-check.mjs` → `project-init` → этап 10 |
 | Stage по профилю своего сервера; после переезда stage → прод | `stage-config.mjs build <project>` / `promote` → `project-init` → `access.md`, `types.md` |

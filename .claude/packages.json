@@ -1,5 +1,5 @@
 {
-	"$comment": "Пакеты услуг для project-init (этап 6). Новый пакет — новая запись; поля: title, client (описание для клиента ru/en), stacks, questions, deliverables, handoff (проверки при сдаче), defaults (типы проекта, где пакет отмечен сразу).",
+	"$comment": "Пакеты услуг для project-init (этап 6). Новый пакет — новая запись; поля: title, client (описание для клиента ru/en), stacks, questions, deliverables, handoff (проверки при сдаче), defaults (типы проекта, где пакет отмечен сразу). procedure — процедура пакета в .claude/skills/ (агент открывает её при работе по пакету).",
 	"packages": {
 		"content-full": {
 			"title": "Тексты под ключ",
@@ -7,10 +7,21 @@
 				"ru": "Разберёмся в вашем бизнесе и аудитории, предложим структуру сайта и напишем тексты всех страниц в едином тоне.",
 				"en": "We study your business and audience, propose the site structure and write copy for every page in a consistent voice."
 			},
-			"stacks": [ "content" ],
-			"questions": [ "полный бриф (brief.md)" ],
-			"deliverables": [ ".claude/product-marketing.md", "project-base/content/structure.md", "project-base/content/<страница>.md" ],
-			"handoff": [ "тексты всех страниц утверждены клиентом", "нет lorem ipsum и заглушек" ],
+			"stacks": [
+				"content"
+			],
+			"questions": [
+				"полный бриф (brief.md)"
+			],
+			"deliverables": [
+				".claude/product-marketing.md",
+				"project-base/content/structure.md",
+				"project-base/content/<страница>.md"
+			],
+			"handoff": [
+				"тексты всех страниц утверждены клиентом",
+				"нет lorem ipsum и заглушек"
+			],
 			"defaults": []
 		},
 		"content-edit": {
@@ -19,10 +30,18 @@
 				"ru": "Вычитаем и улучшим ваши тексты: ясность, структура, тон, ошибки.",
 				"en": "We proofread and polish your copy: clarity, structure, tone and errors."
 			},
-			"stacks": [ "content" ],
-			"questions": [ "где тексты клиента" ],
-			"deliverables": [ "project-base/content/<страница>.md с правками" ],
-			"handoff": [ "правки согласованы с клиентом" ],
+			"stacks": [
+				"content"
+			],
+			"questions": [
+				"где тексты клиента"
+			],
+			"deliverables": [
+				"project-base/content/<страница>.md с правками"
+			],
+			"handoff": [
+				"правки согласованы с клиентом"
+			],
 			"defaults": []
 		},
 		"seo-base": {
@@ -31,11 +50,26 @@
 				"ru": "Настроим сайт для поисковиков: заголовки и описания страниц, карта сайта, разметка, Search Console, внутренние ссылки.",
 				"en": "We set the site up for search engines: page titles and descriptions, sitemap, structured data, Search Console and internal links."
 			},
-			"stacks": [ "seo" ],
-			"questions": [ "SEO и аналитика (access.md → раздел 5)" ],
-			"deliverables": [ "отчёт /seo audit до и после" ],
-			"handoff": [ "мета у всех страниц", "карта сайта отправлена в Search Console", "robots.txt проверен", "разметка без ошибок" ],
-			"defaults": [ "redesign", "seo", "migration" ]
+			"stacks": [
+				"seo"
+			],
+			"questions": [
+				"SEO и аналитика (access.md → раздел 5)"
+			],
+			"deliverables": [
+				"отчёт /seo audit до и после"
+			],
+			"handoff": [
+				"мета у всех страниц",
+				"карта сайта отправлена в Search Console",
+				"robots.txt проверен",
+				"разметка без ошибок"
+			],
+			"defaults": [
+				"redesign",
+				"seo",
+				"migration"
+			]
 		},
 		"quality": {
 			"title": "Скорость и доступность",
@@ -43,11 +77,21 @@
 				"ru": "Ускорим загрузку и сделаем сайт удобным для всех посетителей; покажем замеры до и после.",
 				"en": "We speed up loading and make the site usable for every visitor, with before/after measurements."
 			},
-			"stacks": [ "quality" ],
+			"stacks": [
+				"quality"
+			],
 			"questions": [],
-			"deliverables": [ "замеры Core Web Vitals и доступности до и после" ],
-			"handoff": [ "Core Web Vitals в зелёной зоне или объяснено, почему нет", "нет критичных ошибок доступности" ],
-			"defaults": [ "redesign", "seo" ]
+			"deliverables": [
+				"замеры Core Web Vitals и доступности до и после"
+			],
+			"handoff": [
+				"Core Web Vitals в зелёной зоне или объяснено, почему нет",
+				"нет критичных ошибок доступности"
+			],
+			"defaults": [
+				"redesign",
+				"seo"
+			]
 		},
 		"motion": {
 			"title": "Анимации",
@@ -55,10 +99,19 @@
 				"ru": "Оживим сайт: анимации при прокрутке и анимация текста без потери скорости.",
 				"en": "We bring the site to life with scroll and text animations without hurting performance."
 			},
-			"stacks": [ "motion" ],
-			"questions": [ "какие страницы и что анимировать" ],
-			"deliverables": [ "анимации по согласованному списку" ],
-			"handoff": [ "prefers-reduced-motion учтён", "контент виден без JS" ],
+			"stacks": [
+				"motion"
+			],
+			"questions": [
+				"какие страницы и что анимировать"
+			],
+			"deliverables": [
+				"анимации по согласованному списку"
+			],
+			"handoff": [
+				"prefers-reduced-motion учтён",
+				"контент виден без JS"
+			],
 			"defaults": []
 		},
 		"maintenance": {
@@ -67,11 +120,22 @@
 				"ru": "Каждый месяц: обновления (сначала на тестовой копии), проверка безопасности, контроль бэкапов и короткий отчёт.",
 				"en": "Every month: updates (tested on staging first), security check, backup control and a short report."
 			},
-			"stacks": [ "wpcli", "quality" ],
-			"questions": [ "периодичность", "кому отправлять отчёт" ],
-			"deliverables": [ "ежемесячный отчёт клиенту" ],
-			"handoff": [ "график и получатель отчёта согласованы" ],
-			"defaults": []
+			"stacks": [
+				"wpcli",
+				"quality"
+			],
+			"questions": [
+				"периодичность",
+				"кому отправлять отчёт"
+			],
+			"deliverables": [
+				"ежемесячный отчёт клиенту"
+			],
+			"handoff": [
+				"график и получатель отчёта согласованы"
+			],
+			"defaults": [],
+			"procedure": "project-ops/packages/maintenance.md"
 		},
 		"content-migration": {
 			"title": "Перенос контента",
@@ -79,11 +143,25 @@
 				"ru": "Перенесём страницы, записи и изображения со старого сайта и настроим перенаправления, чтобы не потерять посетителей и позиции.",
 				"en": "We move pages, posts and images from the old site and set up redirects so you keep visitors and rankings."
 			},
-			"stacks": [ "wpcli", "seo" ],
-			"questions": [ "откуда (WordPress / другая CMS / статичный сайт)", "объём", "сохраняются ли адреса" ],
-			"deliverables": [ "перенесённый контент", "карта редиректов" ],
-			"handoff": [ "все старые адреса отвечают 200 или 301", "картинки на месте" ],
-			"defaults": []
+			"stacks": [
+				"wpcli",
+				"seo"
+			],
+			"questions": [
+				"откуда (WordPress / другая CMS / статичный сайт)",
+				"объём",
+				"сохраняются ли адреса"
+			],
+			"deliverables": [
+				"перенесённый контент",
+				"карта редиректов"
+			],
+			"handoff": [
+				"все старые адреса отвечают 200 или 301",
+				"картинки на месте"
+			],
+			"defaults": [],
+			"procedure": "project-ops/packages/content-migration.md"
 		},
 		"integrations": {
 			"title": "Интеграции",
@@ -91,11 +169,24 @@
 				"ru": "Подключим CRM, оплату, рассылки и аналитику; всё проверим в тестовом режиме до запуска.",
 				"en": "We connect CRM, payments, newsletters and analytics, all tested in sandbox mode before launch."
 			},
-			"stacks": [ "plugin", "rest" ],
-			"questions": [ "какие сервисы", "есть ли у клиента аккаунты и тестовые ключи" ],
-			"deliverables": [ "работающие интеграции в тестовом режиме", "инструкция по переключению на боевые ключи" ],
-			"handoff": [ "тестовые сценарии пройдены", "боевые ключи ввёл человек" ],
-			"defaults": []
+			"stacks": [
+				"plugin",
+				"rest"
+			],
+			"questions": [
+				"какие сервисы",
+				"есть ли у клиента аккаунты и тестовые ключи"
+			],
+			"deliverables": [
+				"работающие интеграции в тестовом режиме",
+				"инструкция по переключению на боевые ключи"
+			],
+			"handoff": [
+				"тестовые сценарии пройдены",
+				"боевые ключи ввёл человек"
+			],
+			"defaults": [],
+			"procedure": "project-ops/packages/integrations.md"
 		},
 		"training": {
 			"title": "Обучение клиента",
@@ -104,10 +195,20 @@
 				"en": "We prepare a clear illustrated guide on editing the site yourself and a dedicated editor account."
 			},
 			"stacks": [],
-			"questions": [ "язык инструкции", "кто будет править сайт" ],
-			"deliverables": [ "инструкция под стек сайта", "учётная запись клиента с ролью редактора" ],
-			"handoff": [ "инструкция передана", "клиент вошёл под своей учётной записью" ],
-			"defaults": []
+			"questions": [
+				"язык инструкции",
+				"кто будет править сайт"
+			],
+			"deliverables": [
+				"инструкция под стек сайта",
+				"учётная запись клиента с ролью редактора"
+			],
+			"handoff": [
+				"инструкция передана",
+				"клиент вошёл под своей учётной записью"
+			],
+			"defaults": [],
+			"procedure": "project-ops/packages/training.md"
 		}
 	}
 }

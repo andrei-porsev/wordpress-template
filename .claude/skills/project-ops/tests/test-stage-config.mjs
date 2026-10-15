@@ -53,6 +53,8 @@ check( 'ignore и watcher — из sftp.json проекта', JSON.stringify( st
 check( 'httpAuth перенесён, uploadOnSave выключен', st.httpAuth?.user === 'stage' && st.uploadOnSave === false );
 check( 'ssh-stage.json: cwd = remotePath', json( join( proj, '.vscode', 'ssh-stage.json' ) ).cwd === '/httpdocs' );
 check( 'неверное имя проекта — отказ', run( 'build', 'ac me' ).code === 1 );
+const pw = json( join( proj, '.vscode', 'playwright-mcp.json' ) );
+check( 'пароль stage для браузера — только для origin stage', pw.browser.contextOptions.httpCredentials.origin === 'https://acme.stage.example' && pw.browser.contextOptions.httpCredentials.username === 'stage' );
 
 write( join( proj, '.claude', '.state', 'sync-sftp-stage.json' ), { files: { b: 2 } } );
 r = run( 'promote' );
