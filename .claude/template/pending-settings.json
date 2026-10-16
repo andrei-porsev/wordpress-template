@@ -1,0 +1,11 @@
+{
+	"$comment": "Ожидающие правки защищённых файлов шаблона. Агент только дописывает сюда; применяет человек: node .claude/skills/project-ops/scripts/template-update.mjs . --protected (из папки шаблона). Таблица — project-base/plans/init-redesign.md → «Ожидающие правки настроек».",
+	"edits": [
+		{
+			"file": ".claude/settings.json",
+			"path": [ "permissions", "defaultMode" ],
+			"value": "auto",
+			"decision": "031"
+		}
+	]
+}

@@ -500,7 +500,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 | B. Новая инициализация — **выполнено** (решение 028) | `project-init`: файл на этап, типы, бриф, сводка, прогресс, повторный запуск, пакеты `.claude/packages.json`, наборы плагинов, новый `ACCESS.md`; шаги, зависящие от C, — с запасным путём | 23, 29–31, 37, 40, 41, 44–48, 51, 52, 54 |
 | C. Скрипты `project-ops` — **выполнено** | `remote.mjs` / `sftp-sync` (compare, list, безопасный sync-down, deploy), `session-check`, `recon` + `security.mjs`, `connect` + `connect-check`, `machine-check`, `stage-config`, `local-exec`; документы `stage.md`, `no-wpcli.md`, `local.md`, `packages/*.md`; ручные шаги `manual-steps.md`; тесты `project-ops/tests/` | 1–7, 10, 13–18, 24–27 (проверка версии шаблона — в E), 32–36, 38, 39, 42, 43, 49 |
 | D. Хуки — **выполнено** (решение 030) | описание правок: `SessionStart`, `post-edit` (`debug.log` по SFTP/FTP, стоп без PHP, стоп при изменении на сервере, режим `local`), `guard-wpcli` для stage | 9, 11, 12, 28 |
-| E. Обновление старых проектов | `template.json`, скрипт обновления, миграция с Cursor, пилот | 21, 22 |
+| E. Обновление старых проектов — **реализовано** (решение 032), пилот — в сессии пилота | `manifest.json`, метка `.claude/template.json`, `template-update.mjs` (пробный прогон, `--apply`, `--take`, `--done`, `--protected`), миграция 2026.10.16, проверка версии в `skills-sync check --hook`, `template.md`; миграция с Cursor не нужна | 21, 23, 27 |
 | F. Plesk | сервисный план «Stage» вместе с пользователем | 8 |
 
 ### Ожидающие правки настроек (правит человек — внести в следующий патч `settings.json` / хуков)
@@ -509,7 +509,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 |-----|--------|---------|
 | `.claude/settings.json` → `permissions.defaultMode` | `"acceptEdits"` → `"auto"`; затем перезапуск Claude Code и коммит | 031 |
 
-Готовя патч настроек (часть E и дальше), сначала включить всё из этой таблицы; применённое — удалить отсюда.
+Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 
 ### Часть D — что собралось по итогам C (правит пользователь, агент готовит описание)
 

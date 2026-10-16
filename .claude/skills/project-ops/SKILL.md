@@ -33,6 +33,7 @@ compatibility: "Этот шаблон. Разработка на сервере 
 | Компиляция SCSS → CSS | [compile-scss.md](compile-scss.md) |
 | Сборка Gutenberg-блоков (`src/` → `build/`) | [build-blocks.md](build-blocks.md) |
 | Скиллы: подключить стек, проверить и обновить из апстрима | [skills.md](skills.md) |
+| Обновить проект до версии шаблона, миграции, «Шаблон: доступна X» | [template.md](template.md), `template-update.mjs` |
 
 Сначала нужный файл, потом команды из него.
 

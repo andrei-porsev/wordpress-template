@@ -1,0 +1,54 @@
+{
+	"$comment": "Версия шаблона и категории файлов для template-update.mjs (решение 032). Версию поднимает агент, когда изменения шаблона готовы для проектов.",
+	"version": "2026.10.16",
+	"repo": "git@github.com:andrei-porsev/wordpress-template.git",
+	"exclude": [
+		"project-base/plans/**"
+	],
+	"protected": [
+		".claude/hooks/**",
+		".claude/settings.json"
+	],
+	"project": [
+		"ACCESS.md",
+		"project-base/INDEX.md",
+		"project-base/DECISIONS.md",
+		"project-base/project.json",
+		".vscode/sftp.json",
+		".vscode/ssh.json",
+		"project-base/themes/[!_]*/**",
+		"project-base/plugins/[!_]*/**",
+		"wp-content/**"
+	],
+	"owned": [
+		".claude/skills/project-init/**",
+		".claude/skills/project-ops/**",
+		".claude/skills/project-structure/**",
+		".claude/skills-optional/**",
+		".claude/rules-optional/**",
+		".claude/rules/**",
+		".claude/template/**",
+		".claude/hooks/**"
+	],
+	"migrations": [
+		{
+			"id": "2026.10.16",
+			"doc": ".claude/template/migrations/2026.10.16.md",
+			"structured": {
+				"ACCESS.md": {
+					"aliases": {
+						"SSH / WP-CLI": "Сервер / SSH / WP-CLI",
+						"SFTP / FTP": "Сервер / SFTP / FTP",
+						"Figma": "Дизайн / Figma"
+					}
+				},
+				"project-base/INDEX.md": {
+					"aliases": {
+						"Проект": "Профиль проекта",
+						"Стек": "Профиль проекта / Стек"
+					}
+				}
+			}
+		}
+	]
+}

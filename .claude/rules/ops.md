@@ -10,6 +10,7 @@
 | SCSS → CSS | `compile-scss.md` |
 | `src/` блоков, `npm run build` | `build-blocks.md` |
 | Стеки скиллов, обновления из апстрима | `skills.md` |
+| Обновить проект до версии шаблона | `template.md` |
 
 ## Кто обновляет сервер
 
