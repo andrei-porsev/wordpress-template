@@ -389,7 +389,11 @@ function decide( t, p, pair, ctx ) {
 	const cur = readFile( p.root, pair.rel );
 	let base;
 	const open = p.label?.unresolved?.[ pair.rel ];
-	if ( open ) {
+	// Хуки и settings.json после --apply, но до --protected — предок тот, что был до обновления.
+	const pend = pair.kind === 'protected' && ! ctx.flagBase ? p.label?.protectedBase : null;
+	if ( pend ) {
+		base = pend.template ? blobAt( TROOT, pend.template, pair.from || pair.rel ) : blobAt( p.root, pend.project, pair.rel );
+	} else if ( open ) {
 		// Конфликт прошлого обновления не решён — предок тот, что был при нём.
 		const from = pair.from || templatePathOf( pair.rel, ctx.core );
 		base = open.template ? blobAt( TROOT, open.template, from ) : blobAt( p.root, open.project, pair.rel );
@@ -420,7 +424,7 @@ function decide( t, p, pair, ctx ) {
 		return same( cur, base ) ? { ...r, action: 'remove' } : { ...r, action: 'conflict', reason: 'нет в шаблоне, но в проекте правился — удалить?' };
 	}
 	if ( cur === null ) {
-		return base === null ? { ...r, action: 'add' } : { ...r, action: 'conflict', reason: 'в проекте удалён, в шаблоне есть' };
+		return base === null ? { ...r, action: 'add' } : { ...r, action: 'conflict', reason: 'в проекте нет (удалён или не попал при переносе), в шаблоне есть' };
 	}
 	if ( same( cur, theirs ) ) {
 		return { ...r, action: 'same' };
@@ -730,6 +734,9 @@ function cmdApply( t, p, results, mig ) {
 		}
 	}
 	const label = buildLabel( t, p, results.filter( ( r ) => r.kind !== 'protected' ) );
+	if ( results.some( ( r ) => r.kind === 'protected' && ! [ 'same', 'skip' ].includes( r.action ) ) ) {
+		label.protectedBase = p.label?.protectedBase || ( p.templateBase ? { template: p.label.commit } : { project: p.base } );
+	}
 	for ( const r of results.filter( ( x ) => x.action === 'conflict' && x.kind !== 'protected' ) ) {
 		label.unresolved[ r.rel ] = p.label?.unresolved?.[ r.rel ] || ( p.templateBase ? { template: p.label.commit } : { project: p.base } );
 	}
@@ -869,6 +876,7 @@ async function cmdProtectedProject( t, p, results ) {
 	}
 	const label = p.label || buildLabel( t, p, [] );
 	label.protected = { version: t.manifest.version, commit: t.commit };
+	delete label.protectedBase;
 	writeFile( p.root, LABEL, jsonBuf( label ) );
 	console.log( 'Готово. Перезапусти Claude Code в папке проекта (может попросить одобрить новые хуки), затем агенту: «проверь хуки» — selftest и коммит.' );
 }
@@ -920,7 +928,7 @@ async function main() {
 	const stacks = activeStacks( t, p );
 	const { list, notes } = pairs( t, p, stacks );
 	const core = new Set( t.skills.core || [] );
-	const results = list.map( ( pair ) => decide( t, p, pair, { stacks, core } ) ).sort( ( a, b ) => a.rel.localeCompare( b.rel ) );
+	const results = list.map( ( pair ) => decide( t, p, pair, { stacks, core, flagBase: Boolean( flags.base ) } ) ).sort( ( a, b ) => a.rel.localeCompare( b.rel ) );
 
 	if ( flags.take ) {
 		cmdTake( t, p, results, flags.take, flags.positional );

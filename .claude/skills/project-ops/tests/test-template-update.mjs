@@ -1,7 +1,7 @@
 /**
  * Проверка template-update.mjs на поддельных шаблоне и проекте во временной папке:
  * первое обновление без метки, слияние, удаление, подключённые стеки, миграция разделов, повторный прогон,
- * конфликт с запоминанием предка, settings.json, отказ --protected без терминала.
+ * конфликт с запоминанием предка, опора хуков после --apply, settings.json, отказ --protected без терминала.
  * node .claude/skills/project-ops/tests/test-template-update.mjs
  */
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -127,6 +127,9 @@ check( '2 миграция ACCESS.md: новые разделы, значени�
 const label = JSON.parse( read( proj, '.claude/template.json' ) );
 check( '2 метка', label.version === '2026.01.01' && label.migrations.length === 0 && Object.keys( label.files ).length > 5 );
 check( '2 всё закоммичено', git( proj, 'status', '--porcelain' ) === '' );
+check( '2 метка помнит опору хуков до обновления', Boolean( label.protectedBase?.project ), JSON.stringify( label.protectedBase ) );
+r = run();
+check( '2 после --apply хуки всё ещё к замене (опора не из новой метки)', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ) && /settings\.json — заменить/.test( r.out ), r.out );
 
 // 3. Миграция отмечена, повторный прогон — без изменений.
 run( '--done', '2026.01.01' );
@@ -149,6 +152,7 @@ r = run();
 check( '4 конфликт виден и после применения', /CLAUDE\.md — слияние: конфликтов 1/.test( r.out ), r.out );
 run( '--take', 'template', 'CLAUDE.md' );
 check( '4 --take template', read( proj, 'CLAUDE.md' ).includes( 'шаблон v3' ) && ! JSON.parse( read( proj, '.claude/template.json' ) ).unresolved[ 'CLAUDE.md' ] );
+check( '4 хуки без --protected ждут и после следующего обновления', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ), r.out );
 
 // 5. settings.json: основа шаблона + добавленное проектом.
 const { settingsMerge, structuredMerge, globRe } = await import( pathToFileURL( SCRIPT ).href );

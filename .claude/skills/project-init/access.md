@@ -77,6 +77,8 @@ FTP / FTPS — конфиг `.vscode/sftp-ftp.json` заполняет чело�
 3. Публичный ключ — в `~/.ssh/authorized_keys` пользователя подписки (расширение SSH Keys или файловый менеджер).
 4. Порт SSH открыт в фаерволе Plesk **и** в облачном фаерволе панели IONOS.
 5. WP-CLI в PATH пользователя — проверит `test`; нет — команда установки, выполняет человек.
+6. После `/bin/bash` chroot снят и для SSH, и для SFTP: путь сайта — `/var/www/vhosts/<домен>/httpdocs` в `sftp.json` → `remotePath` и `ssh.json` → `cwd` (не `/httpdocs`).
+   PHP Plesk не в PATH: человек пишет `export PATH=/opt/plesk/php/<версия>/bin:$PATH` в `~/.bashrc` (файла нет — создать, есть — строкой в начало). Проверка — `ssh-exec.mjs -- wp core version`.
 
 Доступ администратора Plesk агенту не даётся и в шаблоне не хранится.
 
@@ -96,6 +98,8 @@ FTP / FTPS — конфиг `.vscode/sftp-ftp.json` заполняет чело�
 | `Authentication failed` | не тот логин, ключ не добавлен, вход по паролю запрещён, права на `.ssh` | по шагам: логин → ключ в `authorized_keys` → права `700` / `600` |
 | вошёл и выкинуло | оболочка `/bin/false` или chroot | Plesk: SSH → `/bin/bash` |
 | `wp: command not found` | WP-CLI нет в PATH | путь к бинарю (`ssh.json` → `wpCli`) или установка |
+| `php: not found` при `wp` | PHP панели не в PATH (Plesk: `/opt/plesk/php/<версия>/bin`) | человек: PATH в `~/.bashrc`; `wp` с префиксом `php` не запускать — `guard-wpcli` его не узнает |
+| сверка: все файлы «удалены» | chroot снят, `remotePath` `/httpdocs` больше не существует | `/var/www/vhosts/<домен>/httpdocs` в `sftp.json` и `ssh.json` |
 | сменился ключ сервера | переустановка сервера — или подмена | **стоп** (скрипты не входят), спросить пользователя; подтверждено — `connect-check.mjs --forget-host` |
 | хост не найден | опечатка или DNS ещё не указывает на сервер | проверить адрес |
 | ключ `.ppk` / зашифрован / `.pub` | формат PuTTY, нет `passphrase`, указан публичный ключ | конвертировать в OpenSSH, добавить фразу, указать приватный |

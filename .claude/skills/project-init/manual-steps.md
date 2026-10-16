@@ -37,6 +37,7 @@ SSH-ключ `ed25519` создаёт агент после «да» (`ssh-keyge
 | Открыть порт SSH в фаерволе | при таймауте | иначе нет связи | панель хостинга; IONOS — ещё облачный фаервол | `connect-check` |
 | `sftp-ftp.json` и `"sftp.config"` | при FTP | агент этот файл не открывает | по `sftp-ftp.json.example`, `.vscode/settings.json` → `"sftp.config": "sftp-ftp.json"` | `connect-check` |
 | WP-CLI для пользователя подписки | жел. при SSH | база, администраторы, `verify-checksums` | установить `wp-cli.phar` в домашнюю папку (Plesk — часть F) | `connect-check`: WP-CLI да |
+| PHP Plesk в PATH | при Plesk без chroot | `wp` без префикса — работает `guard-wpcli` (дамп перед изменениями) | `~/.bashrc`: `export PATH=/opt/plesk/php/<версия>/bin:$PATH` (нет файла — создать, есть — в начало) | `ssh-exec.mjs -- wp core version` |
 | Снять блокировку IP / разобраться со входом | при стопе «2 неудачных входа» | Fail2Ban | панель хостинга → Fail2Ban; исправить данные | `connect-check --reset-auth` после исправления |
 | Подтвердить смену ключа сервера | при «сменился ключ» | защита от подмены | уточнить у хостинга | `connect-check --forget-host` |
 

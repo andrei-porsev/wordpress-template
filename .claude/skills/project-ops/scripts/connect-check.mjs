@@ -68,11 +68,17 @@ try {
 		const ls = run( 'sftp-sync.mjs', 'list' );
 		const isWp = /\swp-config\.php$/m.test( ls.out ) && /\swp-content$/m.test( ls.out );
 		lines.push( `Путь к сайту (${ cfg.remotePath || '/' }): ${ isWp ? 'WordPress найден' : 'wp-config.php здесь нет — проверить remotePath (каталог с wp-config.php)' }` );
+		if ( ! isWp && /^\/https?docs\/?$/.test( cfg.remotePath || '' ) ) {
+			lines.push( '  Plesk без chroot (SSH /bin/bash) видит настоящий корень: remotePath и ssh.json → cwd — /var/www/vhosts/<домен>/httpdocs' );
+		}
 	}
 	if ( ssh.ok ) {
 		lines.push( `WP-CLI: ${ wpcli ? 'да' : 'нет' } · php: ${ has( 'php' ) ? 'да' : 'нет' } · find: ${ has( 'find' ) ? 'да' : 'нет' } · md5sum: ${ has( 'md5sum' ) ? 'да' : 'нет' }` );
 		if ( ! has( 'find' ) && ! has( 'php' ) ) {
 			lines.push( '  оболочка урезанная (chroot): WP-CLI и php не запустить — для Plesk: SSH /bin/bash вместо chrooted, WP-CLI — установить (часть F плана)' );
+		} else if ( has( 'wp' ) && ! has( 'php' ) ) {
+			lines.push( "  php нет в PATH (Plesk: /opt/plesk/php/<версия>/bin) — человек: echo 'export PATH=/opt/plesk/php/<версия>/bin:$PATH' > ~/.bashrc (файл есть — строкой в начало)" );
+			lines.push( '  wp с префиксом php не запускать: guard-wpcli узнаёт WP-CLI только по первому слову wp' );
 		}
 	}
 
