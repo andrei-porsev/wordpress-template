@@ -285,7 +285,9 @@ export async function withSftp( cfg, fn ) {
 				await sftp.fastGet( remote, local );
 			},
 			async read( remote ) {
-				return await sftp.get( remote );
+				// Пустой файл ssh2-sftp-client отдаёт не Buffer.
+				const data = await sftp.get( remote );
+				return Buffer.isBuffer( data ) ? data : Buffer.from( data ?? '' );
 			},
 			async remove( remote ) {
 				await sftp.delete( remote );
