@@ -13,7 +13,8 @@ await safe( () => {
 	}
 	const root = repoRoot( input );
 	const state = loadState( root, input.session_id );
-	const files = Object.keys( state.structural || {} );
+	// Файл, удалённый в том же ходе (пробная заливка), — не структурная правка.
+	const files = Object.keys( state.structural || {} ).filter( ( f ) => existsSync( join( root, f ) ) );
 	if ( state.mapTouched && files.length ) {
 		saveState( root, input.session_id, { structural: {}, mapTouched: false, reminded: false } );
 		return;

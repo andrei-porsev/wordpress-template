@@ -523,7 +523,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 | Где | Правка | Решение |
 |-----|--------|---------|
-| `.claude/hooks/stop-map.mjs` | не считать структурной правкой удалённый в том же ходе файл — `git apply project-base/plans/part-e-stop-map.patch`, затем `node .claude/hooks/selftest.mjs` и коммит | 032 (пилот, находка 10) |
+| — | Ожидающих правок нет (патч `stop-map` применён 2026-10-16) | — |
 
 Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 
