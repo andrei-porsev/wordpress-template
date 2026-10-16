@@ -268,9 +268,10 @@ function loadProject( root, flags ) {
 			templateBase = null;
 		}
 	}
+	const files = git( root, [ 'ls-files', '-z' ] ).toString( 'utf8' ).split( '\0' ).filter( Boolean );
 	const status = gitText( root, [ 'status', '--porcelain' ] );
 	const branch = gitText( root, [ 'rev-parse', '--abbrev-ref', 'HEAD' ] );
-	return { root, label, base, baseFile, templateBase, clean: status === '', branch };
+	return { root, label, base, baseFile, templateBase, files, clean: status === '', branch };
 }
 
 function blobAt( cwd, commit, rel ) {
@@ -290,14 +291,18 @@ function templatePathOf( rel, core ) {
 	return rel;
 }
 
+// Файлы проекта под git в каталоге (игнорируемое — node_modules, .state — не в счёт).
+const tracked = ( p, dir ) => p.files.filter( ( r ) => r.startsWith( dir + '/' ) );
+const trackedDirs = ( p, dir ) => [ ...new Set( tracked( p, dir ).map( ( r ) => r.slice( dir.length + 1 ).split( '/' ) ).filter( ( parts ) => parts.length > 1 ).map( ( parts ) => parts[ 0 ] ) ) ];
+
 // Подключённые стеки: из манифеста проекта или по составу .claude/skills и .claude/rules.
 function activeStacks( t, p ) {
 	const own = readJson( readFile( p.root, '.claude/skills.json' ) );
 	if ( own && Array.isArray( own.active ) ) {
 		return { active: own.active, inferred: false };
 	}
-	const skills = new Set( listDirs( p.root, '.claude/skills' ) );
-	const rules = new Set( walk( p.root, '.claude/rules' ).map( ( r ) => r.split( '/' ).pop().replace( /\.md$/, '' ) ) );
+	const skills = new Set( trackedDirs( p, '.claude/skills' ) );
+	const rules = new Set( tracked( p, '.claude/rules' ).map( ( r ) => r.split( '/' ).pop().replace( /\.md$/, '' ) ) );
 	const active = Object.entries( t.skills.stacks || {} )
 		.filter( ( [ , s ] ) => {
 			const items = [ ...( s.skills || [] ).map( ( n ) => skills.has( n ) ), ...( s.rules || [] ).map( ( n ) => rules.has( n ) ) ];
@@ -334,8 +339,8 @@ function pairs( t, p, stacks ) {
 	const optSkills = new Set( [ ...t.tree.keys() ].filter( ( r ) => r.startsWith( '.claude/skills-optional/' ) ).map( ( r ) => r.split( '/' )[ 2 ] ) );
 	const optRules = new Set( [ ...t.tree.keys() ].filter( ( r ) => r.startsWith( '.claude/rules-optional/' ) ).map( ( r ) => r.split( '/' )[ 2 ].replace( /\.md$/, '' ) ) );
 	const tRules = new Set( [ ...t.tree.keys() ].filter( ( r ) => r.startsWith( '.claude/rules/' ) ).map( ( r ) => r.split( '/' )[ 2 ].replace( /\.md$/, '' ) ) );
-	const wantSkills = new Set( listDirs( p.root, '.claude/skills' ).filter( ( n ) => ! core.has( n ) ) );
-	const wantRules = new Set( walk( p.root, '.claude/rules' ).map( ( r ) => r.split( '/' ).pop().replace( /\.md$/, '' ) ).filter( ( n ) => ! tRules.has( n ) ) );
+	const wantSkills = new Set( trackedDirs( p, '.claude/skills' ).filter( ( n ) => ! core.has( n ) ) );
+	const wantRules = new Set( tracked( p, '.claude/rules' ).map( ( r ) => r.split( '/' ).pop().replace( /\.md$/, '' ) ).filter( ( n ) => ! tRules.has( n ) ) );
 	for ( const id of stacks.active ) {
 		const s = t.skills.stacks?.[ id ] || {};
 		( s.skills || [] ).forEach( ( n ) => wantSkills.add( n ) );
@@ -350,13 +355,13 @@ function pairs( t, p, stacks ) {
 					add( `.claude/skills/${ name }/${ rel.slice( prefix.length ) }`, rel, 'activated' );
 				}
 			}
-			for ( const rel of walk( p.root, `.claude/skills/${ name }` ) ) {
+			for ( const rel of tracked( p, `.claude/skills/${ name }` ) ) {
 				if ( ! out.has( rel ) ) {
 					add( rel, null, 'activated' );
 				}
 			}
 		} else {
-			walk( p.root, `.claude/skills/${ name }` ).forEach( ( rel ) => add( rel, null, 'activated' ) );
+			tracked( p, `.claude/skills/${ name }` ).forEach( ( rel ) => add( rel, null, 'activated' ) );
 		}
 	}
 	for ( const name of wantRules ) {
@@ -370,7 +375,7 @@ function pairs( t, p, stacks ) {
 
 	// Файлы проекта в каталогах шаблона, которых в шаблоне больше нет.
 	for ( const dir of [ '.claude/skills/project-init', '.claude/skills/project-ops', '.claude/skills/project-structure', '.claude/skills-optional', '.claude/rules-optional', '.claude/template', '.claude/hooks' ] ) {
-		for ( const rel of walk( p.root, dir ) ) {
+		for ( const rel of tracked( p, dir ) ) {
 			if ( ! out.has( rel ) && owned( rel ) ) {
 				add( rel, null, rel.startsWith( '.claude/hooks/' ) ? 'protected' : 'template' );
 			}

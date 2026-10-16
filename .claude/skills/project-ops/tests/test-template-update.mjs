@@ -55,7 +55,7 @@ put( proj, '.claude/skills-optional/sk-a/SKILL.md', 'скилл a v1\n' );
 put( proj, '.claude/skills-optional/sk-gone/SKILL.md', 'убран из шаблона\n' );
 put( proj, '.claude/settings.json', JSON.stringify( { permissions: { allow: [ 'A' ], defaultMode: 'acceptEdits' } }, null, '\t' ) + '\n' );
 put( proj, '.claude/hooks/h.mjs', 'хук v1\n' );
-put( proj, '.gitignore', '/node_modules/\n' + block( '!/wp-content/\n/wp-content/themes/*\n!/wp-content/themes/my-theme/' ) + '**/*.log\n' );
+put( proj, '.gitignore', '**/node_modules/\n' + block( '!/wp-content/\n/wp-content/themes/*\n!/wp-content/themes/my-theme/' ) + '**/*.log\n' );
 put( proj, 'ACCESS.md', '# Доступы\n\nстарое вступление\n\n## SSH\n\n- Host: example.org\n- Port: 22\n\n## Сайт\n\n- URL: https://example.org\n- Своё поле: да\n' );
 put( proj, 'wp-content/themes/my-theme/style.css', '/* тема */\n' );
 commit( proj, 'перенос на шаблон' );
@@ -88,13 +88,17 @@ put( tpl, '.claude/skills-optional/sk-a/SKILL.md', 'скилл a v2\n' );
 put( tpl, '.claude/skills-optional/sk-woo/SKILL.md', 'woo\n' );
 put( tpl, '.claude/settings.json', JSON.stringify( { permissions: { allow: [ 'A', 'B' ], defaultMode: 'auto' }, hooks: { Stop: [] } }, null, '\t' ) + '\n' );
 put( tpl, '.claude/hooks/h.mjs', 'хук v2\n' );
-put( tpl, '.gitignore', '/node_modules/\n' + block( '!/wp-content/' ) + '**/*.log\n**/*.tmp\n' );
+put( tpl, '.gitignore', '**/node_modules/\n' + block( '!/wp-content/' ) + '**/*.log\n**/*.tmp\n' );
 put( tpl, 'ACCESS.md', '# Доступы\n\nновое вступление\n\n## Сервер\n\n- Хостинг: —\n\n### SSH\n\n- Host: —\n- Port: —\n\n## Сайт\n\n- URL: —\n- Админка: —\n' );
 put( tpl, 'project-base/plans/x.md', 'план шаблона\n' );
 commit( tpl, 'шаблон v2' );
 
+// Игнорируемое в каталогах шаблона (зависимости скриптов) — не файлы шаблона.
+put( proj, '.claude/skills-optional/sk-a/node_modules/dep/index.js', '// зависимость\n' );
+
 // 1. Пробный прогон ничего не меняет.
 let r = run();
+check( '1 игнорируемые файлы не в отчёте', ! r.out.includes( 'node_modules' ), r.out );
 check( '1 пробный прогон', r.code === 0 && /без метки/.test( r.out ) && /объединить/.test( r.out ), r.out );
 check( '1 стек fse определён по составу', /стеки скиллов: fse \(определены/.test( r.out ), r.out );
 check( '1 хуки — шаг человека', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ) && /settings\.json — заменить/.test( r.out ), r.out );
