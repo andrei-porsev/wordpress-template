@@ -507,7 +507,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 | Где | Правка | Решение |
 |-----|--------|---------|
-| `.claude/settings.json` → `permissions.defaultMode` | `"acceptEdits"` → `"auto"`; затем перезапуск Claude Code и коммит | 031 |
+| — | Ожидающих правок нет (`defaultMode: auto` применён 2026-10-16, решение 031) | — |
 
 Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 

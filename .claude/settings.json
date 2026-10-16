@@ -115,7 +115,7 @@
 			"PowerShell(iex*)",
 			"Bash(sudo:*)"
 		],
-		"defaultMode": "acceptEdits",
+		"defaultMode": "auto",
 		"ask": [
 			"Edit(/.mcp.json)",
 			"Edit(/.vscode/sftp.json)",
