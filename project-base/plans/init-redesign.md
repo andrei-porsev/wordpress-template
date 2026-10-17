@@ -523,7 +523,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 | Где | Правка | Решение |
 |-----|--------|---------|
-| `.claude/hooks/guard-wpcli.mjs`, `selftest.mjs` | вызов `ssh-exec.mjs` / `local-exec.mjs` по пути в кавычках с пробелами (`"D:/…/# Freelance/…"`) хук не видел — WP-CLI шёл без автодампа и журнала; скрипт другого проекта — только с подтверждением, без автодампа. Патч `project-base/plans/part-f-guard-wpcli.patch` (`git apply --check` проходит), selftest +3 | 033 |
+| — | Ожидающих правок нет (патч `part-f-guard-wpcli` применён 2026-10-17, selftest 65 / 65) | — |
 
 Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 

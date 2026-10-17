@@ -35,8 +35,10 @@ const SECRETS = /wp-config|\.env\b|\.ssh|id_rsa|id_ed25519|\.pem\b|\.htpasswd/i;
 const DUMP_HINT = 'Перед изменением БД сделай дамп: wp db export.';
 
 // Контекст текущего вызова: нужен для журнала и автодампа.
-// local — local-exec.mjs (дамп делает сам скрипт); stage — --stage; strict — подтверждение и на stage.
-const ctx = { root: process.cwd(), input: {}, command: '', remote: '', wp: false, local: false, stage: false, strict: false };
+// local — local-exec.mjs (дамп делает сам скрипт); stage — --stage; strict — подтверждение и на stage;
+// foreign — скрипт другого проекта (абсолютный путь вне корня): автодамп хука ушёл бы не на тот сервер.
+const ctx = { root: process.cwd(), input: {}, command: '', remote: '', wp: false, local: false, stage: false, strict: false, foreign: false, script: '' };
+const norm = ( p ) => p.replaceAll( '\\', '/' ).replace( /^\/([a-z])\//i, '$1:/' ).toLowerCase();
 
 const state = () => loadState( ctx.root, ctx.input.session_id );
 
@@ -66,7 +68,7 @@ function dumpOnce() {
 function decide( decision, reason ) {
 	let text = reason;
 	if ( decision === 'ask' && ctx.wp && ! ctx.local ) {
-		text = `${ reason } ${ dumpOnce() }`;
+		text = `${ reason } ${ ctx.foreign ? 'Скрипт другого проекта: автодамп не сделан — дамп вручную (wp db export) в том проекте до подтверждения.' : dumpOnce() }`;
 		// Stage — копия для правок: меняющее WP-CLI без подтверждения, но после дампа; разрушающее и произвольный код — как на проде.
 		if ( ctx.stage && ! ctx.strict && state().dumpedStage ) {
 			decision = 'allow';
@@ -90,13 +92,22 @@ function decide( decision, reason ) {
 }
 // Команда на сервере: всё после « -- » у ssh-exec.mjs (или local-exec.mjs — локальный сайт), без внешних кавычек.
 function remoteCommand( command ) {
-	// Только реальный вызов «node …ssh-exec.mjs» в начале команды или после && ; ||.
+	// Только реальный вызов «node …ssh-exec.mjs» в начале команды или после && ; ||; путь — и в кавычках, с пробелами.
 	// Упоминание в тексте (heredoc, echo, документация) не считается.
-	const call = /(?:^|&&|;|\|\|)\s*node\s+["']?[^\s"']*(ssh|local)-exec\.mjs/.exec( command );
+	let call = null;
+	for ( const m of command.matchAll( /(?:^|&&|;|\|\|)\s*node\s+(?:"([^"]*)"|'([^']*)'|([^\s"']+))/g ) ) {
+		const script = m[ 1 ] ?? m[ 2 ] ?? m[ 3 ];
+		const kind = /(ssh|local)-exec\.mjs$/.exec( script );
+		if ( kind ) {
+			call = { index: m.index, kind: kind[ 1 ], script };
+			break;
+		}
+	}
 	if ( ! call ) {
 		return null;
 	}
-	ctx.local = call[ 1 ] === 'local';
+	ctx.local = call.kind === 'local';
+	ctx.script = call.script;
 	const dash = command.indexOf( ' -- ', call.index );
 	if ( dash < 0 ) {
 		return null;
@@ -159,6 +170,8 @@ await safe( () => {
 	ctx.command = command;
 	ctx.remote = remote;
 	ctx.stage = ! ctx.local && / --stage\b/.test( command );
+	ctx.foreign = /^([a-z]:\/|\/)/.test( norm( ctx.script ) ) && ! norm( ctx.script ).startsWith( norm( ctx.root ) + '/' );
+	ctx.strict = ctx.foreign;
 
 	if ( /\bsudo\b|\bmkfs\b|>\s*\/dev\/(sd|nvme)/i.test( remote ) ) {
 		decide( 'deny', 'Заблокировано: sudo и разрушающие команды на сервере запрещены.' );

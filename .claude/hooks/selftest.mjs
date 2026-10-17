@@ -105,6 +105,9 @@ for ( const [ c, want ] of [
 	[ `${ S } test`, 'pass' ],
 	[ 'node - <<EOF\n' + `${ S } -- wp db drop\nEOF`, 'pass' ],
 	[ `echo "${ S } -- sudo ls"`, 'pass' ],
+	[ 'node ".claude/skills/project-ops/scripts/ssh-exec.mjs" -- wp plugin list', 'pass' ],
+	[ 'node "D:/Other Project/.claude/skills/project-ops/scripts/ssh-exec.mjs" -- wp db drop --yes', 'deny' ],
+	[ 'cd "D:/Other Project" && node "D:/Other Project/.claude/skills/project-ops/scripts/ssh-exec.mjs" --stage -- wp plugin install a --activate', 'ask' ],
 ] ) {
 	check( `guard-wpcli ${ c.split( '\n' )[ 0 ].replace( S, 'SSH' ) }`, run( 'guard-wpcli.mjs', sh( c ) ), want );
 }
