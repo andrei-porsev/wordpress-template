@@ -2,7 +2,8 @@
  * Конфиги stage по профилю своего сервера и «stage становится продом» после переезда.
  *   node .claude/skills/project-ops/scripts/stage-config.mjs build <project> [--server vps] [--yes]
  *       ~/.wp-template/servers.json → .vscode/sftp-stage.json + ssh-stage.json (ignore / watcher — из sftp.json проекта;
- *       httpAuth и пароль подписки из прежнего sftp-stage.json сохраняются — пароль на каталог у каждого проекта свой)
+ *       httpAuth и пароль подписки из прежнего sftp-stage.json сохраняются — пароль на каталог у каждого проекта свой);
+ *       с --yes печатает команду для SSH Terminal подписки: публичный ключ агента + PHP Plesk в PATH
  *   node .claude/skills/project-ops/scripts/stage-config.mjs auth <project> [--server vps]
  *       httpAuth из sftp-stage.json → .vscode/playwright-mcp.json (после того как человек вписал пароль на каталог)
  *   node .claude/skills/project-ops/scripts/stage-config.mjs promote [--yes]
@@ -94,9 +95,33 @@ function build() {
 	if ( sftp.httpAuth && url ) {
 		writePlaywrightConfig( url, sftp.httpAuth );
 	}
+	terminalCommand( srv );
 	console.log( `Дальше: ACCESS.md → «Окружения» (Stage: свой VPS, Stage-конфиг) и «Stage / dev URL: ${ url || '—' }»; проверка — connect-check.mjs --stage.` );
 	sftp.privateKeyPath || sftp.password || console.log( 'Пароль подписки — в .vscode/sftp-stage.json → password (в чат не писать).' );
 	sftp.httpAuth || console.log( `Пароль на каталог stage (свой у проекта) — в .vscode/sftp-stage.json → httpAuth { "user", "password" }, затем stage-config.mjs auth ${ project }.` );
+}
+
+/*
+ * Одна вставка для SSH Terminal подписки (Plesk): публичный ключ агента в authorized_keys и PHP Plesk в PATH через ~/.bashrc.
+ * Повторный запуск безопасен: ключ не дублируется, прежняя строка PATH заменяется (смена версии PHP — поле php профиля).
+ */
+function terminalCommand( srv ) {
+	const pubPath = srv.privateKeyPath ? `${ srv.privateKeyPath }.pub` : '';
+	const pub = pubPath && existsSync( pubPath ) ? readFileSync( pubPath, 'utf8' ).trim() : '';
+	if ( ! /^(ssh-ed25519|ssh-rsa|ecdsa-sha2-\S+) [A-Za-z0-9+/=]+( [^'\n]*)?$/.test( pub ) ) {
+		console.log( `⚠️ Публичный ключ не прочитан (${ pubPath || 'privateKeyPath пуст' }) — команду для SSH Terminal не собрать; ключ — в подписке → SSH Keys.` );
+		return;
+	}
+	const php = /^\d+\.\d+$/.test( String( srv.php || '' ) ) ? srv.php : '8.3';
+	const pathLine = `export PATH=/opt/plesk/php/${ php }/bin:$PATH`;
+	const command = [
+		'mkdir -p ~/.ssh && chmod 700 ~/.ssh && touch ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys',
+		`(grep -qxF '${ pub }' ~/.ssh/authorized_keys || echo '${ pub }' >> ~/.ssh/authorized_keys)`,
+		`(echo '${ pathLine }'; grep -v '/opt/plesk/php/' ~/.bashrc 2>/dev/null || true) > ~/.bashrc.tmp && mv ~/.bashrc.tmp ~/.bashrc`,
+		'source ~/.bashrc && php -v | head -1 && wp --version',
+	].join( ' && ' );
+	console.log( 'СДЕЛАТЬ ВРУЧНУЮ: Plesk → подписка → SSH Terminal → вставить одной строкой (ключ агента + PHP в PATH), Enter; в ответ — версии PHP и WP-CLI:' );
+	console.log( command );
 }
 
 function auth() {

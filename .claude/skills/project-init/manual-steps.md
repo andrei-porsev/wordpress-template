@@ -37,7 +37,7 @@ SSH-ключ `ed25519` создаёт агент после «да» (`ssh-keyge
 | Открыть порт SSH в фаерволе | при таймауте | иначе нет связи | панель хостинга; IONOS — ещё облачный фаервол | `connect-check` |
 | `sftp-ftp.json` и `"sftp.config"` | при FTP | агент этот файл не открывает | по `sftp-ftp.json.example`, `.vscode/settings.json` → `"sftp.config": "sftp-ftp.json"` | `connect-check` |
 | WP-CLI для пользователя подписки | жел. при SSH | база, администраторы, `verify-checksums` | установить `wp-cli.phar` в домашнюю папку (свой VPS — `project-ops` → `plesk.md`) | `connect-check`: WP-CLI да |
-| PHP Plesk в PATH | при Plesk без chroot | `wp` без префикса — работает `guard-wpcli` (дамп перед изменениями) | `~/.bashrc`: `export PATH=/opt/plesk/php/<версия>/bin:$PATH` (нет файла — создать, есть — в начало) | `ssh-exec.mjs -- wp core version` |
+| PHP Plesk в PATH | при Plesk без chroot | `wp` без префикса — работает `guard-wpcli` (дамп перед изменениями) | свой VPS — команда для SSH Terminal из `stage-config build` (заодно ключ агента); иначе `~/.bashrc`: `export PATH=/opt/plesk/php/<версия>/bin:$PATH` (нет файла — создать, есть — в начало) | `ssh-exec.mjs -- wp core version` |
 | Снять блокировку IP / разобраться со входом | при стопе «2 неудачных входа» | Fail2Ban | панель хостинга → Fail2Ban; исправить данные | `connect-check --reset-auth` после исправления |
 | Подтвердить смену ключа сервера | при «сменился ключ» | защита от подмены | уточнить у хостинга | `connect-check --forget-host` |
 
@@ -48,7 +48,7 @@ SSH-ключ `ed25519` создаёт агент после «да» (`ssh-keyge
 | Бэкап БД в панели хостинга | обяз. без SSH | точка отката базы | панель хостинга / плагин бэкапов | пользователь: «готово» |
 | План «Stage» в Plesk | один раз на сервер | подписки stage одинаковые: SSH `/bin/bash`, Apache + nginx, noindex, без почты | `project-ops` → `plesk.md` → 1 | первая подписка: `connect-check --stage`, заголовок `X-Robots-Tag` |
 | Создать stage (подписка, клон / импорт / установка) | при stage на VPS | копия для правок | `project-ops` → `plesk.md` → 2 | `connect-check --stage` |
-| Пароль на stage (защита каталога) | жел. | копию не видят посторонние, клиент смотрит работу | Plesk → Password-protected directories, свой у проекта; логин и пароль → `httpAuth` в `sftp-stage.json`, затем `stage-config auth` | `recon --stage`: не 401 |
+| Пароль на stage (защита каталога) | обяз. при копии прода | копию не видят посторонние, клиент смотрит работу, WP-cron базы прода не шлёт письма до перехвата почты | свой VPS — «Защищённые паролем папки» → `/` **до клона**, свой у проекта; логин и пароль → `httpAuth` в `sftp-stage.json`, затем `stage-config auth` | `recon --stage`: сайт 200, без пароля — 401 |
 | `noindex` в заголовках stage | жел. (свой VPS — из плана) | копия не попадёт в Google | панель / настройки веб-сервера | заголовок `X-Robots-Tag` |
 | Удалить подписку stage | при сдаче, если stage не нужен | не копятся подписки | `project-ops` → `plesk.md` → 3 (сначала проверка агентом) | `ACCESS.md` → «Stage: удалён» |
 | Тестовые ключи оплаты Woo на stage / локально | обяз. при магазине | без реальных списаний | настройки WooCommerce → платежи | пользователь: «готово» |

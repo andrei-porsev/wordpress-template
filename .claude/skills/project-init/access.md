@@ -74,11 +74,11 @@ FTP / FTPS — конфиг `.vscode/sftp-ftp.json` заполняет чело�
 **Свой VPS (Plesk на IONOS):**
 1. Отдельная подписка на проект по плану «Stage» (`project-ops` → `plesk.md`) → свой системный пользователь; агент под `root` не ходит.
 2. Подписка → «Доступ к веб-хостингу» → доступ по SSH: `/bin/bash` (план «Stage» ставит сам; в chrooted нет WP-CLI).
-3. Публичный ключ — в `~/.ssh/authorized_keys` пользователя подписки (расширение SSH Keys или файловый менеджер).
+3. Публичный ключ — в `~/.ssh/authorized_keys` пользователя подписки: свой VPS — команда для SSH Terminal из `stage-config build` (ключ + PATH для PHP одной вставкой); иначе — SSH Keys подписки.
 4. Порт SSH открыт в фаерволе Plesk **и** в облачном фаерволе панели IONOS.
 5. WP-CLI в PATH пользователя — проверит `test`; нет — команда установки, выполняет человек.
 6. После `/bin/bash` chroot снят и для SSH, и для SFTP: путь сайта — `/var/www/vhosts/<домен>/httpdocs` в `sftp.json` → `remotePath` и `ssh.json` → `cwd` (не `/httpdocs`).
-   PHP Plesk не в PATH: человек пишет `export PATH=/opt/plesk/php/<версия>/bin:$PATH` в `~/.bashrc` (файла нет — создать, есть — строкой в начало; у своего VPS может прийти из шаблона хоста — `plesk.md`). Проверка — `ssh-exec.mjs -- wp core version`.
+   PHP Plesk не в PATH: человек пишет `export PATH=/opt/plesk/php/<версия>/bin:$PATH` в `~/.bashrc` (файла нет — создать, есть — строкой в начало; свой VPS — та же команда для SSH Terminal из `stage-config build`). Проверка — `ssh-exec.mjs -- wp core version`.
 
 Доступ администратора Plesk агенту не даётся и в шаблоне не хранится.
 

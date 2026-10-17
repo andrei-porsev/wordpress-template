@@ -9,7 +9,8 @@
 			"privateKeyPath": "",
 			"remotePath": "/var/www/vhosts/{project}.stage.example.com/httpdocs",
 			"stageUrl": "https://{project}.stage.example.com",
-			"$notes": "Plesk: подписка на проект по плану «Stage» (project-ops → plesk.md) — свой системный пользователь {project}_dev; один ключ агента добавляется в каждую подписку — пароль не нужен. План даёт SSH /bin/bash, поэтому remotePath — /var/www/vhosts/{project}.<домен stage>/httpdocs (chroot — /httpdocs). Пароль на каталог у каждого проекта свой — не здесь, а в .vscode/sftp-stage.json → httpAuth."
+			"php": "8.3",
+			"$notes": "Plesk: подписка на проект по плану «Stage» (project-ops → plesk.md) — свой системный пользователь {project}_dev; один ключ агента добавляется в каждую подписку — пароль не нужен. План даёт SSH /bin/bash, поэтому remotePath — /var/www/vhosts/{project}.<домен stage>/httpdocs (chroot — /httpdocs). Пароль на каталог у каждого проекта свой — не здесь, а в .vscode/sftp-stage.json → httpAuth. php — версия PHP плана: stage-config build печатает команду для SSH Terminal (ключ из privateKeyPath + .pub и PATH /opt/plesk/php/<php>/bin)."
 		}
 	}
 }

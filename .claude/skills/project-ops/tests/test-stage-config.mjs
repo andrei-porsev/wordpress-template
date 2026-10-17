@@ -37,9 +37,13 @@ write( join( proj, '.claude', '.state', 'sync-sftp.json' ), { files: { a: 1 } } 
 let r = run( 'build', 'acme' );
 check( 'без профиля — понятная ошибка', r.code === 1 && /servers\.example\.json/.test( r.out ), r.out );
 
+const keyPath = join( base, 'id_ed25519' ).replaceAll( '\\', '/' );
+const pubKey = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAITestKeyOnly agent@test';
+writeFileSync( keyPath, 'PRIVATE-KEY-MUST-NOT-LEAK' );
+writeFileSync( `${ keyPath }.pub`, pubKey + '\n' );
 write( join( home, 'servers.json' ), { servers: { vps: {
-	host: 'vps.example', port: 22, username: '{project}_dev', privateKeyPath: 'C:/keys/id_ed25519', remotePath: '/httpdocs',
-	stageUrl: 'https://{project}.stage.example',
+	host: 'vps.example', port: 22, username: '{project}_dev', privateKeyPath: keyPath, remotePath: '/httpdocs',
+	stageUrl: 'https://{project}.stage.example', php: '8.2',
 } } } );
 r = run( 'build', 'acme' );
 check( 'план без --yes', r.code === 0 && /ПЛАН/.test( r.out ) && ! existsSync( join( proj, '.vscode', 'sftp-stage.json' ) ), r.out );
@@ -53,6 +57,26 @@ check( 'ignore и watcher — из sftp.json проекта', JSON.stringify( st
 check( 'без httpAuth — подсказка про пароль на каталог, uploadOnSave выключен', ! st.httpAuth && /stage-config\.mjs auth acme/.test( r.out ) && st.uploadOnSave === false, r.out );
 check( 'ssh-stage.json: cwd = remotePath', json( join( proj, '.vscode', 'ssh-stage.json' ) ).cwd === '/httpdocs' );
 check( 'неверное имя проекта — отказ', run( 'build', 'ac me' ).code === 1 );
+
+// Команда для SSH Terminal: публичный ключ и PATH версии из профиля; приватный ключ не печатается; повтор не дублирует.
+const cmdLine = r.out.split( '\n' ).find( ( l ) => l.startsWith( 'mkdir -p ~/.ssh' ) ) || '';
+check( 'команда для SSH Terminal: ключ и PHP 8.2', cmdLine.includes( pubKey ) && cmdLine.includes( '/opt/plesk/php/8.2/bin' ), r.out );
+check( 'приватный ключ не в выводе', ! /PRIVATE-KEY-MUST-NOT-LEAK/.test( r.out ) );
+const fakeHome = join( base, 'remote-home' );
+mkdirSync( fakeHome, { recursive: true } );
+writeFileSync( join( fakeHome, '.bashrc' ), 'export PATH=/opt/plesk/php/7.4/bin:$PATH\nalias ll="ls -l"\n' );
+const shellPart = cmdLine.replace( / && source ~\/\.bashrc.*$/, '' );
+const bash = ( c ) => spawnSync( 'bash', [ '-c', c ], { encoding: 'utf8', env: { ...process.env, HOME: fakeHome.replaceAll( '\\', '/' ) } } );
+if ( bash( 'true' ).status === 0 ) {
+	bash( shellPart );
+	const b2 = bash( shellPart );
+	const keys = readFileSync( join( fakeHome, '.ssh', 'authorized_keys' ), 'utf8' ).trim().split( '\n' );
+	const rc = readFileSync( join( fakeHome, '.bashrc' ), 'utf8' );
+	check( 'повтор: ключ один раз', b2.status === 0 && keys.length === 1 && keys[ 0 ] === pubKey, keys.join( '|' ) + b2.stderr );
+	check( 'повтор: одна строка PATH новой версии, остальное в .bashrc сохранено', rc.startsWith( 'export PATH=/opt/plesk/php/8.2/bin:$PATH\n' ) && ( rc.match( /opt\/plesk\/php/g ) || [] ).length === 1 && rc.includes( 'alias ll' ), rc );
+} else {
+	console.log( 'SKIP команда для SSH Terminal в bash — bash не найден' );
+}
 
 r = run( 'auth', 'acme' );
 check( 'auth без httpAuth — понятная ошибка', r.code === 1 && /httpAuth/.test( r.out ), r.out );
