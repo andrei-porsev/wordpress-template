@@ -7,7 +7,7 @@ Stage — копия сайта для правок до прода. У клие
 
 | Где | Кто | Как |
 |-----|-----|-----|
-| Свой VPS (Plesk) | человек | подписка на проект (сервисный план «Stage» — часть F) → WP Toolkit → Clone (с того же сервера) или Import (с хостинга клиента) |
+| Свой VPS (Plesk) | человек | подписка на проект по плану «Stage» → WP Toolkit → Clone (с того же сервера), Import (с хостинга клиента) или Install (нового сайта ещё нет) — по шагам [plesk.md](plesk.md) |
 | Хостинг клиента | человек | встроенный staging (SiteGround, Kinsta, WP Engine, Cloudways…) — в панели хостинга |
 
 Конфиги: свой VPS — `stage-config.mjs build <project>` (план) → «да» → `--yes`; хостинг клиента — данные как для прода → `.vscode/sftp-stage.json`, `ssh-stage.json`.
@@ -20,7 +20,7 @@ Stage — копия сайта для правок до прода. У клие
 | Что | Как | Зачем |
 |-----|-----|-------|
 | Запрет индексации | `wp option update blog_public 0`; заголовок `X-Robots-Tag: noindex` — панель / веб-сервер (человек) | копия не попадёт в Google как дубль |
-| Пароль на весь stage | Plesk → Password-protected directories (человек); логин и пароль → `httpAuth` в `sftp-stage.json` и профиль сервера | посторонние не видят незапущенный сайт |
+| Пароль на весь stage | Plesk → Password-protected directories (человек), свой у каждого проекта; логин и пароль → `httpAuth` в `sftp-stage.json` | посторонние не видят незапущенный сайт; клиент смотрит работу |
 | Перехват почты | плагин-заглушка (Disable Emails или аналог): `wp plugin install disable-emails --activate` после «да» | формы и Woo не пишут реальным клиентам |
 | Тестовые ключи оплаты | WooCommerce → Платежи — человек (ключи — секреты) | никаких реальных списаний |
 | Внешние cron-задачи | `wp cron event list`; рассылки и синхронизации с CRM — отключить после решения пользователя | копия не дублирует действия прода |
@@ -30,8 +30,10 @@ Stage — копия сайта для правок до прода. У клие
 
 ## 3. Пароль stage для скриптов и браузера
 
-- **Скрипты** (`deploy`, `recon`, `session-check`): `httpAuth: { "user", "password" }` в `sftp-stage.json` — иначе проверка сайта видит только HTTP 401.
-- **Браузер агента:** `stage-config build` с `httpAuth` в профиле пишет `.vscode/playwright-mcp.json` — `httpCredentials` только для origin stage (пароль не уходит на другие сайты и не попадает в адрес).
+Пароль на каталог у каждого проекта свой: хранится только в `sftp-stage.json` → `httpAuth`, в `ACCESS.md` — где лежит и выдан ли клиенту.
+
+- **Скрипты** (`deploy`, `recon`, `session-check`): `httpAuth: { "user", "password" }` в `sftp-stage.json` — иначе проверка сайта видит только HTTP 401. Повторный `stage-config build` его не затирает.
+- **Браузер агента:** `stage-config.mjs auth <project>` (или `build`, если `httpAuth` уже вписан) пишет `.vscode/playwright-mcp.json` — `httpCredentials` только для origin stage (пароль не уходит на другие сайты и не попадает в адрес).
   Подключить: `.mcp.json` → playwright → `args` + `"--config", ".vscode/playwright-mcp.json"` (агент после «да»), затем `/mcp` → переподключить playwright (человек).
   Без профиля — тот же файл вручную:
 
@@ -46,3 +48,8 @@ Stage — копия сайта для правок до прода. У клие
 - Код — `sftp-sync.mjs deploy` (`sftp.md`).
 - Весь сайт / БД (запуск редизайна, новый сайт) — WP Toolkit «Синхронизировать» или плагин миграции, человек, перед этим бэкап прода; затем на проде — индексация открыта, почта и ключи оплаты боевые (человек).
 - Переезд: stage был новым сервером → `stage-config.mjs promote` (`project-init` → `types.md` → «Переезд»).
+
+## 5. Stage больше не нужен
+
+Свой VPS — [plesk.md](plesk.md) → «Конец проекта»: проверка, что всё на проде, удаление подписки человеком, `ACCESS.md` → «Stage: удалён <дата>», смена режима `stage-auto`; конфиги в `.vscode/` остаются.
+Stage у клиента — то же, удаляет клиент или человек в панели хостинга.

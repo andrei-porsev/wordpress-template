@@ -36,7 +36,7 @@ SSH-ключ `ed25519` создаёт агент после «да» (`ssh-keyge
 | Включить SSH, добавить публичный ключ | жел. | WP-CLI, логи, быстрые проверки | панель хостинга (Plesk: подписка → SSH `/bin/bash`; SiteGround: SSH Keys Manager → Import); клиенту — письмо от агента | `connect-check` |
 | Открыть порт SSH в фаерволе | при таймауте | иначе нет связи | панель хостинга; IONOS — ещё облачный фаервол | `connect-check` |
 | `sftp-ftp.json` и `"sftp.config"` | при FTP | агент этот файл не открывает | по `sftp-ftp.json.example`, `.vscode/settings.json` → `"sftp.config": "sftp-ftp.json"` | `connect-check` |
-| WP-CLI для пользователя подписки | жел. при SSH | база, администраторы, `verify-checksums` | установить `wp-cli.phar` в домашнюю папку (Plesk — часть F) | `connect-check`: WP-CLI да |
+| WP-CLI для пользователя подписки | жел. при SSH | база, администраторы, `verify-checksums` | установить `wp-cli.phar` в домашнюю папку (свой VPS — `project-ops` → `plesk.md`) | `connect-check`: WP-CLI да |
 | PHP Plesk в PATH | при Plesk без chroot | `wp` без префикса — работает `guard-wpcli` (дамп перед изменениями) | `~/.bashrc`: `export PATH=/opt/plesk/php/<версия>/bin:$PATH` (нет файла — создать, есть — в начало) | `ssh-exec.mjs -- wp core version` |
 | Снять блокировку IP / разобраться со входом | при стопе «2 неудачных входа» | Fail2Ban | панель хостинга → Fail2Ban; исправить данные | `connect-check --reset-auth` после исправления |
 | Подтвердить смену ключа сервера | при «сменился ключ» | защита от подмены | уточнить у хостинга | `connect-check --forget-host` |
@@ -46,9 +46,11 @@ SSH-ключ `ed25519` создаёт агент после «да» (`ssh-keyge
 | Шаг | Обяз. | Зачем | Как | Проверка |
 |-----|-------|-------|-----|----------|
 | Бэкап БД в панели хостинга | обяз. без SSH | точка отката базы | панель хостинга / плагин бэкапов | пользователь: «готово» |
-| Создать stage (подписка, клон / импорт) | при stage на VPS | копия для правок | Plesk → подписка, WP Toolkit → Clone / Import | `connect-check --stage` |
-| Пароль на stage (защита каталога) | жел. | копию не видят посторонние | Plesk → Password-protected directories; логин и пароль → `httpAuth` в `sftp-stage.json` | `recon --stage`: не 401 |
-| `noindex` в заголовках stage | жел. | копия не попадёт в Google | панель / настройки веб-сервера | заголовок `X-Robots-Tag` |
+| План «Stage» в Plesk | один раз на сервер | подписки stage одинаковые: SSH `/bin/bash`, Apache + nginx, noindex, без почты | `project-ops` → `plesk.md` → 1 | первая подписка: `connect-check --stage`, заголовок `X-Robots-Tag` |
+| Создать stage (подписка, клон / импорт / установка) | при stage на VPS | копия для правок | `project-ops` → `plesk.md` → 2 | `connect-check --stage` |
+| Пароль на stage (защита каталога) | жел. | копию не видят посторонние, клиент смотрит работу | Plesk → Password-protected directories, свой у проекта; логин и пароль → `httpAuth` в `sftp-stage.json`, затем `stage-config auth` | `recon --stage`: не 401 |
+| `noindex` в заголовках stage | жел. (свой VPS — из плана) | копия не попадёт в Google | панель / настройки веб-сервера | заголовок `X-Robots-Tag` |
+| Удалить подписку stage | при сдаче, если stage не нужен | не копятся подписки | `project-ops` → `plesk.md` → 3 (сначала проверка агентом) | `ACCESS.md` → «Stage: удалён» |
 | Тестовые ключи оплаты Woo на stage / локально | обяз. при магазине | без реальных списаний | настройки WooCommerce → платежи | пользователь: «готово» |
 | Перенос всего сайта (архив, импорт) | при переезде / локальной копии | скрипты переносят только код | Duplicator, All-in-One WP Migration, WP Toolkit, импорт в LocalWP | `connect-check` / `local-exec status` |
 | Запустить сайт в LocalWP / OSPanel | при локальной копии | WP-CLI и проверка нужны с запущенной базой | Start site | `local-exec status` |
@@ -69,4 +71,5 @@ SSH-ключ `ed25519` создаёт агент после «да» (`ssh-keyge
 
 ## Шаблон (не в каждом проекте)
 
-Правки хуков и `settings.json` (часть D плана), сервисный план Plesk (часть F) — пользователь, по описанию агента; в инициализации не повторять.
+Правки хуков и `settings.json` (часть D плана) — пользователь, по описанию агента; в инициализации не повторять.
+План «Stage» в Plesk — один раз на сервер (`plesk.md` → 1); в инициализации — только если плана ещё нет.

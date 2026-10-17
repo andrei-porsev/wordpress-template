@@ -75,7 +75,7 @@ try {
 	if ( ssh.ok ) {
 		lines.push( `WP-CLI: ${ wpcli ? 'да' : 'нет' } · php: ${ has( 'php' ) ? 'да' : 'нет' } · find: ${ has( 'find' ) ? 'да' : 'нет' } · md5sum: ${ has( 'md5sum' ) ? 'да' : 'нет' }` );
 		if ( ! has( 'find' ) && ! has( 'php' ) ) {
-			lines.push( '  оболочка урезанная (chroot): WP-CLI и php не запустить — для Plesk: SSH /bin/bash вместо chrooted, WP-CLI — установить (часть F плана)' );
+			lines.push( '  оболочка урезанная (chroot): WP-CLI и php не запустить — для Plesk: SSH /bin/bash вместо chrooted, свой VPS — подписка по плану «Stage» (project-ops → plesk.md)' );
 		} else if ( has( 'wp' ) && ! has( 'php' ) ) {
 			lines.push( "  php нет в PATH (Plesk: /opt/plesk/php/<версия>/bin) — человек: echo 'export PATH=/opt/plesk/php/<версия>/bin:$PATH' > ~/.bashrc (файл есть — строкой в начало)" );
 			lines.push( '  wp с префиксом php не запускать: guard-wpcli узнаёт WP-CLI только по первому слову wp' );

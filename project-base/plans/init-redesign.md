@@ -517,7 +517,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 | C. Скрипты `project-ops` — **выполнено** | `remote.mjs` / `sftp-sync` (compare, list, безопасный sync-down, deploy), `session-check`, `recon` + `security.mjs`, `connect` + `connect-check`, `machine-check`, `stage-config`, `local-exec`; документы `stage.md`, `no-wpcli.md`, `local.md`, `packages/*.md`; ручные шаги `manual-steps.md`; тесты `project-ops/tests/` | 1–7, 10, 13–18, 24–27 (проверка версии шаблона — в E), 32–36, 38, 39, 42, 43, 49 |
 | D. Хуки — **выполнено** (решение 030) | описание правок: `SessionStart`, `post-edit` (`debug.log` по SFTP/FTP, стоп без PHP, стоп при изменении на сервере, режим `local`), `guard-wpcli` для stage | 9, 11, 12, 28 |
 | E. Обновление старых проектов — **реализовано** (решение 032), пилот — в сессии пилота | `manifest.json`, метка `.claude/template.json`, `template-update.mjs` (пробный прогон, `--apply`, `--take`, `--done`, `--protected`), миграция 2026.10.16, проверка версии в `skills-sync check --hook`, `template.md`; миграция с Cursor не нужна | 21, 23, 27 |
-| F. Plesk | сервисный план «Stage» вместе с пользователем | 8 |
+| F. Plesk — **записано** (решение 033), план в Plesk создаёт пользователь | `project-ops/plesk.md` (план «Stage», подписка на проект, конец проекта), `stage-config auth` и сохранение `httpAuth`, пароль stage свой у проекта | 8 |
 
 ### Ожидающие правки настроек (правит человек — внести в следующий патч `settings.json` / хуков)
 

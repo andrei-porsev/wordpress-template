@@ -7,10 +7,9 @@
 			"port": 22,
 			"username": "{project}_dev",
 			"privateKeyPath": "",
-			"remotePath": "/httpdocs",
+			"remotePath": "/var/www/vhosts/{project}.stage.example.com/httpdocs",
 			"stageUrl": "https://{project}.stage.example.com",
-			"httpAuth": { "user": "", "password": "" },
-			"$notes": "Plesk: подписка на проект — свой системный пользователь; при входе по ключу добавить один публичный ключ в каждую подписку — пароль не нужен. remotePath: chroot — /httpdocs, без chroot — /var/www/vhosts/<домен>/httpdocs. httpAuth — защита каталога stage (одна на все stage или пусто)."
+			"$notes": "Plesk: подписка на проект по плану «Stage» (project-ops → plesk.md) — свой системный пользователь {project}_dev; один ключ агента добавляется в каждую подписку — пароль не нужен. План даёт SSH /bin/bash, поэтому remotePath — /var/www/vhosts/{project}.<домен stage>/httpdocs (chroot — /httpdocs). Пароль на каталог у каждого проекта свой — не здесь, а в .vscode/sftp-stage.json → httpAuth."
 		}
 	}
 }

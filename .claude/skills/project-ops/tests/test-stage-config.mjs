@@ -1,5 +1,5 @@
 /**
- * Проверка stage-config: сборка sftp-stage.json по профилю ~/.wp-template/servers.json и promote после переезда.
+ * Проверка stage-config: сборка sftp-stage.json по профилю ~/.wp-template/servers.json, пароль на каталог проекта (auth) и promote после переезда.
  * node .claude/skills/project-ops/tests/test-stage-config.mjs
  */
 import { spawnSync } from 'node:child_process';
@@ -39,7 +39,7 @@ check( 'без профиля — понятная ошибка', r.code === 1 &
 
 write( join( home, 'servers.json' ), { servers: { vps: {
 	host: 'vps.example', port: 22, username: '{project}_dev', privateKeyPath: 'C:/keys/id_ed25519', remotePath: '/httpdocs',
-	stageUrl: 'https://{project}.stage.example', httpAuth: { user: 'stage', password: 'secret-http' },
+	stageUrl: 'https://{project}.stage.example',
 } } } );
 r = run( 'build', 'acme' );
 check( 'план без --yes', r.code === 0 && /ПЛАН/.test( r.out ) && ! existsSync( join( proj, '.vscode', 'sftp-stage.json' ) ), r.out );
@@ -47,14 +47,24 @@ check( 'план: пользователь и URL по шаблону', /acme_de
 check( 'секреты не в выводе', ! /secret-http|oldpass/.test( r.out ), r.out );
 
 r = run( 'build', 'acme', '--yes' );
-const st = json( join( proj, '.vscode', 'sftp-stage.json' ) );
+let st = json( join( proj, '.vscode', 'sftp-stage.json' ) );
 check( 'sftp-stage.json записан', st.host === 'vps.example' && st.username === 'acme_dev' && st.remotePath === '/httpdocs', JSON.stringify( st ) );
 check( 'ignore и watcher — из sftp.json проекта', JSON.stringify( st.ignore ) === JSON.stringify( ignore ) && st.watcher.files === 'x' );
-check( 'httpAuth перенесён, uploadOnSave выключен', st.httpAuth?.user === 'stage' && st.uploadOnSave === false );
+check( 'без httpAuth — подсказка про пароль на каталог, uploadOnSave выключен', ! st.httpAuth && /stage-config\.mjs auth acme/.test( r.out ) && st.uploadOnSave === false, r.out );
 check( 'ssh-stage.json: cwd = remotePath', json( join( proj, '.vscode', 'ssh-stage.json' ) ).cwd === '/httpdocs' );
 check( 'неверное имя проекта — отказ', run( 'build', 'ac me' ).code === 1 );
+
+r = run( 'auth', 'acme' );
+check( 'auth без httpAuth — понятная ошибка', r.code === 1 && /httpAuth/.test( r.out ), r.out );
+write( join( proj, '.vscode', 'sftp-stage.json' ), { ...st, httpAuth: { user: 'stage', password: 'secret-http' } } );
+r = run( 'auth', 'acme' );
 const pw = json( join( proj, '.vscode', 'playwright-mcp.json' ) );
-check( 'пароль stage для браузера — только для origin stage', pw.browser.contextOptions.httpCredentials.origin === 'https://acme.stage.example' && pw.browser.contextOptions.httpCredentials.username === 'stage' );
+check( 'auth: пароль stage для браузера — только для origin stage', r.code === 0 && pw.browser.contextOptions.httpCredentials.origin === 'https://acme.stage.example' && pw.browser.contextOptions.httpCredentials.username === 'stage', r.out );
+check( 'auth: секреты не в выводе', ! /secret-http/.test( r.out ), r.out );
+
+r = run( 'build', 'acme', '--yes' );
+st = json( join( proj, '.vscode', 'sftp-stage.json' ) );
+check( 'повторный build сохраняет httpAuth проекта', st.httpAuth?.password === 'secret-http' && ! /secret-http/.test( r.out ), r.out );
 
 write( join( proj, '.claude', '.state', 'sync-sftp-stage.json' ), { files: { b: 2 } } );
 r = run( 'promote' );

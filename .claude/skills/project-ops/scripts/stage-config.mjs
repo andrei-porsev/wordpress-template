@@ -1,7 +1,10 @@
 /**
  * Конфиги stage по профилю своего сервера и «stage становится продом» после переезда.
  *   node .claude/skills/project-ops/scripts/stage-config.mjs build <project> [--server vps] [--yes]
- *       ~/.wp-template/servers.json → .vscode/sftp-stage.json + ssh-stage.json (ignore / watcher — из sftp.json проекта)
+ *       ~/.wp-template/servers.json → .vscode/sftp-stage.json + ssh-stage.json (ignore / watcher — из sftp.json проекта;
+ *       httpAuth и пароль подписки из прежнего sftp-stage.json сохраняются — пароль на каталог у каждого проекта свой)
+ *   node .claude/skills/project-ops/scripts/stage-config.mjs auth <project> [--server vps]
+ *       httpAuth из sftp-stage.json → .vscode/playwright-mcp.json (после того как человек вписал пароль на каталог)
  *   node .claude/skills/project-ops/scripts/stage-config.mjs promote [--yes]
  *       после переключения DNS: sftp-stage.json → sftp.json (старый → sftp.old.json), ssh — так же, снимок синхронизации — тоже
  * Без --yes — только план. Секреты в вывод не попадают; данные сервера в контекст агента — тоже (только итоговые поля без паролей).
@@ -21,9 +24,9 @@ const readJson = ( p ) => JSON.parse( readFileSync( p, 'utf8' ) );
 const writeJson = ( p, data ) => writeFileSync( p, JSON.stringify( data, null, '\t' ) + '\n' );
 const fill = ( v, name ) => ( typeof v === 'string' ? v.replaceAll( '{project}', name ) : v );
 
-function build() {
+function profile() {
 	if ( ! project || ! /^[a-z0-9][a-z0-9-_]*$/i.test( project ) ) {
-		throw new Error( 'Нужно имя проекта латиницей: stage-config.mjs build <project> [--server <ключ>]' );
+		throw new Error( `Нужно имя проекта латиницей: stage-config.mjs ${ cmd } <project> [--server <ключ>]` );
 	}
 	const servers = readHome( 'servers.json' );
 	if ( ! servers?.servers ) {
@@ -38,6 +41,11 @@ function build() {
 	if ( ! srv.host ) {
 		throw new Error( `В профиле ${ key } пустой host — заполнить ${ join( homeDir(), 'servers.json' ) }.` );
 	}
+	return { key, srv, url: fill( srv.stageUrl || '', project ) };
+}
+
+function build() {
+	const { key, srv, url } = profile();
 	if ( ! existsSync( vs( 'sftp.json' ) ) ) {
 		throw new Error( 'Нет .vscode/sftp.json проекта — из него берутся ignore и watcher.' );
 	}
@@ -57,11 +65,15 @@ function build() {
 		ignore: base.ignore || [],
 		watcher: base.watcher || {},
 	};
-	if ( srv.httpAuth?.user ) {
-		sftp.httpAuth = srv.httpAuth;
+	// Вписанное человеком в прежний конфиг: пароль на каталог проекта и пароль подписки при входе без ключа.
+	const prev = existsSync( vs( 'sftp-stage.json' ) ) ? readJson( vs( 'sftp-stage.json' ) ) : {};
+	if ( prev.httpAuth?.user ) {
+		sftp.httpAuth = prev.httpAuth;
+	}
+	if ( ! sftp.privateKeyPath && prev.password && prev.username === sftp.username ) {
+		sftp.password = prev.password;
 	}
 	const ssh = { host: '', port: sftp.port, username: '', password: '', privateKeyPath: '', cwd: sftp.remotePath, wpCli: srv.wpCli || 'wp' };
-	const url = fill( srv.stageUrl || '', project );
 
 	console.log( `Stage по профилю «${ key }» (${ srv.title || srv.host }):` );
 	console.log( `  ${ sftp.username }@${ sftp.host }:${ sftp.port } · ${ sftp.remotePath } · ${ sftp.privateKeyPath ? 'вход по ключу' : 'вход по паролю — вписать в sftp-stage.json' }${ sftp.httpAuth ? ' · httpAuth есть' : '' }` );
@@ -83,7 +95,23 @@ function build() {
 		writePlaywrightConfig( url, sftp.httpAuth );
 	}
 	console.log( `Дальше: ACCESS.md → «Окружения» (Stage: свой VPS, Stage-конфиг) и «Stage / dev URL: ${ url || '—' }»; проверка — connect-check.mjs --stage.` );
-	sftp.privateKeyPath || console.log( 'Пароль подписки — в .vscode/sftp-stage.json → password (в чат не писать).' );
+	sftp.privateKeyPath || sftp.password || console.log( 'Пароль подписки — в .vscode/sftp-stage.json → password (в чат не писать).' );
+	sftp.httpAuth || console.log( `Пароль на каталог stage (свой у проекта) — в .vscode/sftp-stage.json → httpAuth { "user", "password" }, затем stage-config.mjs auth ${ project }.` );
+}
+
+function auth() {
+	const { url } = profile();
+	const cfg = existsSync( vs( 'sftp-stage.json' ) ) ? readJson( vs( 'sftp-stage.json' ) ) : null;
+	if ( ! cfg ) {
+		throw new Error( `Нет .vscode/sftp-stage.json — сначала stage-config.mjs build ${ project }.` );
+	}
+	if ( ! cfg.httpAuth?.user ) {
+		throw new Error( 'В .vscode/sftp-stage.json нет httpAuth { "user", "password" } — вписывает человек (пароль на каталог из Plesk).' );
+	}
+	if ( ! url ) {
+		throw new Error( 'В профиле сервера нет stageUrl — адрес stage для браузера не известен.' );
+	}
+	writePlaywrightConfig( url, cfg.httpAuth );
 }
 
 /*
@@ -141,10 +169,12 @@ function promote() {
 try {
 	if ( cmd === 'build' ) {
 		build();
+	} else if ( cmd === 'auth' ) {
+		auth();
 	} else if ( cmd === 'promote' ) {
 		promote();
 	} else {
-		throw new Error( 'Команда: build <project> [--server <ключ>] [--yes] | promote [--yes]' );
+		throw new Error( 'Команда: build <project> [--server <ключ>] [--yes] | auth <project> [--server <ключ>] | promote [--yes]' );
 	}
 } catch ( e ) {
 	console.error( String( e instanceof Error ? e.message : e ) );
