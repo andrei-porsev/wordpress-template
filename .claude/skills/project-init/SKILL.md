@@ -133,8 +133,8 @@ compatibility: "Этот шаблон. Язык — русский."
 
 ### Запись — по порядку
 
-1. `project-base/project.json` (`stem`, `themes`, `plugins`, `muPlugins`, `blocks`; родительскую тему не добавлять; нет — пустой массив) →
-   `node .claude/skills/project-ops/scripts/gen-whitelist.mjs` (`.gitignore` между маркерами, `ignore` / `watcher` в `sftp.json`; руками не править).
+1. `project-base/project.json` (`stem`, `themes`, `plugins`, `muPlugins`, `blocks`, `scss`; родительскую тему не добавлять; нет — пустой массив) →
+   `node .claude/skills/project-ops/scripts/gen-whitelist.mjs` (`.gitignore` между маркерами, `ignore` / `watcher` в `sftp.json`, `includeItems` в `.vscode/settings.json`; руками не править).
    `.vscode/sftp-ftp.json.example` — слаги подставить руками; рабочий `sftp-ftp.json` не трогать.
 2. `INDEX.md` → «Профиль проекта» и «Стек»; «Обязательные проверки» — главные действия посетителя, проверка в браузере по `Публичный URL`, `handoff` пакетов;
    «Команды» — при WP-CLI рабочими строками через `ssh-exec.mjs -- wp …` (не голый `wp`); «Правила проекта» — только отклонения от общих, не копировать `CLAUDE.md` и правила.
@@ -146,8 +146,8 @@ compatibility: "Этот шаблон. Язык — русский."
 6. `project-base/DECISIONS.md` — выборы и отказы с причиной (архитектура, билдер, «продолжить на риск»…);
    `INDEX.md` → «Сделать вручную» — открытые ручные шаги (`- [ ] шаг — зачем`).
 7. SCSS-заготовка: перенос по `project-base/_starter/README.md` (новый — папка `scss/` целиком, `cltm` → `{stem}`; есть SCSS — только `abstracts/` после проверки конфликтов;
-   существующий сайт без SCSS — в том числе на билдере с обычным CSS — не внедрять без просьбы); `.vscode/settings.json` → `liveSassCompile.settings.includeItems` — путь к entry
-   (FSE — шаблон `.../assets/scss/*.scss`: общий `index.scss` + entry на блок, решение 029).
+   существующий сайт без SCSS — в том числе на билдере с обычным CSS — не внедрять без просьбы); путь к entry — `project.json` → `scss` и `gen-whitelist.mjs`
+   (FSE — шаблон `.../assets/scss/*.scss`: общий `index.scss` + entry на блок, решение 029; `includeItems` руками не править — решение 036).
 8. Базовые плагины (этап 5) — WP-CLI после «да», если сайт уже стоит. Сайта ещё нет — список в `INDEX.md` → «Важные моменты» («поставить: …»), установка — когда сайт появится.
 9. Коммит «init: настройка проекта» — отдельно от baseline и чужих правок.
 10. Удалить `.claude/.state/init.json`.

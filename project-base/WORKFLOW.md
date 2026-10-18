@@ -32,8 +32,8 @@
    Проект с нуля — папка `scss/` целиком; в проекте уже есть SCSS — только
    `abstracts/`, предварительно проверив конфликты имён, `@use` против `@import`
    и дубли брейкпоинтов.
-8. Поправить путь к entry в `.vscode/settings.json` →
-   `liveSassCompile.settings.includeItems` под слаг темы.
+8. Путь к entry — `project.json` → `scss` и `gen-whitelist.mjs`
+   (пишет `liveSassCompile.settings.includeItems` в `.vscode/settings.json`).
 
 ### 1.2. Скачать сайт и зафиксировать baseline
 

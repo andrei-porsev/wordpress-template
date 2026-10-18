@@ -3,5 +3,6 @@
 	"themes": [],
 	"plugins": [],
 	"muPlugins": [],
-	"blocks": []
+	"blocks": [],
+	"scss": []
 }

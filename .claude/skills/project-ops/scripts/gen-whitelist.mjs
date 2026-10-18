@@ -1,7 +1,8 @@
 /**
- * Whitelist слагов из project-base/project.json → .gitignore и .vscode/sftp.json.
+ * Из project-base/project.json: whitelist слагов → .gitignore и .vscode/sftp.json; entry SCSS → .vscode/settings.json.
  * Запуск из корня: node .claude/skills/project-ops/scripts/gen-whitelist.mjs
  * blocks: "plugin-slug/block-slug" (блок внутри своего плагина).
+ * scss: пути entry как в Live Sass ("/wp-content/themes/<slug>/assets/scss/*.scss"); пусто — includeItems не трогается.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -19,6 +20,7 @@ const themes = list( 'themes' );
 const plugins = list( 'plugins' );
 const muPlugins = list( 'muPlugins' );
 const blocks = list( 'blocks' );
+const scss = list( 'scss' );
 
 const slugRe = /^[A-Za-z0-9._-]+$/;
 for ( const s of [ ...themes, ...plugins, ...muPlugins ] ) {
@@ -30,6 +32,14 @@ for ( const s of [ ...themes, ...plugins, ...muPlugins ] ) {
 for ( const b of blocks ) {
 	if ( ! /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test( b ) ) {
 		console.error( `Блок должен быть "plugin-slug/block-slug": ${ b }` );
+		process.exit( 1 );
+	}
+}
+const own = { themes, plugins, 'mu-plugins': muPlugins };
+for ( const s of scss ) {
+	const m = s.match( /^\/wp-content\/(themes|plugins|mu-plugins)\/([^/]+)\/[^"\\]+\.scss$/ );
+	if ( ! m || ! own[ m[ 1 ] ].includes( m[ 2 ] ) ) {
+		console.error( `scss: entry должен лежать в своей теме или плагине из project.json ("/wp-content/themes/<slug>/…/<файл>.scss"): ${ s }` );
 		process.exit( 1 );
 	}
 }
@@ -123,8 +133,31 @@ function patchSftp() {
 	console.log( 'OK .vscode/sftp.json' );
 }
 
+// includeItems Live Sass — правка текста: в settings.json комментарии (JSONC), пересборка их бы стёрла.
+function patchVscode() {
+	if ( ! scss.length ) {
+		return;
+	}
+	const path = join( root, '.vscode', 'settings.json' );
+	if ( ! existsSync( path ) ) {
+		console.warn( 'Нет .vscode/settings.json — пропуск.' );
+		return;
+	}
+	const src = readFileSync( path, 'utf8' );
+	const re = /^([ \t]*)("liveSassCompile\.settings\.includeItems"\s*:\s*)\[[^\]]*\]/m;
+	if ( ! re.test( src ) ) {
+		console.error( '.vscode/settings.json: нет liveSassCompile.settings.includeItems.' );
+		process.exit( 1 );
+	}
+	const eol = src.includes( '\r\n' ) ? '\r\n' : '\n';
+	const next = src.replace( re, ( _, ind, key ) => `${ ind }${ key }[${ eol }${ scss.map( ( s ) => `${ ind }\t${ JSON.stringify( s ) }` ).join( ',' + eol ) }${ eol }${ ind }]` );
+	writeFileSync( path, next );
+	console.log( 'OK .vscode/settings.json (includeItems)' );
+}
+
 patchGitignore();
 patchSftp();
+patchVscode();
 
 if ( ! themes.length && ! plugins.length && ! muPlugins.length ) {
 	console.warn( 'Внимание: слаги пусты — whitelist закрывает всю wp-content.' );

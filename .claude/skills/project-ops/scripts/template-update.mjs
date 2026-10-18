@@ -164,7 +164,7 @@ const listDirs = ( root, rel ) =>
 const readJson = ( buf, fallback = null ) => ( buf ? JSON.parse( norm( buf ).toString( 'utf8' ) ) : fallback );
 const jsonBuf = ( data ) => Buffer.from( JSON.stringify( data, null, '\t' ) + '\n', 'utf8' );
 
-// Трёхстороннее слияние: предок — файл проекта на опорном коммите.
+// Трёхстороннее слияние: предок — версия шаблона, от которой разошлись проект и шаблон.
 function merge3( ours, base, theirs ) {
 	const dir = mkdtempSync( join( tmpdir(), 'template-update-' ) );
 	try {
@@ -282,6 +282,73 @@ function blobAt( cwd, commit, rel ) {
 	}
 }
 
+// Все версии путей шаблона до t.commit (новые первыми): один git log на прогон.
+let history = null;
+function templateVersions( t, rel ) {
+	if ( ! history ) {
+		history = new Map();
+		const rec = git( TROOT, [ 'log', '--format=', '--raw', '--no-abbrev', '--no-renames', '-z', t.commit ] ).toString( 'utf8' ).split( '\0' );
+		for ( let i = 0; i + 1 < rec.length; i++ ) {
+			const m = rec[ i ].match( /:\d+ \d+ [0-9a-f]+ ([0-9a-f]+) [A-Z]\d*$/ );
+			if ( ! m ) {
+				continue;
+			}
+			const path = rec[ ++i ];
+			if ( ! /^0+$/.test( m[ 1 ] ) ) {
+				history.set( path, [ ...( history.get( path ) || [] ), m[ 1 ] ] );
+			}
+		}
+	}
+	return [ ...new Set( history.get( rel ) || [] ) ];
+}
+
+// Строк, которых нет в другом файле (с повторами); бинарные — только точное совпадение.
+function lineDistance( a, b ) {
+	if ( same( a, b ) ) {
+		return 0;
+	}
+	if ( norm( a ).subarray( 0, 8000 ).includes( 0 ) || norm( b ).subarray( 0, 8000 ).includes( 0 ) ) {
+		return Infinity;
+	}
+	const count = new Map();
+	for ( const l of norm( a ).toString( 'utf8' ).split( '\n' ) ) {
+		count.set( l, ( count.get( l ) || 0 ) + 1 );
+	}
+	let d = 0;
+	for ( const l of norm( b ).toString( 'utf8' ).split( '\n' ) ) {
+		const c = count.get( l ) || 0;
+		if ( c ) {
+			count.set( l, c - 1 );
+		} else {
+			d++;
+		}
+	}
+	for ( const c of count.values() ) {
+		d += c;
+	}
+	return d;
+}
+
+// Версия шаблона, совпадающая с файлом, иначе ближайшая к нему (при равенстве — новее); null — сравнить не с чем.
+function nearestTemplate( t, rel, buf ) {
+	const shas = templateVersions( t, rel );
+	const blobs = readBlobs( TROOT, shas );
+	let best = null;
+	let bestD = Infinity;
+	for ( const sha of shas ) {
+		const v = blobs.get( sha );
+		const d = lineDistance( v, buf );
+		if ( d === 0 ) {
+			return v;
+		}
+		if ( d < bestD ) {
+			best = v;
+			bestD = d;
+		}
+	}
+	return best;
+}
+
 // Путь в шаблоне для файла проекта: подключённые копии лежат в шаблоне в *-optional.
 function templatePathOf( rel, core ) {
 	const m = rel.match( /^\.claude\/skills\/([^/]+)\/(.+)$/ );
@@ -387,6 +454,8 @@ function pairs( t, p, stacks ) {
 function decide( t, p, pair, ctx ) {
 	const cur = readFile( p.root, pair.rel );
 	let base;
+	// Предок — ближайшая, а не совпавшая версия шаблона (файл правили при переносе).
+	let approx = false;
 	const open = p.label?.unresolved?.[ pair.rel ];
 	// Хуки и settings.json после --apply, но до --protected — предок тот, что был до обновления.
 	const pend = pair.kind === 'protected' && ! ctx.flagBase ? p.label?.protectedBase : null;
@@ -400,7 +469,14 @@ function decide( t, p, pair, ctx ) {
 		const from = pair.from || ( pair.kind === 'activated' && pair.rel.startsWith( '.claude/rules/' ) ? pair.rel.replace( '.claude/rules/', '.claude/rules-optional/' ) : templatePathOf( pair.rel, ctx.core ) );
 		base = pair.kind === 'skills-json' ? null : p.templateBase( from );
 	} else {
+		// Без метки опора — файл проекта на переносе. Вне .claude/ (настройки редактора, CLAUDE.md, .mcp.json) вписанное
+		// при переносе — правка проекта, предок — версия шаблона; .claude/ проект не правит — предок файл на опоре.
 		base = p.baseFile( pair.rel );
+		if ( base !== null && ! pair.rel.startsWith( '.claude/' ) ) {
+			const near = nearestTemplate( t, pair.rel, base );
+			approx = near !== null && ! same( near, base );
+			base = near ?? base;
+		}
 	}
 	let theirs = pair.from ? t.file( pair.from ) : null;
 
@@ -438,6 +514,10 @@ function decide( t, p, pair, ctx ) {
 	}
 	if ( base === null ) {
 		return { ...r, action: 'conflict', reason: 'появился и в проекте, и в шаблоне, содержимое разное' };
+	}
+	if ( same( base, theirs ) && approx ) {
+		// Версии шаблона на переносе нет в истории: изменения шаблона после переноса не видны.
+		return { ...r, action: 'conflict', reason: 'правлен при переносе, версия шаблона на переносе не найдена — сравнить с шаблоном' };
 	}
 	if ( same( base, theirs ) ) {
 		// Шаблон с прошлой опоры не менялся — правки проекта остаются как есть.

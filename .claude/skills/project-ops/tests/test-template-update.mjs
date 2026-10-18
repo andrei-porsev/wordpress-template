@@ -1,6 +1,6 @@
 /**
  * Проверка template-update.mjs на поддельных шаблоне и проекте во временной папке:
- * первое обновление без метки, слияние, удаление, подключённые стеки, миграция разделов, повторный прогон,
+ * первое обновление без метки (предок — версия шаблона), слияние, удаление, подключённые стеки, миграция разделов, повторный прогон,
  * конфликт с запоминанием предка, опора хуков после --apply, settings.json, отказ --protected без терминала.
  * node .claude/skills/project-ops/tests/test-template-update.mjs
  */
@@ -43,6 +43,8 @@ const run = ( ...args ) => {
 };
 const block = ( lines ) => `# >>> project.json (генерируется, не править вручную)\n${ lines }\n# <<< project.json\n`;
 const lines = ( n, tag ) => Array.from( { length: n }, ( _, i ) => `строка ${ i + 1 }${ tag && i === n - 1 ? tag : '' }` ).join( '\n' ) + '\n';
+// Настройки редактора: строка 2 — общая, строка 10 — entry SCSS.
+const vscode = ( l2, l10 ) => lines( 20 ).replace( '\nстрока 2\n', `\n${ l2 }\n` ).replace( '\nстрока 10\n', `\n${ l10 }\n` );
 
 // --- Старое состояние шаблона = опора проекта ---
 mkdirSync( proj, { recursive: true } );
@@ -59,6 +61,8 @@ put( proj, '.claude/hooks/h.mjs', 'хук v1\n' );
 put( proj, '.gitignore', '**/node_modules/\n' + block( '!/wp-content/\n/wp-content/themes/*\n!/wp-content/themes/my-theme/' ) + '**/*.log\n' );
 put( proj, 'ACCESS.md', '# Доступы\n\nстарое вступление\n\n## SSH\n\n- Host: example.org\n- Port: 22\n\n## Сайт\n\n- URL: https://example.org\n- Своё поле: да\n' );
 put( proj, 'wp-content/themes/my-theme/style.css', '/* тема */\n' );
+put( proj, '.vscode/settings.json', vscode( 'строка 2', 'entry my-theme' ) );
+put( proj, '.mcp.json', 'mcp проекта\n' );
 commit( proj, 'перенос на шаблон' );
 
 // Правки проекта после опоры.
@@ -70,6 +74,23 @@ commit( proj, 'правки проекта' );
 mkdirSync( tpl, { recursive: true } );
 git( tpl, 'init', '-q', '-b', 'main' );
 cpSync( SCRIPT, join( tpl, SCRIPT_REL ) );
+
+// Версия шаблона, с которой переносили проект.
+put( tpl, 'CLAUDE.md', lines( 20 ) );
+put( tpl, '.claude/rules/core.md', 'правило v1\n' );
+put( tpl, '.claude/rules-optional/r-fse.md', 'fse v1\n' );
+put( tpl, '.claude/skills-optional/sk-a/SKILL.md', 'скилл a v1\n' );
+put( tpl, '.claude/skills-optional/sk-gone/SKILL.md', 'убран из шаблона\n' );
+put( tpl, '.claude/settings.json', JSON.stringify( { permissions: { allow: [ 'A' ], defaultMode: 'acceptEdits' } }, null, '\t' ) + '\n' );
+put( tpl, '.claude/hooks/h.mjs', 'хук v1\n' );
+put( tpl, '.gitignore', '**/node_modules/\n' + block( '!/wp-content/' ) + '**/*.log\n' );
+put( tpl, '.vscode/settings.json', vscode( 'строка 2', 'entry theme-child' ) );
+commit( tpl, 'шаблон v1' );
+rmSync( join( tpl, '.claude/skills-optional/sk-gone' ), { recursive: true } );
+
+put( tpl, '.vscode/settings.json', vscode( 'строка 2 — шаблон v2', 'entry theme-child' ) );
+// Версии на переносе нет в истории шаблона.
+put( tpl, '.mcp.json', 'mcp шаблона\n' );
 put( tpl, '.claude/template/manifest.json', JSON.stringify( {
 	version: '2026.01.01',
 	repo: 'git@example.org:t.git',
@@ -122,6 +143,9 @@ const gi = read( proj, '.gitignore' );
 check( '2 .gitignore: блок проекта сохранён, шаблонные строки добавлены', gi.includes( 'my-theme' ) && gi.includes( '**/*.tmp' ), gi );
 check( '2 хуки не тронуты', read( proj, '.claude/hooks/h.mjs' ) === 'хук v1\n' && read( proj, '.claude/settings.json' ).includes( 'P-own' ) && ! read( proj, '.claude/settings.json' ).includes( '"B"' ) );
 check( '2 планы шаблона не попали в проект', ! existsSync( join( proj, 'project-base/plans' ) ) );
+const vs = read( proj, '.vscode/settings.json' );
+check( '2 без метки: вписанное при переносе сохранено, правка шаблона пришла', vs.includes( 'entry my-theme' ) && vs.includes( 'строка 2 — шаблон v2' ), vs );
+check( '2 без метки: версии на переносе нет в истории — конфликт, файл не тронут', /\.mcp\.json — правлен при переносе, версия шаблона на переносе не найдена/.test( r.out ) && read( proj, '.mcp.json' ) === 'mcp проекта\n', r.out );
 check( '2 проектный код не тронут', read( proj, 'wp-content/themes/my-theme/style.css' ) === '/* тема */\n' );
 const access = read( proj, 'ACCESS.md' );
 check( '2 миграция ACCESS.md: новые разделы, значения перенесены',
@@ -133,7 +157,8 @@ check( '2 метка помнит опору хуков до обновлени�
 r = run();
 check( '2 после --apply хуки всё ещё к замене (опора не из новой метки)', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ) && /settings\.json — объединить/.test( r.out ), r.out );
 
-// 3. Миграция отмечена, повторный прогон — без изменений.
+// 3. Конфликт решён, миграция отмечена, повторный прогон — без изменений.
+run( '--take', 'project', '.mcp.json' );
 run( '--done', '2026.01.01' );
 commit( proj, 'миграция' );
 r = run();

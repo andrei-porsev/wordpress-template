@@ -56,7 +56,7 @@ try {
 	const generateMap = settings[ 'liveSassCompile.settings.generateMap' ] !== false;
 
 	if ( ! items.length ) {
-		throw new Error( 'includeItems пуст — пропиши entry SCSS в .vscode/settings.json.' );
+		throw new Error( 'includeItems пуст — entry SCSS в project-base/project.json → scss, затем gen-whitelist.mjs.' );
 	}
 
 	const inputs = items.flatMap( ( item ) => expandItem( root, item ) );

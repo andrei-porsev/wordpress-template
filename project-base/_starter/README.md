@@ -78,7 +78,7 @@ assets/scss/
 
 Имя: `block-<namespace>--<имя блока>` — двойной дефис отделяет пространство имён (`woocommerce--product-price` → `woocommerce/product-price`).
 В каждом entry блока — `@use 'abstracts' as *;`. Live Sass и `compile-scss.mjs` собирают всё по шаблону:
-`.vscode/settings.json` → `liveSassCompile.settings.includeItems`: `"/wp-content/themes/{тема}/assets/scss/*.scss"`.
+`project.json` → `scss`: `"/wp-content/themes/{тема}/assets/scss/*.scss"`, затем `gen-whitelist.mjs` (пишет `includeItems` в `.vscode/settings.json`).
 
 Подключение в теме (`inc/block-styles.php`, `cltm` → `{stem}`):
 
@@ -182,8 +182,8 @@ grep -rn "\$bp-" .
 Человек в редакторе — Live Sass Compile (watch). Агент — skill `project-ops`
 → `compile-scss.md` (тот же entry из `settings.json`).
 
-Live Sass: entry указывается в `.vscode/settings.json` →
-`liveSassCompile.settings.includeItems` (FSE — шаблон `assets/scss/*.scss`). При смене слага темы поправить путь.
+Live Sass: entry — `project.json` → `scss` (FSE — шаблон `assets/scss/*.scss`), `gen-whitelist.mjs` пишет его в
+`.vscode/settings.json` → `liveSassCompile.settings.includeItems`. При смене слага темы поправить путь в `project.json`.
 
 На сервер уезжает скомпилированный CSS. Исходный SCSS хранится в git —
 он и есть источник правды, править собранный CSS нельзя.

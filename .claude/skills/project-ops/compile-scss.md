@@ -17,7 +17,7 @@ node .claude/skills/project-ops/scripts/compile-scss.mjs
 `*` в имени файла — несколько entry (как в Live Sass): FSE — `"/wp-content/themes/<slug>/assets/scss/*.scss"` собирает `index.scss` и каждый `block-<namespace>--<имя>.scss`
 в свой CSS; партиалы `_*.scss` пропускаются. Entry лежат плоско в `assets/scss/` — из подпапки `savePath: "~/../css"` увёл бы CSS не туда.
 
-Пустой `includeItems` или нет файла entry — остановиться, не угадывать другой путь. Entry правит `project-init` / человек.
+Пустой `includeItems` или нет файла entry — остановиться, не угадывать другой путь. Entry — `project.json` → `scss`, затем `gen-whitelist.mjs` (решение 036).
 
 ## После компиляции
 
