@@ -4,7 +4,7 @@
  * Код выхода 0 — все кейсы прошли. Так project-init проверяет хуки при старте проекта.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -142,6 +142,20 @@ for ( const [ c, want ] of [
 // session-start: напоминание есть всегда (проект настроен — сверка, нет — project-init).
 const ss = spawnSync( process.execPath, [ join( hooks, 'session-start.mjs' ) ], { input: JSON.stringify( { cwd: root } ), encoding: 'utf8', env, timeout: 30000 } );
 check( 'session-start: напоминание project-init для ненастроенного проекта', /project-init/.test( ss.stdout ) ? 'pass' : 'fail', 'pass' );
+
+// session-start: sessions/ и backups/edit/ старше 30 дней удаляются, свежие и backups/db/ — нет.
+const st = join( root, '.claude', '.state' );
+const old = new Date( Date.now() - 40 * 86400000 );
+for ( const rel of [ 'sessions/old.json', 'sessions/new.json', 'backups/edit/old/a.php', 'backups/db/old.sql' ] ) {
+	mkdirSync( join( st, rel, '..' ), { recursive: true } );
+	writeFileSync( join( st, rel ), 'x' );
+}
+for ( const rel of [ 'sessions/old.json', 'backups/edit/old', 'backups/db/old.sql' ] ) {
+	utimesSync( join( st, rel ), old, old );
+}
+spawnSync( process.execPath, [ join( hooks, 'session-start.mjs' ) ], { input: JSON.stringify( { cwd: root } ), encoding: 'utf8', env, timeout: 30000 } );
+const pruned = ! existsSync( join( st, 'sessions/old.json' ) ) && ! existsSync( join( st, 'backups/edit/old' ) ) && existsSync( join( st, 'sessions/new.json' ) ) && existsSync( join( st, 'backups/db/old.sql' ) );
+check( 'session-start: чистка sessions/ и backups/edit/ старше 30 дней, дампы не трогает', pruned ? 'pass' : 'fail', 'pass' );
 
 rmSync( root, { recursive: true, force: true } );
 console.log( `\n${ total - failed } из ${ total } прошли` );

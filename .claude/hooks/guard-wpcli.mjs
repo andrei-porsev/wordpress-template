@@ -8,7 +8,7 @@
  *    на stage (--stage) — allow после автодампа, кроме db import и произвольного кода; local-exec.mjs — разбирается так же,
  *         eval, составные команды (; && ||), прочие команды;
  *  - без решения: чтение WP-CLI — дальше permissions.allow.
- * Перед первым ask по WP-CLI за сессию хук сам делает дамп БД (wp db export ../claude-backup-<время>.sql).
+ * Перед первым ask по WP-CLI за сессию хук сам делает дамп БД (ssh-exec.mjs dump → ../claude-backup/<время>.sql, права 600).
  * Решения (кроме allow) пишутся в журнал .claude/.state/audit.log.
  * Сбой хука: exit 0. Поэтому 'allow' даём только самим хуком, а в permissions.allow — точечные команды чтения.
  */
@@ -50,12 +50,11 @@ function dumpOnce() {
 	if ( st[ key ] ) {
 		return `Дамп в этой сессии уже сделан: ${ st[ key ] }.`;
 	}
-	const stamp = new Date().toISOString().replace( /[-:T]/g, '' ).slice( 0, 14 );
-	const file = `../claude-backup-${ stamp }.sql`;
 	const script = join( root, '.claude', 'skills', 'project-ops', 'scripts', 'ssh-exec.mjs' );
 	const flag = command.includes( ' --stage' ) ? [ '--stage' ] : [];
-	const r = spawnSync( process.execPath, [ script, ...flag, '--', `wp db export ${ file }` ], { cwd: root, encoding: 'utf8', timeout: 120000 } );
-	if ( r.status === 0 ) {
+	const r = spawnSync( process.execPath, [ script, ...flag, 'dump' ], { cwd: root, encoding: 'utf8', timeout: 120000 } );
+	const file = ( ( r.stdout || '' ).match( /^DUMP (\S+)/m ) || [] )[ 1 ];
+	if ( r.status === 0 && file ) {
 		st[ key ] = file;
 		saveState( root, input.session_id, st );
 		audit( root, 'db-dump', { file } );

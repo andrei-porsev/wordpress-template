@@ -134,7 +134,7 @@ export function projectSlugs( project, kind ) {
 }
 
 function statePath( root, sessionId ) {
-	return join( root, '.claude', '.state', `${ sessionId || 'default' }.json` );
+	return join( root, '.claude', '.state', 'sessions', `${ sessionId || 'default' }.json` );
 }
 
 export function loadState( root, sessionId ) {
@@ -147,7 +147,7 @@ export function loadState( root, sessionId ) {
 
 export function saveState( root, sessionId, state ) {
 	const path = statePath( root, sessionId );
-	mkdirSync( join( root, '.claude', '.state' ), { recursive: true } );
+	mkdirSync( join( root, '.claude', '.state', 'sessions' ), { recursive: true } );
 	writeFileSync( path, JSON.stringify( state ) );
 }
 

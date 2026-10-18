@@ -9,6 +9,8 @@
 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs upload*)",
 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs sync-down*)",
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs test*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs dump*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage dump*)",
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage test*)",
 			"Bash(npm install --prefix .claude/skills/project-ops)",
 			"Bash(node .claude/skills/project-ops/scripts/install-deps.mjs*)",

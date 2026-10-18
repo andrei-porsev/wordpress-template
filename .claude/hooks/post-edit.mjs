@@ -221,7 +221,7 @@ await safe( async () => {
 	// 2) Хвост debug.log до заливки, чтобы потом увидеть только новые ошибки: по SSH — число строк, без SSH — копия файла по SFTP.
 	let logBase = null;
 	let logCopy = null;
-	const stateDir = join( root, '.claude', '.state', 'backup', sessionId || 'default' );
+	const stateDir = join( root, '.claude', '.state', 'backups', 'edit', sessionId || 'default' );
 	if ( isPhp ) {
 		const r = run( 'ssh-exec.mjs', [ '--', 'wc -l < wp-content/debug.log 2>/dev/null || echo 0' ] );
 		if ( r.status === 0 ) {
