@@ -12,7 +12,8 @@ paths:
 - Источник правды: `theme.json` (settings/styles), `templates/`, `parts/`, `patterns/`.
 - Не предлагай classic `header.php` / `sidebar.php` как основную модель, если тема уже block theme.
 - Контентные секции — patterns; повторяемая логика UI — блоки (native или ACF), не раздувать `functions.php`.
-- Типографика в `theme.json`: если пресет меняется от моб к десктопу — `fluid: { min, max }`; одно значение на всех ширинах — фиксированный `size`. `settings.layout.contentSize` держать равным `$cltm-container-max-width` (1200px). Каркас секций — rule `markup-layout`.
+- Типографика и отступы в `theme.json` — по `scss-bem` → «Fluid»: заголовки — `fluid: { min, max }` всегда; текст и отступы — при разнице больше 3 px, иначе фиксированный `size`.
+  Стили контента — в `styles.blocks["core/post-content"]`, не в глобальных `styles.elements` (те же теги в интерфейсе — правило `site-design`). `settings.layout.contentSize` держать равным `$cltm-container-max-width` (1200px). Каркас секций — rule `markup-layout`.
 - Кастомную PHP-логику темы держи в `functions.php` / `inc/` на хуках; тяжёлое — в плагине.
 
 ## CSS — четыре уровня, по порядку (решение 029)
