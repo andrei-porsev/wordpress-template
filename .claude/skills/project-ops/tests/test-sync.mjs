@@ -88,5 +88,13 @@ check( '7 после --force всё совпадает', groups().same.length ==
 out = run( 'list', T );
 check( '8 list показывает файлы и папки', /^-.*a\.php$/m.test( out ) && /^d.*inc$/m.test( out ) && /b\.css/.test( out ), out );
 
+// 9. SCSS изменился на сервере — подсказка проверить, собран ли CSS.
+check( '9 без SCSS подсказки нет', ! /compile-scss/.test( run( 'sync-down' ) ), '' );
+put( remote, T + 'assets/scss/_x.scss', '.x{}\n' );
+out = run( 'compare' );
+check( '9 compare: подсказка про SCSS', /SCSS изменился на сервере → .*compile-scss\.mjs --check/.test( out ), out );
+out = run( 'sync-down' );
+check( '9 sync-down: подсказка про SCSS', /скачано 1/.test( out ) && /compile-scss\.mjs --check/.test( out ), out );
+
 console.log( fails ? `ПРОВАЛЕНО: ${ fails }` : 'Все проверки sftp-sync прошли' );
 process.exit( fails ? 1 : 0 );

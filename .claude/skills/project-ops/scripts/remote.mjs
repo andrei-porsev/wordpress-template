@@ -583,6 +583,13 @@ export function printGroups( groups ) {
 	}
 }
 
+// SCSS пришёл с сервера — собран ли из него CSS, решает compile-scss.mjs --check (CSS на сервере могли не пересобрать).
+function scssHint( rels ) {
+	if ( rels.some( ( rel ) => rel.endsWith( '.scss' ) ) ) {
+		console.log( 'SCSS изменился на сервере → node .claude/skills/project-ops/scripts/compile-scss.mjs --check (собран ли CSS из него)' );
+	}
+}
+
 export async function cmdCompare( cfg, root, json ) {
 	const roots = rootsOrThrow( cfg );
 	await withClient( cfg, async ( api ) => {
@@ -605,6 +612,7 @@ export async function cmdCompare( cfg, root, json ) {
 			console.log( 'Снимка синхронизации нет: первая сверка, отличия — без направления.' );
 		}
 		printGroups( groups );
+		scssHint( [ ...groups.remote, ...groups.conflict, ...groups.unknown ].map( ( i ) => i.rel ) );
 		const dirty = groups.remote.length + groups.local.length + groups.conflict.length + groups.unknown.length;
 		console.log( dirty ? 'ЕСТЬ ОТЛИЧИЯ' : 'OK compare: всё совпадает' );
 	} );
@@ -800,6 +808,7 @@ export async function cmdSyncDown( cfg, root, force ) {
 			}
 		}
 		console.log( `OK sync-down: скачано ${ down }, удалено ${ removed }, не тронуто ${ kept.length }` );
+		scssHint( take.filter( ( i ) => remoteHash[ i.rel ] ).map( ( i ) => i.rel ) );
 	} );
 }
 

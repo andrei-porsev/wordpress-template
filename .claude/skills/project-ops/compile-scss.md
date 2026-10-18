@@ -19,6 +19,15 @@ node .claude/skills/project-ops/scripts/compile-scss.mjs
 
 Пустой `includeItems` или нет файла entry — остановиться, не угадывать другой путь. Entry — `project.json` → `scss`, затем `gen-whitelist.mjs` (решение 036).
 
+## Проверка без сборки
+
+```bash
+node .claude/skills/project-ops/scripts/compile-scss.mjs --check
+```
+
+Собирает во временную папку и сверяет с CSS на диске, ничего не пишет: source map и переводы строк не в счёт, разница только в пробелах — «OK (форматирование)».
+«CSS УСТАРЕЛ» (код 1) — CSS не собран из текущего SCSS. Когда: SCSS пришёл с сервера (`sync-down` / `compare` подсказывают) — дальше `WORKFLOW.md` → 2.1, решение 038.
+
 ## После компиляции
 
 Локально CSS готов. Компилятор — процесс Bash, хук заливки его не видит. При `guarded-auto` / `stage-auto` залей CSS сам (`upload`, при `stage-auto` с `--stage`), при `manual` — по команде или «да» (`ssh.md`). Пути — из вывода компилятора, команда в [sftp.md](sftp.md).

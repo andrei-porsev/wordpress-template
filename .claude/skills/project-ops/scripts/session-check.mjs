@@ -291,6 +291,9 @@ async function serverSection( root, configName, label ) {
 				if ( groups.remote.length ) {
 					say( '  → sync-down и отдельный коммит «sync: изменения с сервера (не мои)».' );
 				}
+				if ( [ ...groups.remote, ...groups.conflict, ...groups.unknown ].some( ( i ) => i.rel.endsWith( '.scss' ) ) ) {
+					say( '  → среди них SCSS: после sync-down — compile-scss.mjs --check (собран ли CSS на сервере из него, WORKFLOW.md → 2.1).' );
+				}
 				if ( ! hasSnapshot ) {
 					say( '  (снимка синхронизации не было — первая сверка)' );
 				}
