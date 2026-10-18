@@ -360,9 +360,8 @@ function pairs( t, p, stacks ) {
 					add( rel, null, 'activated' );
 				}
 			}
-		} else {
-			tracked( p, `.claude/skills/${ name }` ).forEach( ( rel ) => add( rel, null, 'activated' ) );
 		}
+		// Скилла нет ни в шаблоне, ни в skills-optional — свой скилл проекта, обновление его не трогает.
 	}
 	for ( const name of wantRules ) {
 		const rel = `.claude/rules/${ name }.md`;

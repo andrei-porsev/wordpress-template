@@ -53,6 +53,7 @@ put( proj, '.claude/rules/r-fse.md', 'fse v1\n' );
 put( proj, '.claude/skills/sk-a/SKILL.md', 'скилл a v1\n' );
 put( proj, '.claude/skills-optional/sk-a/SKILL.md', 'скилл a v1\n' );
 put( proj, '.claude/skills-optional/sk-gone/SKILL.md', 'убран из шаблона\n' );
+put( proj, '.claude/skills/own-news/SKILL.md', 'свой скилл проекта\n' );
 put( proj, '.claude/settings.json', JSON.stringify( { permissions: { allow: [ 'A' ], defaultMode: 'acceptEdits' } }, null, '\t' ) + '\n' );
 put( proj, '.claude/hooks/h.mjs', 'хук v1\n' );
 put( proj, '.gitignore', '**/node_modules/\n' + block( '!/wp-content/\n/wp-content/themes/*\n!/wp-content/themes/my-theme/' ) + '**/*.log\n' );
@@ -114,7 +115,8 @@ check( '2 замена неизменённого правила', read( proj, '
 check( '2 новое правило добавлено', read( proj, '.claude/rules/new.md' ) === 'новое правило\n' );
 check( '2 подключённые копии обновлены', read( proj, '.claude/skills/sk-a/SKILL.md' ) === 'скилл a v2\n' && read( proj, '.claude/rules/r-fse.md' ) === 'fse v2\n' );
 check( '2 неподключённый стек не подключён', ! existsSync( join( proj, '.claude/skills/sk-woo' ) ) && existsSync( join( proj, '.claude/skills-optional/sk-woo/SKILL.md' ) ) );
-check( '2 убранное из шаблона удалено', ! existsSync( join( proj, '.claude/skills-optional/sk-gone' ) ) );
+check( '2 свой скилл проекта не тронут и не в отчёте', read( proj, '.claude/skills/own-news/SKILL.md' ) === 'свой скилл проекта\n' && ! /own-news/.test( r.out ), r.out );
+check( '2 убранное из шаблона удалено',! existsSync( join( proj, '.claude/skills-optional/sk-gone' ) ) );
 check( '2 skills.json: active = fse', JSON.parse( read( proj, '.claude/skills.json' ) ).active.join() === 'fse' );
 const gi = read( proj, '.gitignore' );
 check( '2 .gitignore: блок проекта сохранён, шаблонные строки добавлены', gi.includes( 'my-theme' ) && gi.includes( '**/*.tmp' ), gi );
