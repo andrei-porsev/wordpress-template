@@ -184,7 +184,10 @@ function parseArgs( argv ) {
 		throw new Error( 'Нужно: --stdin <файл> -- <команда>, например: --stdin draft.html -- wp post update 123 -' );
 	}
 	if ( dash >= 0 ) {
-		const cmd = argv.slice( dash + 1 ).join( ' ' ).trim();
+		// Одна строка — команда оболочки как есть (конвейер, кавычки); несколько аргументов — каждый в кавычках,
+		// иначе пробелы и апострофы в значениях (--post_title="пам'яті …") теряются при склейке.
+		const parts = argv.slice( dash + 1 );
+		const cmd = ( parts.length === 1 ? parts[ 0 ] : parts.map( ( a ) => ( /^[\w@%+=:,./-]+$/.test( a ) ? a : shQuote( a ) ) ).join( ' ' ) ).trim();
 		if ( ! cmd ) {
 			throw new Error( 'После -- нужна команда, например: -- wp cache flush' );
 		}
