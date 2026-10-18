@@ -3,7 +3,7 @@
  * node .claude/skills/project-ops/tests/test-stage-config.mjs
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -88,7 +88,9 @@ check( 'auth: секреты не в выводе', ! /secret-http/.test( r.out 
 
 r = run( 'build', 'acme', '--yes' );
 st = json( join( proj, '.vscode', 'sftp-stage.json' ) );
-check( 'повторный build сохраняет httpAuth проекта', st.httpAuth?.password === 'secret-http' && ! /secret-http/.test( r.out ), r.out );
+const bakRoot = join( proj, '.claude', '.state', 'backups', 'config' );
+check( 'повторный build: копия старого конфига — в .claude/.state/backups/config, не в .vscode', ! existsSync( join( proj, '.vscode', 'sftp-stage.bak.json' ) ) && existsSync( bakRoot ) && readdirSync( bakRoot ).some( ( d ) => existsSync( join( bakRoot, d, 'sftp-stage.json' ) ) ) );
+check( 'повторный build сохраняет httpAuth проекта',st.httpAuth?.password === 'secret-http' && ! /secret-http/.test( r.out ), r.out );
 
 write( join( proj, '.claude', '.state', 'sync-sftp-stage.json' ), { files: { b: 2 } } );
 r = run( 'promote' );

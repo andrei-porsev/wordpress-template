@@ -2,6 +2,7 @@
  * SSH: .vscode/ssh.json, пустые поля — из sftp.json.
  * Пароль в stdout не пишем.
  * --stdin <файл> — локальный файл во ввод команды на сервере (длинный текст: wp post update <ID> -), на сервер он не записывается.
+ * dump [метка] — дамп БД в ../claude-backup/<время>[-метка].sql (вне каталога сайта, права 600); печатает «DUMP <путь>».
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -162,6 +163,9 @@ function execRemote( root, cfg, command, Client, input = null ) {
 	} );
 }
 
+// Дампы БД — на уровень выше каталога сайта: по HTTP недоступны.
+const DUMP_DIR = '../claude-backup';
+
 // Доступы и секреты во ввод команды не отправляем.
 const SECRET_FILE = /(^|[\\/])(\.vscode[\\/]|\.env|wp-config|\.ssh[\\/])|\.(pem|key|ppk)$|id_(rsa|ed25519)/i;
 
@@ -197,7 +201,12 @@ function parseArgs( argv ) {
 	if ( mode === 'test' ) {
 		return { mode: 'test' };
 	}
-	throw new Error( 'Команда: test | -- <cmd>' );
+	if ( mode === 'dump' ) {
+		const label = ( argv[ 3 ] || '' ).toLowerCase().replace( /[^a-z0-9-]+/g, '-' ).replace( /^-+|-+$/g, '' ).slice( 0, 40 );
+		const stamp = new Date().toISOString().replace( /[-:T]/g, '' ).slice( 0, 14 );
+		return { mode: 'dump', file: `${ DUMP_DIR }/${ stamp }${ label ? `-${ label }` : '' }.sql` };
+	}
+	throw new Error( 'Команда: test | dump [метка] | -- <cmd>' );
 }
 
 try {
@@ -214,6 +223,10 @@ try {
 		].join( '; ' );
 		await execRemote( root, cfg, probe, Client );
 		console.log( 'OK', cfg.host, cfg.cwd );
+	} else if ( args.mode === 'dump' ) {
+		// umask 077: каталог 700 и файл 600 — в дампе хеши паролей пользователей.
+		await execRemote( root, cfg, `umask 077 && mkdir -p ${ DUMP_DIR } && wp db export ${ shQuote( args.file ) } --quiet && ls -l ${ shQuote( args.file ) }`, Client );
+		console.log( 'DUMP', args.file );
 	} else {
 		await execRemote( root, cfg, args.cmd, Client, input );
 	}

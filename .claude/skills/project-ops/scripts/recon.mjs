@@ -2,7 +2,7 @@
  * Разведка и полная проверка безопасности сайта (project-init → recon.md). Только чтение сервера.
  *   node .claude/skills/project-ops/scripts/recon.mjs [--stage] [--deep]   — разведка, целостность, окружение
  *   node .claude/skills/project-ops/scripts/recon.mjs --env-table          — окружения прод / stage / локально рядом
- * Пишет .claude/.state/recon-<конфиг>.json (основа security-check.md и audit.md) и env-<конфиг>.json.
+ * Пишет .claude/.state/reports/recon-<конфиг>.json (основа security-check.md и audit.md) и env-<конфиг>.json.
  * --deep — сверка всех файлов плагинов с wordpress.org (долго: качает файлы).
  */
 import { spawnSync } from 'node:child_process';
@@ -126,8 +126,9 @@ function makeTree( api, cfg, root, viaSsh ) {
 	};
 }
 
-function stateDir( root ) {
-	const dir = join( root, '.claude', '.state' );
+// .claude/.state/<sub>: reports — отчёты разведки, cache — скачанные оригиналы.
+function stateDir( root, sub ) {
+	const dir = join( root, '.claude', '.state', sub );
 	mkdirSync( dir, { recursive: true } );
 	return dir;
 }
@@ -286,9 +287,9 @@ async function activeTheme( root, cfg, inv, wpcli ) {
 	return children.length === 1 ? { slug: children[ 0 ].slug, how: `предположительно — единственная дочерняя (${ why })` } : { slug: '', how: why };
 }
 
-// Оригинал темы с wordpress.org → .claude/.state/originals/<slug>-<версия>/<slug>/.
+// Оригинал темы с wordpress.org → .claude/.state/cache/originals/<slug>-<версия>/<slug>/.
 async function originalTheme( root, slug, version ) {
-	const base = join( stateDir( root ), 'originals', `${ slug }-${ version }` );
+	const base = join( stateDir( root, 'cache' ), 'originals', `${ slug }-${ version }` );
 	const dir = join( base, slug );
 	if ( existsSync( dir ) ) {
 		return dir;
@@ -550,7 +551,7 @@ async function run( root ) {
 		} else {
 			env.debugLog = 'нет (WP_DEBUG_LOG выключен или лог в другом месте)';
 		}
-		writeFileSync( join( stateDir( root ), `env-${ envName }.json` ), JSON.stringify( env, null, '\t' ) + '\n' );
+		writeFileSync( join( stateDir( root, 'reports' ), `env-${ envName }.json` ), JSON.stringify( env, null, '\t' ) + '\n' );
 		say();
 		say( '## Окружение' );
 		say( `Сайт: ${ siteUrl || '— (нет URL)' } → ${ page.status ?? 'нет ответа' }${ page.status === 401 ? ' (закрыт паролем — httpAuth в конфиг)' : '' }` );
@@ -559,7 +560,7 @@ async function run( root ) {
 
 		report.findings = { red, yellow, notes };
 		report.verdict = red.length ? 'red' : yellow.length ? 'yellow' : 'green';
-		writeFileSync( join( stateDir( root ), `recon-${ envName }.json` ), JSON.stringify( report, null, '\t' ) + '\n' );
+		writeFileSync( join( stateDir( root, 'reports' ), `recon-${ envName }.json` ), JSON.stringify( report, null, '\t' ) + '\n' );
 	} );
 
 	say();
@@ -568,11 +569,11 @@ async function run( root ) {
 	yellow.forEach( ( l ) => say( `  🟡 ${ l }` ) );
 	notes.forEach( ( l ) => say( `  · ${ l }` ) );
 	say();
-	say( `Отчёт: .claude/.state/recon-${ envName }.json → security-check.md и audit.md (recon.md). Решение по 🟡 / 🔴 — за пользователем.` );
+	say( `Отчёт: .claude/.state/reports/recon-${ envName }.json → security-check.md и audit.md (recon.md). Решение по 🟡 / 🔴 — за пользователем.` );
 }
 
 function envTable( root ) {
-	const dir = join( root, '.claude', '.state' );
+	const dir = join( root, '.claude', '.state', 'reports' );
 	const envs = [ 'prod', 'stage', 'local' ].map( ( n ) => join( dir, `env-${ n }.json` ) ).filter( existsSync ).map( ( p ) => JSON.parse( readFileSync( p, 'utf8' ) ) );
 	if ( ! envs.length ) {
 		console.log( 'Снимков окружения нет — сначала recon.mjs (и с --stage).' );

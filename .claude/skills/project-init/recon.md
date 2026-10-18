@@ -19,7 +19,7 @@ node .claude/skills/project-ops/scripts/recon.mjs [--stage] [--deep]
 - **С WP-CLI ещё:** администраторы, `siteurl` / `home`.
 - **Окружение:** веб-сервер, PHP, CDN, кеш (по заголовкам), drop-in кеша, `debug.log` (размер, Fatal, Warning). `recon.mjs --env-table` — прод / stage / локально рядом, отличия жирным.
 
-Итог 🟢 / 🟡 / 🔴 с причинами и `.claude/.state/recon-<прод|stage|local>.json` — из него агент пишет `security-check.md` и `audit.md`.
+Итог 🟢 / 🟡 / 🔴 с причинами и `.claude/.state/reports/recon-<прод|stage|local>.json` — из него агент пишет `security-check.md` и `audit.md`.
 **«НЕ проверено»** в итоге (пустой список файлов, нечитаемое ядро) — это не «чисто»: назвать пользователю.
 Сайт за паролем (HTTP 401) — `httpAuth` в конфиге (`sftp.md`), иначе проверка сайта и активной темы его не видит.
 Внешние сигналы (Google Safe Browsing, Sucuri SiteCheck) скрипт не трогает — агент в браузере, с разрешения пользователя.
@@ -101,7 +101,7 @@ ls wp-content/mu-plugins
    git tag baseline
    ```
 
-3. Дамп БД — **на сервере**: `wp db export ../claude-backup-baseline-<дата>.sql` (вне каталога сайта). В проект не скачивать (решение 026).
+3. Дамп БД — **на сервере**: `ssh-exec.mjs dump baseline` → `../claude-backup/<время>-baseline.sql` (вне каталога сайта, права 600). В проект не скачивать (решение 026).
    Без SSH — пользователь делает бэкап в панели хостинга.
 4. Stage на своём VPS или у клиента отмечен на этапе 3 — **создать сейчас** (человек: WP Toolkit или средства хостинга), затем чек-лист «безопасный stage» (раздел 5).
 

@@ -61,7 +61,7 @@ check( 'лишний PHP в корне найден', /корень сайта: 
 check( 'local-xdebuginfo.php не тревога', ! /local-xdebuginfo/.test( outText ) );
 check( 'правка темы найдена', new RegExp( `тема ${ THEME } ${ VERSION }: изменено 1.*functions\\.php` ).test( outText ) );
 check( 'нечитаемое ядро — НЕ проверено, не «чисто»', /ядро: не читаются .* НЕ проверены/.test( outText ) && /лишние PHP НЕ проверены/.test( outText ) );
-check( 'JSON-отчёт записан', JSON.parse( readFileSync( join( proj, '.claude', '.state', 'recon-local.json' ), 'utf8' ) ).verdict === 'red' );
+check( 'JSON-отчёт записан', JSON.parse( readFileSync( join( proj, '.claude', '.state', 'reports', 'recon-local.json' ), 'utf8' ) ).verdict === 'red' );
 
 if ( fails ) {
 	console.log( outText );

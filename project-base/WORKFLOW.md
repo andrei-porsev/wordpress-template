@@ -351,7 +351,8 @@ git checkout before-woo-update -- .
 | Чтение исходников | Read / Grep / Glob (правило `read-code`) | Не парсеры, не `detect_*.mjs`, не обход через Shell |
 | SCSS-заготовка | `project-base/_starter/` | Копируется в тему/плагин при старте |
 | Скрины редизайна | `project-base/screenshots/` | Референс старого сайта, в git |
-| Дампы БД | на сервере (`../claude-backup-<время>.sql`, бэкап хостинга) | Не в git (персональные данные); агент не читает |
+| Дампы БД | на сервере: `../claude-backup/<время>[-метка].sql` (хук или `ssh-exec.mjs dump`, права 600), бэкап хостинга | Не в git (персональные данные); агент не читает; чистит человек |
+| Технические файлы агента | `.claude/.state/` (не в git): в корне — журнал `audit.log` и постоянное состояние (снимки синхронизации, known-hosts, проверки скиллов и версии); `sessions/` — состояние хуков по сессиям; `backups/edit/<сессия>/` — серверные файлы до заливки; `backups/deploy/<время>/` — до выкатки; `backups/db/` — дампы локального сайта; `backups/config/<время>/` — конфиги stage до перезаписи; `reports/` — разведка; `cache/originals/` — оригиналы тем и плагинов | `sessions/` и `backups/edit/` старше 30 дней удаляет хук при старте сессии; остальное — человек |
 | SFTP/FTP-конфиг | `.vscode/sftp.json`, `.vscode/sftp-ftp.json` | В git |
 | Слаги и префикс | `project-base/project.json` | Источник для whitelist в `.gitignore` и `sftp.json` |
 | Хуки и разрешения агента | `.claude/settings.json`, `.claude/hooks/` | Границы правок, заливка, напоминание о карте; защищены от правки агентом |

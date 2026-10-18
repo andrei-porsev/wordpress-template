@@ -540,7 +540,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 | Где | Правка | Решение |
 |-----|--------|---------|
-| — | Ожидающих правок нет (патч `pilot2-guard-wpcli` применён 2026-10-18, selftest 68 / 68) | — |
+| `.claude/hooks/{guard-wpcli,lib,post-edit,session-start,selftest}.mjs`, `.claude/settings.json` | патч `state-layout.patch`: автодамп через `ssh-exec dump` (→ `../claude-backup/`, 600), `sessions/`, `backups/edit/`, чистка старше 30 дней; allow `ssh-exec.mjs dump*` и `--stage dump*`; selftest 69 | решение 034 |
 
 Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 

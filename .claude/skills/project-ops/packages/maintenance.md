@@ -15,7 +15,7 @@ node .claude/skills/project-ops/scripts/recon.mjs
 
 ## 2. Бэкап
 
-Прод: `ssh-exec.mjs -- wp db export ../claude-backup-<дата>.sql` (после «да»; хук сделает дамп сам) + бэкап файлов средствами хостинга (человек). Без SSH — `no-wpcli.md`.
+Прод: `ssh-exec.mjs dump before-updates` → `../claude-backup/<время>-before-updates.sql` + бэкап файлов средствами хостинга (человек). Без SSH — `no-wpcli.md`.
 Проверить, что бэкапы хостинга вообще делаются и свежие (человек: дата последнего бэкапа в панели).
 
 ## 3. Обновления на stage

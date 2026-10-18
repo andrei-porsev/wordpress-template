@@ -37,7 +37,7 @@ node .claude/skills/project-ops/scripts/local-exec.mjs status
 
 ## 3. Подготовить копию
 
-Через `local-exec.mjs -- wp …` — изменения после «да» пользователя (`--yes`), перед каждым — дамп в `.claude/.state/local-backup-*.sql`:
+Через `local-exec.mjs -- wp …` — изменения после «да» пользователя (`--yes`), перед каждым — дамп в `.claude/.state/backups/db/local-*.sql`:
 
 1. Домен: `wp search-replace '<прод>' '<локальный>' --dry-run`, затем без `--dry-run` с `--yes`.
 2. Почта: плагин-заглушка (LocalWP перехватывает письма сам — Mailpit).

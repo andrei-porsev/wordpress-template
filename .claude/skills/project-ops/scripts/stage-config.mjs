@@ -10,7 +10,7 @@
  *       после переключения DNS: sftp-stage.json → sftp.json (старый → sftp.old.json), ssh — так же, снимок синхронизации — тоже
  * Без --yes — только план. Секреты в вывод не попадают; данные сервера в контекст агента — тоже (только итоговые поля без паролей).
  */
-import { copyFileSync, existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { homeDir, readHome } from './home.mjs';
 
@@ -79,15 +79,20 @@ function build() {
 	console.log( `Stage по профилю «${ key }» (${ srv.title || srv.host }):` );
 	console.log( `  ${ sftp.username }@${ sftp.host }:${ sftp.port } · ${ sftp.remotePath } · ${ sftp.privateKeyPath ? 'вход по ключу' : 'вход по паролю — вписать в sftp-stage.json' }${ sftp.httpAuth ? ' · httpAuth есть' : '' }` );
 	console.log( `  Stage / dev URL: ${ url || '—' }` );
+	// Копии старых конфигов — вне .vscode (он в git, а в конфигах пароли).
+	const bakDir = join( root, '.claude', '.state', 'backups', 'config', new Date().toISOString().replace( /[-:T]/g, '' ).slice( 0, 14 ) );
 	for ( const f of [ 'sftp-stage.json', 'ssh-stage.json' ] ) {
-		existsSync( vs( f ) ) && console.log( `  ⚠️ ${ f } уже есть — будет перезаписан (старый → ${ f.replace( '.json', '.bak.json' ) })` );
+		existsSync( vs( f ) ) && console.log( `  ⚠️ ${ f } уже есть — будет перезаписан (старый → .claude/.state/backups/config/<время>/${ f })` );
 	}
 	if ( ! yes ) {
 		console.log( 'ПЛАН: показать пользователю; после «да» — тот же запуск с --yes.' );
 		return;
 	}
 	for ( const f of [ 'sftp-stage.json', 'ssh-stage.json' ] ) {
-		existsSync( vs( f ) ) && copyFileSync( vs( f ), vs( f.replace( '.json', '.bak.json' ) ) );
+		if ( existsSync( vs( f ) ) ) {
+			mkdirSync( bakDir, { recursive: true } );
+			copyFileSync( vs( f ), join( bakDir, f ) );
+		}
 	}
 	writeJson( vs( 'sftp-stage.json' ), sftp );
 	writeJson( vs( 'ssh-stage.json' ), ssh );

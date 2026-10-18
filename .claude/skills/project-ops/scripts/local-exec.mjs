@@ -5,7 +5,7 @@
  *   local-exec.mjs link [--yes]                                                 — junction своих тем / плагинов в сайт (проект отдельно от сайта)
  *   local-exec.mjs -- wp <команда> [--yes]                                      — WP-CLI локального сайта
  * Защита: чтение — сразу; разрушающее (db drop / reset, site empty / delete) — запрещено; меняющее — только с --yes (после «да» пользователя)
- * и с дампом БД в .claude/.state/local-backup-<время>.sql перед изменением. Не WP-CLI — не выполняется.
+ * и с дампом БД в .claude/.state/backups/db/local-<время>.sql перед изменением. Не WP-CLI — не выполняется.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
@@ -235,9 +235,9 @@ async function cmdWp() {
 		if ( ! yes ) {
 			throw new Error( `wp ${ wpArgs.join( ' ' ) } меняет локальный сайт: спросить пользователя, после «да» — тот же запуск с --yes (перед изменением — дамп БД).` );
 		}
-		const dir = join( root, '.claude', '.state' );
+		const dir = join( root, '.claude', '.state', 'backups', 'db' );
 		mkdirSync( dir, { recursive: true } );
-		const dump = join( dir, `local-backup-${ new Date().toISOString().replace( /[-:]/g, '' ).slice( 0, 15 ) }.sql` );
+		const dump = join( dir, `local-${ new Date().toISOString().replace( /[-:]/g, '' ).slice( 0, 15 ) }.sql` );
 		const d = wp( cfg, [ 'db', 'export', dump ] );
 		if ( d.status !== 0 ) {
 			throw new Error( `Дамп БД не сделан — изменение не выполняю: ${ ( d.stdout + d.stderr ).trim() }` );

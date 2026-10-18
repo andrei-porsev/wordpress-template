@@ -1,0 +1,152 @@
+diff --git a/.claude/hooks/guard-wpcli.mjs b/.claude/hooks/guard-wpcli.mjs
+index 0d32994..a0a856c 100644
+--- a/.claude/hooks/guard-wpcli.mjs
++++ b/.claude/hooks/guard-wpcli.mjs
+@@ -8,7 +8,7 @@
+  *    на stage (--stage) — allow после автодампа, кроме db import и произвольного кода; local-exec.mjs — разбирается так же,
+  *         eval, составные команды (; && ||), прочие команды;
+  *  - без решения: чтение WP-CLI — дальше permissions.allow.
+- * Перед первым ask по WP-CLI за сессию хук сам делает дамп БД (wp db export ../claude-backup-<время>.sql).
++ * Перед первым ask по WP-CLI за сессию хук сам делает дамп БД (ssh-exec.mjs dump → ../claude-backup/<время>.sql, права 600).
+  * Решения (кроме allow) пишутся в журнал .claude/.state/audit.log.
+  * Сбой хука: exit 0. Поэтому 'allow' даём только самим хуком, а в permissions.allow — точечные команды чтения.
+  */
+@@ -50,12 +50,11 @@ function dumpOnce() {
+ 	if ( st[ key ] ) {
+ 		return `Дамп в этой сессии уже сделан: ${ st[ key ] }.`;
+ 	}
+-	const stamp = new Date().toISOString().replace( /[-:T]/g, '' ).slice( 0, 14 );
+-	const file = `../claude-backup-${ stamp }.sql`;
+ 	const script = join( root, '.claude', 'skills', 'project-ops', 'scripts', 'ssh-exec.mjs' );
+ 	const flag = command.includes( ' --stage' ) ? [ '--stage' ] : [];
+-	const r = spawnSync( process.execPath, [ script, ...flag, '--', `wp db export ${ file }` ], { cwd: root, encoding: 'utf8', timeout: 120000 } );
+-	if ( r.status === 0 ) {
++	const r = spawnSync( process.execPath, [ script, ...flag, 'dump' ], { cwd: root, encoding: 'utf8', timeout: 120000 } );
++	const file = ( ( r.stdout || '' ).match( /^DUMP (\S+)/m ) || [] )[ 1 ];
++	if ( r.status === 0 && file ) {
+ 		st[ key ] = file;
+ 		saveState( root, input.session_id, st );
+ 		audit( root, 'db-dump', { file } );
+diff --git a/.claude/hooks/lib.mjs b/.claude/hooks/lib.mjs
+index 2b43c66..e935e0e 100644
+--- a/.claude/hooks/lib.mjs
++++ b/.claude/hooks/lib.mjs
+@@ -134,7 +134,7 @@ export function projectSlugs( project, kind ) {
+ }
+ 
+ function statePath( root, sessionId ) {
+-	return join( root, '.claude', '.state', `${ sessionId || 'default' }.json` );
++	return join( root, '.claude', '.state', 'sessions', `${ sessionId || 'default' }.json` );
+ }
+ 
+ export function loadState( root, sessionId ) {
+@@ -147,7 +147,7 @@ export function loadState( root, sessionId ) {
+ 
+ export function saveState( root, sessionId, state ) {
+ 	const path = statePath( root, sessionId );
+-	mkdirSync( join( root, '.claude', '.state' ), { recursive: true } );
++	mkdirSync( join( root, '.claude', '.state', 'sessions' ), { recursive: true } );
+ 	writeFileSync( path, JSON.stringify( state ) );
+ }
+ 
+diff --git a/.claude/hooks/post-edit.mjs b/.claude/hooks/post-edit.mjs
+index cec1ca9..f716f10 100644
+--- a/.claude/hooks/post-edit.mjs
++++ b/.claude/hooks/post-edit.mjs
+@@ -221,7 +221,7 @@ await safe( async () => {
+ 	// 2) Хвост debug.log до заливки, чтобы потом увидеть только новые ошибки: по SSH — число строк, без SSH — копия файла по SFTP.
+ 	let logBase = null;
+ 	let logCopy = null;
+-	const stateDir = join( root, '.claude', '.state', 'backup', sessionId || 'default' );
++	const stateDir = join( root, '.claude', '.state', 'backups', 'edit', sessionId || 'default' );
+ 	if ( isPhp ) {
+ 		const r = run( 'ssh-exec.mjs', [ '--', 'wc -l < wp-content/debug.log 2>/dev/null || echo 0' ] );
+ 		if ( r.status === 0 ) {
+diff --git a/.claude/hooks/selftest.mjs b/.claude/hooks/selftest.mjs
+index 8d505eb..cd2d463 100644
+--- a/.claude/hooks/selftest.mjs
++++ b/.claude/hooks/selftest.mjs
+@@ -4,7 +4,7 @@
+  * Код выхода 0 — все кейсы прошли. Так project-init проверяет хуки при старте проекта.
+  */
+ import { spawnSync } from 'node:child_process';
+-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
++import { existsSync, mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+ import { tmpdir } from 'node:os';
+ import { dirname, join } from 'node:path';
+ import { fileURLToPath } from 'node:url';
+@@ -143,6 +143,20 @@ for ( const [ c, want ] of [
+ const ss = spawnSync( process.execPath, [ join( hooks, 'session-start.mjs' ) ], { input: JSON.stringify( { cwd: root } ), encoding: 'utf8', env, timeout: 30000 } );
+ check( 'session-start: напоминание project-init для ненастроенного проекта', /project-init/.test( ss.stdout ) ? 'pass' : 'fail', 'pass' );
+ 
++// session-start: sessions/ и backups/edit/ старше 30 дней удаляются, свежие и backups/db/ — нет.
++const st = join( root, '.claude', '.state' );
++const old = new Date( Date.now() - 40 * 86400000 );
++for ( const rel of [ 'sessions/old.json', 'sessions/new.json', 'backups/edit/old/a.php', 'backups/db/old.sql' ] ) {
++	mkdirSync( join( st, rel, '..' ), { recursive: true } );
++	writeFileSync( join( st, rel ), 'x' );
++}
++for ( const rel of [ 'sessions/old.json', 'backups/edit/old', 'backups/db/old.sql' ] ) {
++	utimesSync( join( st, rel ), old, old );
++}
++spawnSync( process.execPath, [ join( hooks, 'session-start.mjs' ) ], { input: JSON.stringify( { cwd: root } ), encoding: 'utf8', env, timeout: 30000 } );
++const pruned = ! existsSync( join( st, 'sessions/old.json' ) ) && ! existsSync( join( st, 'backups/edit/old' ) ) && existsSync( join( st, 'sessions/new.json' ) ) && existsSync( join( st, 'backups/db/old.sql' ) );
++check( 'session-start: чистка sessions/ и backups/edit/ старше 30 дней, дампы не трогает', pruned ? 'pass' : 'fail', 'pass' );
++
+ rmSync( root, { recursive: true, force: true } );
+ console.log( `\n${ total - failed } из ${ total } прошли` );
+ process.exit( failed ? 1 : 0 );
+diff --git a/.claude/hooks/session-start.mjs b/.claude/hooks/session-start.mjs
+index f83cb1b..2e4674d 100644
+--- a/.claude/hooks/session-start.mjs
++++ b/.claude/hooks/session-start.mjs
+@@ -1,13 +1,35 @@
+ /**
+  * SessionStart: напоминание агенту о порядке «сверка → обновления → работа» (WORKFLOW.md → 2.1).
+  * Проект не настроен (шапка INDEX из прочерков) — напоминание о project-init вместо сверки.
++ * Чистит .claude/.state/sessions/ и backups/edit/ старше 30 дней (дампы и копии выкаток — человек).
+  */
+-import { existsSync, readFileSync } from 'node:fs';
++import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+ import { join } from 'node:path';
+ import { readInput, repoRoot, safe } from './lib.mjs';
+ 
++const KEEP_DAYS = 30;
++
++function prune( dir ) {
++	if ( ! existsSync( dir ) ) {
++		return;
++	}
++	const limit = Date.now() - KEEP_DAYS * 86400000;
++	for ( const name of readdirSync( dir ) ) {
++		const path = join( dir, name );
++		try {
++			if ( statSync( path ).mtimeMs < limit ) {
++				rmSync( path, { recursive: true, force: true } );
++			}
++		} catch {
++			// Занятый или удалённый файл — пропустить.
++		}
++	}
++}
++
+ await safe( () => {
+ 	const root = repoRoot( readInput() );
++	prune( join( root, '.claude', '.state', 'sessions' ) );
++	prune( join( root, '.claude', '.state', 'backups', 'edit' ) );
+ 	const index = join( root, 'project-base', 'INDEX.md' );
+ 	const name = existsSync( index ) ? ( readFileSync( index, 'utf8' ).split( '\n' ).find( ( l ) => l.startsWith( '- Название / домен:' ) ) || '' ) : '';
+ 	const configured = name && ! name.trim().endsWith( '—' );
+diff --git a/.claude/settings.json b/.claude/settings.json
+index 9aaf833..93bcdd0 100644
+--- a/.claude/settings.json
++++ b/.claude/settings.json
+@@ -9,6 +9,8 @@
+ 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs upload*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs sync-down*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs test*)",
++			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs dump*)",
++			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage dump*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage test*)",
+ 			"Bash(npm install --prefix .claude/skills/project-ops)",
+ 			"Bash(node .claude/skills/project-ops/scripts/install-deps.mjs*)",

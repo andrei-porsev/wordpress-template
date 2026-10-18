@@ -943,7 +943,7 @@ export async function cmdDeploy( cfg, root, yes, stage ) {
 		}
 
 		const stamp = new Date().toISOString().replace( /[-:]/g, '' ).replace( 'T', '-' ).slice( 0, 15 );
-		const backupDir = join( root, '.claude', '.state', 'deploy-backup', stamp );
+		const backupDir = join( root, '.claude', '.state', 'backups', 'deploy', stamp );
 		const had = {};
 		for ( const rel of [ ...toUpload, ...toRemove ] ) {
 			had[ rel ] = await api.existsType( remoteOf( cfg, rel ) ) === 'file';
