@@ -3,9 +3,10 @@
  * Пароль в stdout не пишем.
  * --stdin <файл> — локальный файл во ввод команды на сервере (длинный текст: wp post update <ID> -), на сервер он не записывается.
  * dump [метка] — дамп БД в ../claude-backup/<время>[-метка].sql (вне каталога сайта, права 600); печатает «DUMP <путь>».
+ * media <файл> [--name=…] [--title=…] [--alt=…] — картинка в медиатеку со своим именем файла (через ../claude-tmp/, затем удаляется); печатает «MEDIA <ID> <имя>».
  */
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertAuthAllowed, checkKeyFile, diagnose, hostKeyError, hostVerifier, isAuthError, recordAuth } from './connect.mjs';
 
@@ -143,8 +144,46 @@ function execRemote( root, cfg, command, Client, input = null ) {
 					if ( code ) {
 						reject( new Error( `exit ${ code }` ) );
 					} else {
-						resolve();
+						resolve( out );
 					}
+				} );
+			} );
+		} );
+		conn.on( 'error', ( e ) => {
+			if ( hk.hostKeyChanged ) {
+				reject( hostKeyError( cfg, hk ) );
+				return;
+			}
+			if ( isAuthError( e ) ) {
+				recordAuth( root, cfg, false );
+			}
+			const why = diagnose( e, cfg );
+			reject( new Error( why ? `${ e.message } — ${ why }` : e.message ) );
+		} );
+		conn.connect( { ...authOpts( cfg ), hostVerifier: hostVerifier( root, cfg, hk ) } );
+	} );
+}
+
+// Локальный файл по SFTP в каталог на сервере (относительно cwd), каталог создаётся.
+function sftpPut( root, cfg, Client, local, dir, name ) {
+	assertAuthAllowed( root, cfg );
+	const hk = {};
+	const base = `${ cfg.cwd.replace( /\/+$/, '' ) }/${ dir }`;
+	return new Promise( ( resolve, reject ) => {
+		const conn = new Client();
+		conn.on( 'ready', () => {
+			recordAuth( root, cfg, true );
+			conn.sftp( ( err, sftp ) => {
+				if ( err ) {
+					conn.end();
+					reject( err );
+					return;
+				}
+				sftp.mkdir( base, () => {
+					sftp.fastPut( local, `${ base }/${ name }`, ( e ) => {
+						conn.end();
+						e ? reject( e ) : resolve();
+					} );
 				} );
 			} );
 		} );
@@ -166,6 +205,32 @@ function execRemote( root, cfg, command, Client, input = null ) {
 // Дампы БД — на уровень выше каталога сайта: по HTTP недоступны.
 const DUMP_DIR = '../claude-backup';
 
+// Фото для медиатеки — временно вне каталога сайта, после импорта удаляется.
+const MEDIA_TMP = '../claude-tmp';
+const MEDIA_EXT = /\.(jpe?g|png|webp|gif|avif)$/i;
+
+// media <файл> [--name=<имя-латиницей>] [--title=…] [--alt=…]: имя файла в медиатеке — своё, а не как у источника.
+function parseMedia( argv, root ) {
+	const file = argv[ 3 ];
+	if ( ! file || file.startsWith( '--' ) ) {
+		throw new Error( 'Нужно: media <файл> [--name=…] [--title=…] [--alt=…]' );
+	}
+	const path = resolve( root, file );
+	if ( SECRET_FILE.test( path ) || ! MEDIA_EXT.test( path ) ) {
+		throw new Error( `media: ${ file } — только картинки (jpg, png, webp, gif, avif).` );
+	}
+	if ( ! existsSync( path ) ) {
+		throw new Error( `media: нет файла ${ file }` );
+	}
+	const opt = ( key ) => ( argv.find( ( a ) => a.startsWith( `--${ key }=` ) ) || '' ).slice( key.length + 3 );
+	const ext = path.match( MEDIA_EXT )[ 0 ].toLowerCase().replace( '.jpeg', '.jpg' );
+	const slug = ( opt( 'name' ) || basename( path ).replace( MEDIA_EXT, '' ) ).toLowerCase().replace( /[^a-z0-9-]+/g, '-' ).replace( /-+/g, '-' ).replace( /^-|-$/g, '' ).slice( 0, 80 );
+	if ( ! slug ) {
+		throw new Error( 'media: имя файла — латиницей (--name=moleben-lavra-2026-10-12).' );
+	}
+	return { mode: 'media', path, name: `${ slug }${ ext }`, title: opt( 'title' ), alt: opt( 'alt' ) };
+}
+
 // Доступы и секреты во ввод команды не отправляем.
 const SECRET_FILE = /(^|[\\/])(\.vscode[\\/]|\.env|wp-config|\.ssh[\\/])|\.(pem|key|ppk)$|id_(rsa|ed25519)/i;
 
@@ -180,7 +245,7 @@ function readStdinFile( file, root ) {
 	return readFileSync( path );
 }
 
-function parseArgs( argv ) {
+function parseArgs( argv, root ) {
 	const dash = argv.indexOf( '--' );
 	const si = argv.indexOf( '--stdin' );
 	const stdin = si >= 0 && ( dash < 0 || si < dash ) ? argv[ si + 1 ] : null;
@@ -206,14 +271,17 @@ function parseArgs( argv ) {
 		const stamp = new Date().toISOString().replace( /[-:T]/g, '' ).slice( 0, 14 );
 		return { mode: 'dump', file: `${ DUMP_DIR }/${ stamp }${ label ? `-${ label }` : '' }.sql` };
 	}
-	throw new Error( 'Команда: test | dump [метка] | -- <cmd>' );
+	if ( mode === 'media' ) {
+		return parseMedia( argv, root );
+	}
+	throw new Error( 'Команда: test | dump [метка] | media <файл> | -- <cmd>' );
 }
 
 try {
 	ensureDeps();
 	const { Client } = await import( 'ssh2' );
 	const root = repoRoot();
-	const args = parseArgs( process.argv );
+	const args = parseArgs( process.argv, root );
 	const input = args.stdin ? readStdinFile( args.stdin, root ) : null;
 	const cfg = loadConfig( root );
 	if ( args.mode === 'test' ) {
@@ -227,6 +295,13 @@ try {
 		// umask 077: каталог 700 и файл 600 — в дампе хеши паролей пользователей.
 		await execRemote( root, cfg, `umask 077 && mkdir -p ${ DUMP_DIR } && wp db export ${ shQuote( args.file ) } --quiet && ls -l ${ shQuote( args.file ) }`, Client );
 		console.log( 'DUMP', args.file );
+	} else if ( args.mode === 'media' ) {
+		await sftpPut( root, cfg, Client, args.path, MEDIA_TMP, args.name );
+		const tmp = `${ MEDIA_TMP }/${ args.name }`;
+		const flags = [ args.title && `--title=${ shQuote( args.title ) }`, args.alt && `--alt=${ shQuote( args.alt ) }` ].filter( Boolean ).join( ' ' );
+		// Временный файл удаляется и при ошибке импорта; код выхода — от импорта.
+		const out = await execRemote( root, cfg, `wp media import ${ shQuote( tmp ) } ${ flags } --porcelain; s=$?; rm -f ${ shQuote( tmp ) }; exit $s`, Client );
+		console.log( 'MEDIA', ( out.match( /^\d+/m ) || [ '?' ] )[ 0 ], args.name );
 	} else {
 		await execRemote( root, cfg, args.cmd, Client, input );
 	}

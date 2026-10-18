@@ -540,7 +540,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 | Где | Правка | Решение |
 |-----|--------|---------|
-| — | Ожидающих правок нет (патч `state-layout` применён 2026-10-18, selftest 69 / 69) | — |
+| `.claude/hooks/guard-wpcli.mjs`, `selftest.mjs`, `.claude/settings.json` | патч `news-drafts.patch`: `wp post create` с единственным `--post_status=draft` — allow; allow `ssh-exec.mjs media*` и `--stage media*`; selftest 73 | решение 035 |
 
 Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 
