@@ -8,6 +8,7 @@
  *    на stage (--stage) — allow после автодампа, кроме db import и произвольного кода; local-exec.mjs — разбирается так же,
  *         eval, составные команды (; && ||), прочие команды;
  *  - без решения: чтение WP-CLI — дальше permissions.allow.
+ * allow: wp post create с единственным --post_status=draft (черновик публикует человек).
  * Перед первым ask по WP-CLI за сессию хук сам делает дамп БД (ssh-exec.mjs dump → ../claude-backup/<время>.sql, права 600).
  * Решения (кроме allow) пишутся в журнал .claude/.state/audit.log.
  * Сбой хука: exit 0. Поэтому 'allow' даём только самим хуком, а в permissions.allow — точечные команды чтения.
@@ -244,6 +245,11 @@ await safe( () => {
 
 	if ( READ_VERBS.has( verb ) ) {
 		return;
+	}
+	// Новый черновик опубликованный сайт не меняет — без подтверждения; публикует человек.
+	const statuses = [ ...remote.matchAll( /--post_status[= ]['"]?([\w-]+)/g ) ].map( ( m ) => m[ 1 ] );
+	if ( group === 'post' && verb === 'create' && statuses.length === 1 && statuses[ 0 ] === 'draft' ) {
+		decide( 'allow', 'Новый черновик: опубликованный сайт не меняется.' );
 	}
 	decide( 'ask', `wp ${ words.join( ' ' ) } меняет сайт: подтверди. ${ DUMP_HINT }` );
 } );

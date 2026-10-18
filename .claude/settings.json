@@ -11,6 +11,8 @@
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs test*)",
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs dump*)",
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage dump*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs media*)",
+			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage media*)",
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage test*)",
 			"Bash(npm install --prefix .claude/skills/project-ops)",
 			"Bash(node .claude/skills/project-ops/scripts/install-deps.mjs*)",
