@@ -176,6 +176,10 @@ await safe( () => {
 	if ( /\bsudo\b|\bmkfs\b|>\s*\/dev\/(sd|nvme)/i.test( remote ) ) {
 		decide( 'deny', 'Заблокировано: sudo и разрушающие команды на сервере запрещены.' );
 	}
+	// Разрушающее WP-CLI — блок и внутри составной команды.
+	if ( /\bwp\s+(db\s+(drop|reset|clean)|site\s+(empty|delete))\b/.test( remote ) ) {
+		decide( 'deny', `Заблокировано: разрушающая команда WP-CLI. ${ DUMP_HINT }` );
+	}
 	const write = findWrite( remote );
 	if ( write ) {
 		decide( 'deny', `Заблокировано: на сервере файлы не пишем (${ write }). Код правится локально, на сервер его заливает хук post-edit или sftp-sync upload.` );
@@ -190,6 +194,9 @@ await safe( () => {
 	}
 
 	if ( /[;&|`]|\$\(/.test( remote ) ) {
+		// WP-CLI в составной команде (текст через $(… | base64 -d)) — подтверждение с автодампом; на stage тоже подтверждение.
+		ctx.wp = /^(\S*\/)?wp\s/.test( remote );
+		ctx.strict = true;
 		decide( 'ask', 'Составная команда на сервере (; & | ` $()): подтверди.' );
 	}
 

@@ -441,7 +441,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 | 6 | `.vscode`, `.cursor` в корне прода (залил Cursor до шаблона; отдают 403) | `recon` и `session-check`: 🟡 «файлы разработки в корне»; удаляет человек (удалены, 404) |
 | 7 | `aios-bootstrap.php` и `uploads/aios/…` — 🟡 в каждой сверке | известные файлы AIOS — «не тревога», только при установленном плагине; `recon` проверяет их содержимое |
 | 8 | `--apply` стоп из-за уже влитой ветки `template-update` прошлого обновления | влитая — удаляется сама, невлитая — стоп; тест |
-| 9 | `wp post update … "$(echo … \| base64 -d)"` — «составная», автодамп не запускался (рерайт новостей) | патч `pilot2-guard-wpcli.patch` — человек; до применения — дамп вручную |
+| 9 | `wp post update … "$(echo … \| base64 -d)"` — «составная», автодамп не запускался (рерайт новостей) | патч `pilot2-guard-wpcli.patch` применён человеком, selftest 68 / 68 |
 
 **Пилот** — `<папка проектов>\SiteA\Sites\SiteA Live` (GitHub `andrei-porsev/site-a`):
 шаблон от 2026-09-20 (опора — коммит `a09fea4`), без `skills.json` и хуков части D, есть устаревший `ACCESS.local.md`. Прод без stage на своём VPS, SSH + SFTP, WP-CLI нет (chroot).
@@ -538,7 +538,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 | Где | Правка | Решение |
 |-----|--------|---------|
-| `.claude/hooks/guard-wpcli.mjs`, `selftest.mjs` | патч `pilot2-guard-wpcli.patch`: составная команда с `wp` в начале (текст через `$(… \| base64 -d)`) — подтверждение **с автодампом**, на stage тоже подтверждение; `wp db drop/reset/clean`, `site empty/delete` внутри составной — блок; selftest +3 (68) | находка 9 второго обновления пилота |
+| — | Ожидающих правок нет (патч `pilot2-guard-wpcli` применён 2026-10-18, selftest 68 / 68) | — |
 
 Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 
