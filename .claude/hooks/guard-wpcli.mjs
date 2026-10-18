@@ -8,7 +8,7 @@
  *    на stage (--stage) — allow после автодампа, кроме db import и произвольного кода; local-exec.mjs — разбирается так же,
  *         eval, составные команды (; && ||), прочие команды;
  *  - без решения: чтение WP-CLI — дальше permissions.allow.
- * allow: wp post create с единственным --post_status=draft (черновик публикует человек).
+ * allow: wp post create с единственным --post_status=draft (черновик публикует человек); сброс кеша плагинов (CACHE_PURGE).
  * Перед первым ask по WP-CLI за сессию хук сам делает дамп БД (ssh-exec.mjs dump → ../claude-backup/<время>.sql, права 600).
  * Решения (кроме allow) пишутся в журнал .claude/.state/audit.log.
  * Сбой хука: exit 0. Поэтому 'allow' даём только самим хуком, а в permissions.allow — точечные команды чтения.
@@ -22,6 +22,9 @@ const READ_VERBS = new Set( [
 	'search', 'path', 'count', 'verify-checksums', 'check-update', 'structure', 'tables', 'size',
 	'export', 'flush',
 ] );
+
+// Сброс кеша страниц и минификации (project-ops → cache.md): контент и код не меняются.
+const CACHE_PURGE = new Set( [ 'litespeed-purge all', 'w3-total-cache flush', 'super-cache flush', 'sg purge', 'rocket clean' ] );
 
 // Команды оболочки, которые только читают.
 const READ_CMDS = new Set( [ 'tail', 'head', 'cat', 'ls', 'wc', 'grep', 'pwd', 'date', 'df', 'du', 'stat', 'sort', 'uniq', 'cut' ] );
@@ -243,6 +246,9 @@ await safe( () => {
 		decide( 'ask', `wp ${ group } выполняет произвольный код или меняет конфиг: подтверди.` );
 	}
 
+	if ( CACHE_PURGE.has( `${ group } ${ verb }` ) ) {
+		decide( 'allow', 'Сброс кеша сайта: контент и код не меняются.' );
+	}
 	if ( READ_VERBS.has( verb ) ) {
 		return;
 	}

@@ -540,7 +540,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 | Где | Правка | Решение |
 |-----|--------|---------|
-| `.claude/hooks/guard-wpcli.mjs`, `selftest.mjs` | Сброс кеша плагинов без подтверждения (решение 037): патч `project-base/plans/cache-purge.patch`, selftest 79 / 79 | человек: `git apply` |
+| — | Ожидающих правок нет (патч `cache-purge` применён 2026-10-18, selftest 79 / 79) | — |
 
 Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 
