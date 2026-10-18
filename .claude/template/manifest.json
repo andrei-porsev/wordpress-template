@@ -1,6 +1,6 @@
 {
 	"$comment": "Версия шаблона и категории файлов для template-update.mjs (решение 032). Версию поднимает агент, когда изменения шаблона готовы для проектов.",
-	"version": "2026.10.18.10",
+	"version": "2026.10.18.11",
 	"repo": "git@github.com:andrei-porsev/wordpress-template.git",
 	"exclude": [
 		"project-base/plans/**"
@@ -53,6 +53,13 @@
 		{
 			"id": "2026.10.18",
 			"doc": ".claude/template/migrations/2026.10.18.md",
+			"structured": {
+				"ACCESS.md": {}
+			}
+		},
+		{
+			"id": "2026.10.18.11",
+			"doc": ".claude/template/migrations/2026.10.18.11.md",
 			"structured": {
 				"ACCESS.md": {}
 			}

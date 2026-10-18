@@ -1,0 +1,50 @@
+diff --git a/.claude/hooks/guard-wpcli.mjs b/.claude/hooks/guard-wpcli.mjs
+index 47f9457..9148444 100644
+--- a/.claude/hooks/guard-wpcli.mjs
++++ b/.claude/hooks/guard-wpcli.mjs
+@@ -8,7 +8,7 @@
+  *    на stage (--stage) — allow после автодампа, кроме db import и произвольного кода; local-exec.mjs — разбирается так же,
+  *         eval, составные команды (; && ||), прочие команды;
+  *  - без решения: чтение WP-CLI — дальше permissions.allow.
+- * allow: wp post create с единственным --post_status=draft (черновик публикует человек).
++ * allow: wp post create с единственным --post_status=draft (черновик публикует человек); сброс кеша плагинов (CACHE_PURGE).
+  * Перед первым ask по WP-CLI за сессию хук сам делает дамп БД (ssh-exec.mjs dump → ../claude-backup/<время>.sql, права 600).
+  * Решения (кроме allow) пишутся в журнал .claude/.state/audit.log.
+  * Сбой хука: exit 0. Поэтому 'allow' даём только самим хуком, а в permissions.allow — точечные команды чтения.
+@@ -23,6 +23,9 @@ const READ_VERBS = new Set( [
+ 	'export', 'flush',
+ ] );
+ 
++// Сброс кеша страниц и минификации (project-ops → cache.md): контент и код не меняются.
++const CACHE_PURGE = new Set( [ 'litespeed-purge all', 'w3-total-cache flush', 'super-cache flush', 'sg purge', 'rocket clean' ] );
++
+ // Команды оболочки, которые только читают.
+ const READ_CMDS = new Set( [ 'tail', 'head', 'cat', 'ls', 'wc', 'grep', 'pwd', 'date', 'df', 'du', 'stat', 'sort', 'uniq', 'cut' ] );
+ 
+@@ -243,6 +246,9 @@ await safe( () => {
+ 		decide( 'ask', `wp ${ group } выполняет произвольный код или меняет конфиг: подтверди.` );
+ 	}
+ 
++	if ( CACHE_PURGE.has( `${ group } ${ verb }` ) ) {
++		decide( 'allow', 'Сброс кеша сайта: контент и код не меняются.' );
++	}
+ 	if ( READ_VERBS.has( verb ) ) {
+ 		return;
+ 	}
+diff --git a/.claude/hooks/selftest.mjs b/.claude/hooks/selftest.mjs
+index 414222c..aec7343 100644
+--- a/.claude/hooks/selftest.mjs
++++ b/.claude/hooks/selftest.mjs
+@@ -87,6 +87,12 @@ for ( const [ c, want ] of [
+ 	[ `${ S } -- wp post create --post_title=x`, 'ask' ],
+ 	[ `${ S } -- wp post create --post_status=draft --post_status=publish`, 'ask' ],
+ 	[ `${ S } -- wp post update 5 --post_status=draft`, 'ask' ],
++	[ `${ S } -- wp litespeed-purge all`, 'allow' ],
++	[ `${ S } --stage -- wp w3-total-cache flush all`, 'allow' ],
++	[ `${ S } -- wp rocket clean --confirm`, 'allow' ],
++	[ `${ S } -- wp sg purge`, 'allow' ],
++	[ `${ S } -- wp litespeed-purge all ; echo hi`, 'ask' ],
++	[ `${ S } -- wp litespeed-option set x 1`, 'ask' ],
+ 	[ `${ S } -- wp search-replace a b`, 'ask' ],
+ 	[ `${ S } -- wp search-replace a b --dry-run`, 'pass' ],
+ 	[ `${ S } -- "wp option get siteurl"`, 'pass' ],

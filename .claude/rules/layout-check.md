@@ -2,6 +2,8 @@
 paths:
   - "**/*.scss"
   - "**/*.php"
+  - "wp-content/**/*.css"
+  - "wp-content/**/*.js"
   - "**/templates/**/*.html"
   - "**/parts/**/*.html"
   - "**/patterns/**/*.html"
@@ -58,6 +60,27 @@ paths:
 	return { width: w, scrollWidth: document.documentElement.scrollWidth, overflow: document.documentElement.scrollWidth > w, bad };
 }
 ```
+
+## Что отдаёт сайт
+
+Итог — по тому, что сайт отдаёт посетителю после заливки и сброса кеша (`project-ops` → `cache.md`). Подставленный в страницу свежий CSS — только предварительная проверка вёрстки;
+в отчёте тогда «посетители пока не видят: кеш <плагин> не сброшен».
+Новое правило дошло — его селектор есть в одном из стилей страницы (`browser_evaluate`, результат — адрес стиля, не `null`):
+
+```js
+async () => {
+	const sel = '.acme-to-top'; // селектор из правки
+	for ( const l of document.querySelectorAll( 'link[rel="stylesheet"]' ) ) {
+		const css = await ( await fetch( l.href, { cache: 'no-store' } ) ).text();
+		if ( css.includes( sel ) ) {
+			return l.href;
+		}
+	}
+	return [ ...document.querySelectorAll( 'style' ) ].some( ( s ) => s.textContent.includes( sel ) ) ? 'inline <style>' : null;
+}
+```
+
+`null` после сброса — смотреть, подключён ли стиль и не отдаёт ли кеш старую страницу (перезагрузка с `?nocache=<время>`). JS — так же по `script[src]`.
 
 ## Остальное
 

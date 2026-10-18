@@ -377,6 +377,22 @@ async function coreExtraFiles( tree, sums ) {
 	return php.filter( ( rel ) => ! sums[ rel ] );
 }
 
+// Кеш страниц и минификации: после заливки CSS / JS его сбрасывают (project-ops → cache.md).
+const CACHE_PLUGINS = {
+	'litespeed-cache': 'LiteSpeed Cache',
+	'w3-total-cache': 'W3 Total Cache',
+	'wp-super-cache': 'WP Super Cache',
+	'wp-rocket': 'WP Rocket',
+	'sg-cachepress': 'SiteGround Optimizer',
+	'wp-optimize': 'WP-Optimize',
+	autoptimize: 'Autoptimize',
+	'wp-fastest-cache': 'WP Fastest Cache',
+	breeze: 'Breeze',
+	'cache-enabler': 'Cache Enabler',
+	'hummingbird-performance': 'Hummingbird',
+	nitropack: 'NitroPack',
+};
+
 function envFromHeaders( h ) {
 	if ( ! h ) {
 		return {};
@@ -557,6 +573,8 @@ async function run( root ) {
 		say( `Сайт: ${ siteUrl || '— (нет URL)' } → ${ page.status ?? 'нет ответа' }${ page.status === 401 ? ' (закрыт паролем — httpAuth в конфиг)' : '' }` );
 		say( `Веб-сервер: ${ env.server || '?' } · PHP: ${ env.poweredBy || env.wpInfo || 'не виден (скрыт сервером)' } · CDN: ${ env.cdn || 'нет' } · кеш: ${ env.cache || 'не виден' }` );
 		say( `Drop-in кеша: ${ inv.dropIns.join( ', ' ) || 'нет' } · debug.log: ${ env.debugLog }` );
+		const cachePlugins = inv.plugins.filter( ( p ) => CACHE_PLUGINS[ p.slug ] ).map( ( p ) => CACHE_PLUGINS[ p.slug ] );
+		say( `Плагины кеша: ${ cachePlugins.join( ', ' ) || 'нет' }${ cachePlugins.length ? ' → ACCESS.md → «Кеш сайта» (project-ops → cache.md)' : '' }` );
 
 		report.findings = { red, yellow, notes };
 		report.verdict = red.length ? 'red' : yellow.length ? 'yellow' : 'green';

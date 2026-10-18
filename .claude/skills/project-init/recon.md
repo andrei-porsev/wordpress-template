@@ -17,7 +17,7 @@ node .claude/skills/project-ops/scripts/recon.mjs [--stage] [--deep]
   **активная тема и её родитель против оригинала с wordpress.org** (правки в чужой теме сотрёт обновление); с WP-CLI — `verify-checksums`.
 - **Вредоносное:** шаблоны (`eval(base64_decode` и т.п.; по SSH — `grep` по `wp-content`, без SSH — mu-plugins и drop-in), PHP в `uploads` (известные кеши плагинов — не тревога), лишний PHP в корне, `.htaccess` (редиректы на чужие домены, base64, подмешивание PHP).
 - **С WP-CLI ещё:** администраторы, `siteurl` / `home`.
-- **Окружение:** веб-сервер, PHP, CDN, кеш (по заголовкам), drop-in кеша, `debug.log` (размер, Fatal, Warning). `recon.mjs --env-table` — прод / stage / локально рядом, отличия жирным.
+- **Окружение:** веб-сервер, PHP, CDN, кеш (по заголовкам), плагины кеша (по списку плагинов → `ACCESS.md` → «Кеш сайта», `project-ops` → `cache.md`), drop-in кеша, `debug.log` (размер, Fatal, Warning). `recon.mjs --env-table` — прод / stage / локально рядом, отличия жирным.
 
 Итог 🟢 / 🟡 / 🔴 с причинами и `.claude/.state/reports/recon-<прод|stage|local>.json` — из него агент пишет `security-check.md` и `audit.md`.
 **«НЕ проверено»** в итоге (пустой список файлов, нечитаемое ядро) — это не «чисто»: назвать пользователю.
