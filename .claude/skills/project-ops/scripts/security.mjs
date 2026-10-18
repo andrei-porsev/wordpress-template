@@ -18,10 +18,18 @@ export const CORE_ROOT_PHP = new Set( [
 // Drop-in в wp-content: object-cache / advanced-cache — кеш, db / sunrise — подмена БД и мультисайт. Неожиданный — повод проверить.
 export const DROP_INS = [ 'object-cache.php', 'advanced-cache.php', 'db.php', 'db-error.php', 'install.php', 'maintenance.php', 'sunrise.php', 'php-error.php', 'fatal-error-handler.php' ];
 
-// PHP в uploads, который пишут сами плагины (скомпилированные шаблоны) — не тревога, но считается.
+// PHP в uploads, который пишут сами плагины (скомпилированные шаблоны, правила) — не тревога, но считается.
+// plugin — известен только при установленном плагине: под знакомые имена маскируется вредоносный код.
+const AIOS = 'all-in-one-wp-security-and-firewall';
 export const KNOWN_UPLOAD_PHP = [
 	{ prefix: 'wp-content/uploads/cache/wpml/twig/', label: 'кеш шаблонов WPML' },
+	{ prefix: 'wp-content/uploads/aios/', label: 'правила файервола AIOS', plugin: AIOS },
 ];
+
+// PHP в корне сайта, который ставят плагины (auto_prepend_file в .user.ini).
+export const KNOWN_ROOT_PLUGIN_PHP = { 'aios-bootstrap.php': { label: 'файервол AIOS', plugin: AIOS } };
+
+const knownFor = ( k, plugins ) => k && ( ! k.plugin || Boolean( plugins?.has( k.plugin ) ) );
 
 export const MALWARE_PATTERNS = [
 	/eval\s*\(\s*base64_decode/i,
@@ -38,12 +46,13 @@ export function md5( buf ) {
 	return createHash( 'md5' ).update( buf ).digest( 'hex' );
 }
 
-export function splitUploadPhp( files ) {
+// plugins — Set слагов установленных плагинов.
+export function splitUploadPhp( files, plugins = null ) {
 	const known = {};
 	const unknown = [];
 	for ( const f of files ) {
 		const k = KNOWN_UPLOAD_PHP.find( ( x ) => f.startsWith( x.prefix ) );
-		if ( k ) {
+		if ( knownFor( k, plugins ) ) {
 			known[ k.label ] = ( known[ k.label ] || 0 ) + 1;
 		} else {
 			unknown.push( f );
@@ -114,10 +123,17 @@ export async function checkCoreKeyFiles( api, cfg, sums ) {
 // PHP в корне, который кладут инструменты разработки, — не тревога.
 export const KNOWN_ROOT_PHP = new Set( [ 'local-xdebuginfo.php' ] );
 
-// PHP в корне сайта, которого нет в ядре (кроме известных служебных).
-export async function rootExtraPhp( api, cfg ) {
+// PHP в корне сайта, которого нет в ядре (кроме известных служебных); known — файлы установленных плагинов («имя — плагин»).
+export async function rootExtraPhp( api, cfg, plugins = null, known = [] ) {
 	const list = ( await api.list( remoteOf( cfg, '' ) ) ) || [];
-	return list.filter( ( i ) => entryType( i ) !== 'dir' && i.name.endsWith( '.php' ) && ! CORE_ROOT_PHP.has( i.name ) && ! KNOWN_ROOT_PHP.has( i.name ) ).map( ( i ) => i.name );
+	return list.filter( ( i ) => entryType( i ) !== 'dir' && i.name.endsWith( '.php' ) && ! CORE_ROOT_PHP.has( i.name ) && ! KNOWN_ROOT_PHP.has( i.name ) ).map( ( i ) => i.name ).filter( ( name ) => {
+		const k = KNOWN_ROOT_PLUGIN_PHP[ name ];
+		if ( knownFor( k, plugins ) ) {
+			known.push( `${ name } — ${ k.label }` );
+			return false;
+		}
+		return true;
+	} );
 }
 
 // Папки и файлы редакторов и разработки в корне сайта — в них бывают доступы к серверу (sftp.json, .env).

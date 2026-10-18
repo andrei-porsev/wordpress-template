@@ -211,7 +211,7 @@ async function versionsSection( api, cfg, root, label ) {
 	return { now, prev };
 }
 
-async function quickSecurity( api, cfg, root, core, viaSsh ) {
+async function quickSecurity( api, cfg, root, core, viaSsh, plugins ) {
 	const warn = [];
 	const info = [];
 	// Ядро: контрольные суммы ключевых файлов с wordpress.org.
@@ -226,17 +226,19 @@ async function quickSecurity( api, cfg, root, core, viaSsh ) {
 		}
 	}
 	// Корень: PHP-файлы, которых нет в ядре.
-	const extra = await rootExtraPhp( api, cfg );
+	const rootKnown = [];
+	const extra = await rootExtraPhp( api, cfg, plugins, rootKnown );
 	if ( extra.length ) {
 		warn.push( `корень сайта: PHP не из ядра — ${ extra.join( ', ' ) }` );
 	}
+	rootKnown.length && info.push( `корень сайта: ${ rootKnown.join( ', ' ) } (не тревога)` );
 	const dev = await rootDevFiles( api, cfg );
 	if ( dev.length ) {
 		warn.push( `корень сайта: файлы разработки — ${ dev.join( ', ' ) } (${ DEV_ROOT_HINT })` );
 	}
 	// uploads: PHP там быть не должно (кроме известных кешей плагинов).
 	const reportUploads = ( files, how ) => {
-		const { known, unknown } = splitUploadPhp( files );
+		const { known, unknown } = splitUploadPhp( files, plugins );
 		if ( unknown.length ) {
 			warn.push( `uploads: PHP-файлы (${ unknown.length }) — ${ unknown.slice( 0, 5 ).join( ', ' ) }${ unknown.length > 5 ? ' …' : '' }` );
 		}
@@ -294,7 +296,7 @@ async function serverSection( root, configName, label ) {
 				}
 			}
 			const { now } = await versionsSection( api, cfg, root, label );
-			await quickSecurity( api, cfg, root, now.core, viaSsh );
+			await quickSecurity( api, cfg, root, now.core, viaSsh, new Set( Object.keys( now.plugins ) ) );
 		} );
 	} catch ( e ) {
 		say( `## Сервер (${ label })` );

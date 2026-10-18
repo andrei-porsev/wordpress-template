@@ -438,7 +438,8 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 | 3 | `ssh-exec` в одной строке с локальными командами — `guard-wpcli` считает всё после `--` серверным | хук не меняем (строгость задана в `selftest`); `ssh.md`: `ssh-exec` — отдельным вызовом |
 | 4 | назначение `wpCli` в `ssh.json` неясно | `ssh.md`: только для `test`, PATH — `~/.bashrc` |
 | 5 | агент проверял HTTP через `curl` (закрыт в `deny`) | правило `ops`: HEAD-запрос в браузере |
-| 6 | `.vscode`, `.cursor` в корне прода (залил Cursor до шаблона; отдают 403) | `recon` и `session-check`: 🟡 «файлы разработки в корне»; удаляет человек |
+| 6 | `.vscode`, `.cursor` в корне прода (залил Cursor до шаблона; отдают 403) | `recon` и `session-check`: 🟡 «файлы разработки в корне»; удаляет человек (удалены, 404) |
+| 7 | `aios-bootstrap.php` и `uploads/aios/…` — 🟡 в каждой сверке | известные файлы AIOS — «не тревога», только при установленном плагине; `recon` проверяет их содержимое |
 
 **Пилот** — `<папка проектов>\SiteA\Sites\SiteA Live` (GitHub `andrei-porsev/site-a`):
 шаблон от 2026-09-20 (опора — коммит `a09fea4`), без `skills.json` и хуков части D, есть устаревший `ACCESS.local.md`. Прод без stage на своём VPS, SSH + SFTP, WP-CLI нет (chroot).

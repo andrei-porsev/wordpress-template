@@ -484,17 +484,18 @@ async function run( root ) {
 
 		// Вредоносные шаблоны, uploads, корень, .htaccess.
 		progress( 'вредоносные шаблоны, uploads, .htaccess' );
+		const slugs = new Set( inv.plugins.map( ( p ) => p.slug ) );
 		if ( viaSsh ) {
 			const g = ssh( root, `grep -rlE "${ MALWARE_GREP }" --include='*.php' wp-content | grep -v '/uploads/cache/' | head -n 30` );
 			const hits = g.text.split( '\n' ).filter( ( l ) => l.endsWith( '.php' ) );
 			hits.length ? red.push( `вредоносные шаблоны: ${ hits.join( ', ' ) }` ) : notes.push( 'вредоносные шаблоны в wp-content: не найдены (grep по SSH)' );
 			const up = ssh( root, "grep -rl --include='*.php' '' wp-content/uploads | head -n 2000" );
-			const { known, unknown } = splitUploadPhp( up.text.split( '\n' ).filter( ( l ) => l.endsWith( '.php' ) && ! l.endsWith( '/index.php' ) ) );
+			const { known, unknown } = splitUploadPhp( up.text.split( '\n' ).filter( ( l ) => l.endsWith( '.php' ) && ! l.endsWith( '/index.php' ) ), slugs );
 			unknown.length && red.push( `uploads: PHP (${ unknown.length }) — ${ unknown.slice( 0, 5 ).join( ', ' ) }` );
 			Object.keys( known ).length && notes.push( `uploads: ${ Object.entries( known ).map( ( [ l, n ] ) => `${ l }: ${ n }` ).join( ', ' ) } — не тревога` );
 		} else {
 			const { files, dirs } = await uploadsPhpBySftp( api, cfg );
-			const { unknown } = splitUploadPhp( files );
+			const { unknown } = splitUploadPhp( files, slugs );
 			unknown.length && red.push( `uploads: PHP — ${ unknown.slice( 0, 5 ).join( ', ' ) }` );
 			notes.push( `uploads: обход SFTP на 2 уровня (${ dirs } папок)` );
 			const toScan = [ ...inv.muPlugins.filter( ( n ) => n.endsWith( '.php' ) ).map( ( n ) => `wp-content/mu-plugins/${ n }` ), ...inv.dropIns.map( ( d ) => `wp-content/${ d }` ) ];
@@ -504,8 +505,14 @@ async function run( root ) {
 			}
 			notes.push( 'вредоносные шаблоны: без SSH проверены только mu-plugins и drop-in' );
 		}
-		const extraRoot = await rootExtraPhp( api, cfg );
+		const rootKnown = [];
+		const extraRoot = await rootExtraPhp( api, cfg, slugs, rootKnown );
 		extraRoot.length && yellow.push( `корень сайта: PHP не из ядра — ${ extraRoot.join( ', ' ) }` );
+		// Файлы плагинов в корне известны по имени, содержимое всё равно проверяем.
+		for ( const k of rootKnown ) {
+			const name = k.split( ' — ' )[ 0 ];
+			scanMalware( await readText( api, remoteOf( cfg, name ), 0 ) ).length ? red.push( `вредоносные шаблоны: ${ name }` ) : notes.push( `корень сайта: ${ k } — не тревога, шаблоны не найдены` );
+		}
 		const devRoot = await rootDevFiles( api, cfg );
 		devRoot.length && yellow.push( `корень сайта: файлы разработки — ${ devRoot.join( ', ' ) } (${ DEV_ROOT_HINT })` );
 		const siteUrl = accessUrl( root, isStage ? 'Stage / dev URL' : 'Публичный URL' );
