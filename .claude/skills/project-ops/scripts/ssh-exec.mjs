@@ -5,7 +5,8 @@
  * dump [метка] — дамп БД в ../claude-backup/<время>[-метка].sql (вне каталога сайта, права 600); печатает «DUMP <путь>».
  * media <файл> [--name=…] [--title=…] [--alt=…] — картинка в медиатеку со своим именем файла (через ../claude-tmp/, затем удаляется); печатает «MEDIA <ID> <имя>».
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertAuthAllowed, checkKeyFile, diagnose, hostKeyError, hostVerifier, isAuthError, recordAuth } from './connect.mjs';
@@ -209,6 +210,26 @@ const DUMP_DIR = '../claude-backup';
 const MEDIA_TMP = '../claude-tmp';
 const MEDIA_EXT = /\.(jpe?g|png|webp|gif|avif)$/i;
 
+// Непрозрачный PNG (фотография) → JPEG 85, не больше 2560 px: в 3–5 раз легче. PNG с прозрачностью (логотип, схема) — как есть.
+async function photoAsJpeg( path ) {
+	if ( ! /\.png$/i.test( path ) ) {
+		return null;
+	}
+	let sharp;
+	try {
+		sharp = ( await import( 'sharp' ) ).default;
+	} catch {
+		console.error( 'media: нет sharp (install-deps.mjs) — PNG загружается без перевода в JPEG.' );
+		return null;
+	}
+	if ( ! ( await sharp( path ).stats() ).isOpaque ) {
+		return null;
+	}
+	const out = join( mkdtempSync( join( tmpdir(), 'media-' ) ), 'photo.jpg' );
+	await sharp( path ).rotate().resize( { width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true } ).jpeg( { quality: 85, mozjpeg: true } ).toFile( out );
+	return out;
+}
+
 // media <файл> [--name=<имя-латиницей>] [--title=…] [--alt=…]: имя файла в медиатеке — своё, а не как у источника.
 function parseMedia( argv, root ) {
 	const file = argv[ 3 ];
@@ -296,6 +317,12 @@ try {
 		await execRemote( root, cfg, `umask 077 && mkdir -p ${ DUMP_DIR } && wp db export ${ shQuote( args.file ) } --quiet && ls -l ${ shQuote( args.file ) }`, Client );
 		console.log( 'DUMP', args.file );
 	} else if ( args.mode === 'media' ) {
+		const jpeg = await photoAsJpeg( args.path );
+		if ( jpeg ) {
+			console.error( `media: PNG-фото → JPEG (${ Math.round( statSync( args.path ).size / 1024 ) } → ${ Math.round( statSync( jpeg ).size / 1024 ) } КБ)` );
+			args.path = jpeg;
+			args.name = args.name.replace( /\.png$/i, '.jpg' );
+		}
 		await sftpPut( root, cfg, Client, args.path, MEDIA_TMP, args.name );
 		const tmp = `${ MEDIA_TMP }/${ args.name }`;
 		const flags = [ args.title && `--title=${ shQuote( args.title ) }`, args.alt && `--alt=${ shQuote( args.alt ) }` ].filter( Boolean ).join( ' ' );
