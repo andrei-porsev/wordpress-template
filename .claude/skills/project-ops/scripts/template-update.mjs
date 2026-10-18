@@ -717,9 +717,13 @@ function cmdApply( t, p, results, mig ) {
 	if ( ! p.clean ) {
 		fail( 'В проекте есть незакоммиченное — закоммить и сверь с сервером до обновления.' );
 	}
-	const branches = gitText( p.root, [ 'branch', '--list', BRANCH ] );
-	if ( branches ) {
-		fail( `Ветка ${ BRANCH } уже есть — заверши или удали прошлое обновление.` );
+	// Ветка прошлого обновления, уже влитая в текущую, — удаляется; невлитая — стоп.
+	if ( gitText( p.root, [ 'branch', '--list', BRANCH ] ) ) {
+		if ( ! gitText( p.root, [ 'branch', '--merged', 'HEAD', '--list', BRANCH ] ) ) {
+			fail( `Ветка ${ BRANCH } уже есть и не влита в ${ p.branch } — заверши или удали прошлое обновление.` );
+		}
+		git( p.root, [ 'branch', '-q', '-d', BRANCH ] );
+		console.log( `Ветка прошлого обновления ${ BRANCH } уже влита — удалена.` );
 	}
 	let tag = `before-template-update-${ t.manifest.version }`;
 	for ( let i = 2; gitText( p.root, [ 'tag', '--list', tag ] ); i++ ) {

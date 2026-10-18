@@ -140,14 +140,14 @@ check( '3 повторный прогон: нечего менять', ! /зам
 // 4. Новая версия: конфликт в CLAUDE.md, предок запоминается.
 git( proj, 'checkout', '-q', 'main' );
 git( proj, 'merge', '-q', '--ff-only', 'template-update' );
-git( proj, 'branch', '-q', '-d', 'template-update' );
 put( proj, 'CLAUDE.md', read( proj, 'CLAUDE.md' ).replace( 'строка 10', 'строка 10 — проект' ) );
 commit( proj, 'правка CLAUDE.md' );
 put( tpl, 'CLAUDE.md', read( tpl, 'CLAUDE.md' ).replace( 'строка 10', 'строка 10 — шаблон v3' ) );
 put( tpl, '.claude/template/manifest.json', read( tpl, '.claude/template/manifest.json' ).replace( '"version": "2026.01.01"', '"version": "2026.01.02"' ) );
 commit( tpl, 'шаблон v3' );
 r = run( '--apply' );
-check( '4 конфликт найден и не тронут', /CLAUDE\.md — слияние: конфликтов 1/.test( r.out ) && read( proj, 'CLAUDE.md' ).includes( 'строка 10 — проект' ), r.out );
+check( '4 влитая ветка прошлого обновления удалена сама', /уже влита — удалена/.test( r.out ), r.out );
+check( '4 конфликт найден и не тронут',/CLAUDE\.md — слияние: конфликтов 1/.test( r.out ) && read( proj, 'CLAUDE.md' ).includes( 'строка 10 — проект' ), r.out );
 r = run();
 check( '4 конфликт виден и после применения', /CLAUDE\.md — слияние: конфликтов 1/.test( r.out ), r.out );
 run( '--take', 'template', 'CLAUDE.md' );

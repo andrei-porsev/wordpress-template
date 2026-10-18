@@ -439,6 +439,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 | 4 | назначение `wpCli` в `ssh.json` неясно | `ssh.md`: только для `test`, PATH — `~/.bashrc` |
 | 5 | агент проверял HTTP через `curl` (закрыт в `deny`) | правило `ops`: HEAD-запрос в браузере |
 | 6 | `.vscode`, `.cursor` в корне прода (залил Cursor до шаблона; отдают 403) | `recon` и `session-check`: 🟡 «файлы разработки в корне»; удаляет человек (удалены, 404) |
+| 8 | `--apply` стоп из-за уже влитой ветки `template-update` прошлого обновления | влитая — удаляется сама, невлитая — стоп; тест |
 | 7 | `aios-bootstrap.php` и `uploads/aios/…` — 🟡 в каждой сверке | известные файлы AIOS — «не тревога», только при установленном плагине; `recon` проверяет их содержимое |
 
 **Пилот** — `<папка проектов>\SiteA\Sites\SiteA Live` (GitHub `andrei-porsev/site-a`):
