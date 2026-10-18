@@ -1,6 +1,7 @@
 /**
  * SSH: .vscode/ssh.json, пустые поля — из sftp.json.
  * Пароль в stdout не пишем.
+ * --stdin <файл> — локальный файл во ввод команды на сервере (длинный текст: wp post update <ID> -), на сервер он не записывается.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -101,7 +102,7 @@ function shQuote( s ) {
 	return `'${ String( s ).replace( /'/g, `'\\''` ) }'`;
 }
 
-function execRemote( root, cfg, command, Client ) {
+function execRemote( root, cfg, command, Client, input = null ) {
 	const keyProblem = checkKeyFile( cfg );
 	if ( keyProblem ) {
 		return Promise.reject( new Error( keyProblem ) );
@@ -127,6 +128,9 @@ function execRemote( root, cfg, command, Client ) {
 				stream.stderr.on( 'data', ( d ) => {
 					errOut += d;
 				} );
+				if ( input ) {
+					stream.end( input );
+				}
 				stream.on( 'close', ( code ) => {
 					conn.end();
 					if ( out ) {
@@ -158,14 +162,33 @@ function execRemote( root, cfg, command, Client ) {
 	} );
 }
 
+// Доступы и секреты во ввод команды не отправляем.
+const SECRET_FILE = /(^|[\\/])(\.vscode[\\/]|\.env|wp-config|\.ssh[\\/])|\.(pem|key|ppk)$|id_(rsa|ed25519)/i;
+
+function readStdinFile( file, root ) {
+	const path = resolve( root, file );
+	if ( SECRET_FILE.test( path ) ) {
+		throw new Error( `--stdin: ${ file } — доступы и секреты на сервер не отправляем.` );
+	}
+	if ( ! existsSync( path ) ) {
+		throw new Error( `--stdin: нет файла ${ file }` );
+	}
+	return readFileSync( path );
+}
+
 function parseArgs( argv ) {
 	const dash = argv.indexOf( '--' );
+	const si = argv.indexOf( '--stdin' );
+	const stdin = si >= 0 && ( dash < 0 || si < dash ) ? argv[ si + 1 ] : null;
+	if ( si >= 0 && ( dash < 0 || si < dash ) && ( ! stdin || stdin === '--' ) ) {
+		throw new Error( 'Нужно: --stdin <файл> -- <команда>, например: --stdin draft.html -- wp post update 123 -' );
+	}
 	if ( dash >= 0 ) {
 		const cmd = argv.slice( dash + 1 ).join( ' ' ).trim();
 		if ( ! cmd ) {
 			throw new Error( 'После -- нужна команда, например: -- wp cache flush' );
 		}
-		return { mode: 'run', cmd };
+		return { mode: 'run', cmd, stdin };
 	}
 	const mode = argv[ 2 ] || '';
 	if ( mode === 'test' ) {
@@ -178,8 +201,9 @@ try {
 	ensureDeps();
 	const { Client } = await import( 'ssh2' );
 	const root = repoRoot();
-	const cfg = loadConfig( root );
 	const args = parseArgs( process.argv );
+	const input = args.stdin ? readStdinFile( args.stdin, root ) : null;
+	const cfg = loadConfig( root );
 	if ( args.mode === 'test' ) {
 		const probe = [
 			'pwd',
@@ -188,7 +212,7 @@ try {
 		await execRemote( root, cfg, probe, Client );
 		console.log( 'OK', cfg.host, cfg.cwd );
 	} else {
-		await execRemote( root, cfg, args.cmd, Client );
+		await execRemote( root, cfg, args.cmd, Client, input );
 	}
 } catch ( err ) {
 	const msg = err instanceof Error ? err.message : String( err );
