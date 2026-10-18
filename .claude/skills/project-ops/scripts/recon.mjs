@@ -11,8 +11,8 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ensureDeps, entryType, httpGet, loadConfig, remoteOf, repoRoot, withClient } from './remote.mjs';
 import {
-	checkCoreKeyFiles, coreChecksums, DROP_INS, htaccessFindings, MALWARE_GREP, md5, pluginChecksums,
-	rootExtraPhp, scanMalware, splitUploadPhp, uploadsPhpBySftp, wporgInfo,
+	checkCoreKeyFiles, coreChecksums, DEV_ROOT_HINT, DROP_INS, htaccessFindings, MALWARE_GREP, md5, pluginChecksums,
+	rootDevFiles, rootExtraPhp, scanMalware, splitUploadPhp, uploadsPhpBySftp, wporgInfo,
 } from './security.mjs';
 
 const scriptsDir = dirname( fileURLToPath( import.meta.url ) );
@@ -506,6 +506,8 @@ async function run( root ) {
 		}
 		const extraRoot = await rootExtraPhp( api, cfg );
 		extraRoot.length && yellow.push( `корень сайта: PHP не из ядра — ${ extraRoot.join( ', ' ) }` );
+		const devRoot = await rootDevFiles( api, cfg );
+		devRoot.length && yellow.push( `корень сайта: файлы разработки — ${ devRoot.join( ', ' ) } (${ DEV_ROOT_HINT })` );
 		const siteUrl = accessUrl( root, isStage ? 'Stage / dev URL' : 'Публичный URL' );
 		const ht = htaccessFindings( await readText( api, remoteOf( cfg, '.htaccess' ), 0 ), siteUrl ? new URL( siteUrl ).hostname : '' );
 		ht.forEach( ( h ) => red.push( `.htaccess: ${ h }` ) );

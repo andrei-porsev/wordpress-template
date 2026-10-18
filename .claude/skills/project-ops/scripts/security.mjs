@@ -120,6 +120,16 @@ export async function rootExtraPhp( api, cfg ) {
 	return list.filter( ( i ) => entryType( i ) !== 'dir' && i.name.endsWith( '.php' ) && ! CORE_ROOT_PHP.has( i.name ) && ! KNOWN_ROOT_PHP.has( i.name ) ).map( ( i ) => i.name );
 }
 
+// Папки и файлы редакторов и разработки в корне сайта — в них бывают доступы к серверу (sftp.json, .env).
+export const DEV_ROOT = new Set( [ '.vscode', '.cursor', '.idea', '.git', '.env', 'sftp-config.json', '.ftpconfig', 'sftp.json' ] );
+
+export async function rootDevFiles( api, cfg ) {
+	const list = ( await api.list( remoteOf( cfg, '' ) ) ) || [];
+	return list.filter( ( i ) => DEV_ROOT.has( i.name ) ).map( ( i ) => i.name );
+}
+
+export const DEV_ROOT_HINT = 'могут быть доступы: код ответа — HEAD-запросом в браузере (403/404 — закрыто), удалить с сервера — человек';
+
 // PHP в uploads без SSH: обход SFTP на depth уровней.
 export async function uploadsPhpBySftp( api, cfg, depth = 2, maxDirs = 300 ) {
 	const found = [];

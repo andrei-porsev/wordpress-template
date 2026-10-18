@@ -615,7 +615,7 @@ export async function cmdList( cfg, rel ) {
 		const remote = remoteOf( cfg, rel || '' );
 		const list = await api.list( remote );
 		if ( ! list ) {
-			throw new Error( `Нет на сервере: ${ rel || '/' }` );
+			throw new Error( `Нет на сервере: ${ remote }` );
 		}
 		for ( const item of list ) {
 			if ( item.name === '.' || item.name === '..' ) {
@@ -629,8 +629,9 @@ export async function cmdList( cfg, rel ) {
 }
 
 export async function cmdTest( cfg ) {
+	let ok = true;
 	await withClient( cfg, async ( api ) => {
-		const ok = await api.exists( cfg.remotePath || '/' );
+		ok = await api.exists( cfg.remotePath || '/' );
 		if ( ! ok ) {
 			const list = await api.list( posix.dirname( cfg.remotePath || '/' ) );
 			if ( ! list ) {
@@ -638,7 +639,8 @@ export async function cmdTest( cfg ) {
 			}
 		}
 	} );
-	console.log( 'OK', cfg.host, cfg.remotePath );
+	// Каталога нет, родитель есть: связь в порядке, но путь неверный (или новый сайт — каталог создаст первая заливка).
+	console.log( ok ? `OK ${ cfg.host } ${ cfg.remotePath }` : `OK ${ cfg.host }, но каталога ${ cfg.remotePath } НЕТ (есть только родитель) — проверить remotePath` );
 }
 
 export async function cmdUpload( cfg, root, rels ) {

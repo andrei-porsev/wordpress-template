@@ -411,8 +411,10 @@ function decide( t, p, pair, ctx ) {
 		const block = gitignoreBlock( cur );
 		theirs = withBlock( theirs, block );
 		base = withBlock( base, block );
-	} else if ( pair.rel === '.claude/settings.json' ) {
-		theirs = settingsMerge( cur, base, theirs );
+	}
+	const kept = [];
+	if ( pair.rel === '.claude/settings.json' ) {
+		theirs = settingsMerge( cur, base, theirs, kept );
 	}
 
 	// tpl — версия шаблона (для метки), theirs — что будет записано.
@@ -428,6 +430,9 @@ function decide( t, p, pair, ctx ) {
 	}
 	if ( same( cur, theirs ) ) {
 		return { ...r, action: 'same' };
+	}
+	if ( kept.length ) {
+		return { ...r, action: 'merge', reason: `сохранено из проекта: ${ kept.join( ', ' ) }` };
 	}
 	if ( p.label?.files?.[ pair.rel ] === hashOf( cur ) || same( cur, base ) || pair.kind === 'skills-json' || pair.rel === '.claude/settings.json' ) {
 		return { ...r, action: 'replace' };
@@ -459,8 +464,8 @@ function skillsJson( t, cur, stacks ) {
 	return jsonBuf( m );
 }
 
-// settings.json: основа шаблона + то, что проект добавил сам после опоры.
-function settingsMerge( cur, base, theirs ) {
+// settings.json: основа шаблона + то, что проект добавил сам после опоры; kept — что сохранено из проекта (для отчёта).
+function settingsMerge( cur, base, theirs, kept = [] ) {
 	const t = readJson( theirs );
 	if ( ! t || ! cur ) {
 		return theirs;
@@ -475,11 +480,13 @@ function settingsMerge( cur, base, theirs ) {
 		const added = ( c.permissions?.[ k ] || [] ).filter( ( x ) => ! was.has( x ) && ! tAll.has( x ) && ! ( out.permissions[ k ] || [] ).includes( x ) );
 		if ( added.length ) {
 			out.permissions[ k ] = [ ...( out.permissions[ k ] || [] ), ...added ];
+			kept.push( `permissions.${ k } +${ added.length }` );
 		}
 	}
 	for ( const [ k, v ] of Object.entries( c.permissions || {} ) ) {
 		if ( ! Array.isArray( v ) && JSON.stringify( v ) !== JSON.stringify( b.permissions?.[ k ] ) ) {
 			out.permissions[ k ] = v;
+			kept.push( `permissions.${ k }` );
 		}
 	}
 	for ( const [ k, v ] of Object.entries( c ) ) {
@@ -487,8 +494,11 @@ function settingsMerge( cur, base, theirs ) {
 			continue;
 		}
 		out[ k ] = v && typeof v === 'object' && ! Array.isArray( v ) && out[ k ] && typeof out[ k ] === 'object' ? { ...out[ k ], ...v } : v;
+		kept.push( k );
 	}
-	return jsonBuf( out );
+	// Порядок ключей — как в проекте, новые ключи шаблона — в конце: в diff видно только изменённое.
+	const order = [ ...Object.keys( c ), ...Object.keys( out ) ].filter( ( k, i, a ) => k in out && a.indexOf( k ) === i );
+	return jsonBuf( Object.fromEntries( order.map( ( k ) => [ k, out[ k ] ] ) ) );
 }
 
 // --- Миграции: механическая часть (разделы и поля markdown) ---

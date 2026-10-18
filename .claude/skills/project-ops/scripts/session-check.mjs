@@ -9,7 +9,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { diffState, ensureDeps, entryType, git, GROUP_TITLES, KIND_TITLES, loadConfig, remoteOf, repoRoot, rootsOrThrow, withClient } from './remote.mjs';
-import { checkCoreKeyFiles, coreChecksums, rootExtraPhp, splitUploadPhp, uploadsPhpBySftp } from './security.mjs';
+import { checkCoreKeyFiles, coreChecksums, DEV_ROOT_HINT, rootDevFiles, rootExtraPhp, splitUploadPhp, uploadsPhpBySftp } from './security.mjs';
 
 const scriptsDir = dirname( fileURLToPath( import.meta.url ) );
 
@@ -229,6 +229,10 @@ async function quickSecurity( api, cfg, root, core, viaSsh ) {
 	const extra = await rootExtraPhp( api, cfg );
 	if ( extra.length ) {
 		warn.push( `корень сайта: PHP не из ядра — ${ extra.join( ', ' ) }` );
+	}
+	const dev = await rootDevFiles( api, cfg );
+	if ( dev.length ) {
+		warn.push( `корень сайта: файлы разработки — ${ dev.join( ', ' ) } (${ DEV_ROOT_HINT })` );
 	}
 	// uploads: PHP там быть не должно (кроме известных кешей плагинов).
 	const reportUploads = ( files, how ) => {

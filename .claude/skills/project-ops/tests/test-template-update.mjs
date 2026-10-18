@@ -101,7 +101,7 @@ let r = run();
 check( '1 игнорируемые файлы не в отчёте', ! r.out.includes( 'node_modules' ), r.out );
 check( '1 пробный прогон', r.code === 0 && /без метки/.test( r.out ) && /объединить/.test( r.out ), r.out );
 check( '1 стек fse определён по составу', /стеки скиллов: fse \(определены/.test( r.out ), r.out );
-check( '1 хуки — шаг человека', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ) && /settings\.json — заменить/.test( r.out ), r.out );
+check( '1 хуки — шаг человека', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ) && /settings\.json — объединить \(сохранено из проекта: permissions\.allow/.test( r.out ), r.out );
 check( '1 проект не тронут', git( proj, 'status', '--porcelain' ) === '' && ! existsSync( join( proj, '.claude/template.json' ) ) );
 
 // 2. Применение.
@@ -129,7 +129,7 @@ check( '2 метка', label.version === '2026.01.01' && label.migrations.length
 check( '2 всё закоммичено', git( proj, 'status', '--porcelain' ) === '' );
 check( '2 метка помнит опору хуков до обновления', Boolean( label.protectedBase?.project ), JSON.stringify( label.protectedBase ) );
 r = run();
-check( '2 после --apply хуки всё ещё к замене (опора не из новой метки)', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ) && /settings\.json — заменить/.test( r.out ), r.out );
+check( '2 после --apply хуки всё ещё к замене (опора не из новой метки)', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ) && /settings\.json — объединить/.test( r.out ), r.out );
 
 // 3. Миграция отмечена, повторный прогон — без изменений.
 run( '--done', '2026.01.01' );
@@ -159,6 +159,9 @@ const { settingsMerge, structuredMerge, globRe } = await import( pathToFileURL( 
 const buf = ( o ) => Buffer.from( JSON.stringify( o ) );
 const merged = JSON.parse( settingsMerge( buf( { permissions: { allow: [ 'A', 'P' ], defaultMode: 'acceptEdits' }, enabledPlugins: { x: true } } ), buf( { permissions: { allow: [ 'A' ], defaultMode: 'acceptEdits' } } ), buf( { permissions: { allow: [ 'A', 'B' ], defaultMode: 'auto' }, hooks: { Stop: [] } } ) ).toString() );
 check( '5 settings: шаблон + свои правила проекта', merged.permissions.allow.join() === 'A,B,P' && merged.permissions.defaultMode === 'auto' && merged.enabledPlugins?.x === true && Array.isArray( merged.hooks.Stop ), JSON.stringify( merged ) );
+const kept = [];
+const ordered = JSON.parse( settingsMerge( buf( { enabledPlugins: { x: true }, permissions: { allow: [ 'A' ] } } ), buf( { permissions: { allow: [ 'A' ] } } ), buf( { permissions: { allow: [ 'A', 'B' ] }, hooks: {} } ), kept ).toString() );
+check( '5 settings: порядок ключей проекта, список сохранённого', Object.keys( ordered ).join() === 'enabledPlugins,permissions,hooks' && kept.join() === 'enabledPlugins', `${ Object.keys( ordered ) } | ${ kept }` );
 
 // 6. Разметка: раздел без места в шаблоне уходит в конец.
 const sm = structuredMerge( '# T\n\n## A\n\n- X: —\n', '# P\n\n## A\n\n- X: 1\n\n## Свой\n\nтекст\n' );
