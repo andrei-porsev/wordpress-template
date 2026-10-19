@@ -540,7 +540,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 | Где | Правка | Решение |
 |-----|--------|---------|
-| — | Ожидающих правок нет (патч `cache-purge` применён 2026-10-18, selftest 79 / 79) | — |
+| `.claude/settings.json` → `permissions.allow` | `shot-diff.mjs*` без подтверждения (решение 046): патч `project-base/plans/shot-diff-allow.patch` | человек: `git apply` |
 
 Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 

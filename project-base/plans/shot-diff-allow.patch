@@ -1,0 +1,12 @@
+diff --git a/.claude/settings.json b/.claude/settings.json
+index 7ee523c..5cc5d21 100644
+--- a/.claude/settings.json
++++ b/.claude/settings.json
+@@ -23,6 +23,7 @@
+ 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs --stage compare*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs --stage test*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/session-check.mjs*)",
++			"Bash(node .claude/skills/project-ops/scripts/shot-diff.mjs*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/recon.mjs*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/connect-check.mjs*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/machine-check.mjs*)",
