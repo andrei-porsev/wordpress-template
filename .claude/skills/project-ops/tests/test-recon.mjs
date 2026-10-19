@@ -8,7 +8,7 @@ import { appendFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from '
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { tarBin } from '../scripts/security.mjs';
+import { splitMuPlugins, tarBin } from '../scripts/security.mjs';
 
 const SCRIPT = join( dirname( fileURLToPath( import.meta.url ) ), '..', 'scripts', 'recon.mjs' );
 const base = join( tmpdir(), 'wp-template-test-recon' );
@@ -46,6 +46,11 @@ put( remote, 'shell.php', '<?php // лишний в корне\n' );
 put( proj, '.vscode/sftp.json', JSON.stringify( { protocol: 'local', remotePath: remote.replace( /\\/g, '/' ), ignore: [] } ) );
 put( proj, 'ACCESS.md', '- Публичный URL: https://fake.invalid\n' );
 
+// Известный mu-plugin — заметка только при установленном плагине: под знакомое имя маскируется вредоносный код.
+const AIOS = new Set( [ 'all-in-one-wp-security-and-firewall' ] );
+const muWith = splitMuPlugins( [ 'aios-firewall-loader.php', 'x.php' ], AIOS );
+const muWithout = splitMuPlugins( [ 'aios-firewall-loader.php' ], new Set() );
+
 const r = spawnSync( process.execPath, [ SCRIPT, '--deep' ], { cwd: proj, encoding: 'utf8', timeout: 300000 } );
 const outText = r.stdout || '';
 let fails = 0;
@@ -54,6 +59,8 @@ const check = ( name, ok ) => {
 	fails += ok ? 0 : 1;
 };
 check( 'итог 🔴', /Итог: 🔴/.test( outText ) );
+check( 'mu-plugin AIOS при плагине — известный', muWith.known.join() === 'aios-firewall-loader.php — загрузчик файервола AIOS' && muWith.unknown.join() === 'x.php' );
+check( 'mu-plugin AIOS без плагина — выяснить', muWithout.unknown.join() === 'aios-firewall-loader.php' );
 check( 'PHP в uploads найден', /🔴 uploads: PHP — wp-content\/uploads\/2026\/10\/img\.php/.test( outText ) );
 check( 'кеш WPML — не тревога', ! /uploads.*cache\/wpml/.test( outText.split( 'Итог' )[ 1 ] || '' ) || /не тревога/.test( outText ) );
 check( 'вредоносный mu-plugin найден', /🔴 вредоносные шаблоны: wp-content\/mu-plugins\/loader\.php/.test( outText ) );

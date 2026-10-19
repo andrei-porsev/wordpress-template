@@ -31,7 +31,21 @@ export const KNOWN_UPLOAD_PHP = [
 // PHP в корне сайта, который ставят плагины (auto_prepend_file в .user.ini).
 export const KNOWN_ROOT_PLUGIN_PHP = { 'aios-bootstrap.php': { label: 'файервол AIOS', plugin: AIOS } };
 
+// mu-plugins, которые ставят плагины сами.
+export const KNOWN_MU_PLUGINS = { 'aios-firewall-loader.php': { label: 'загрузчик файервола AIOS', plugin: AIOS } };
+
 const knownFor = ( k, plugins ) => k && ( ! k.plugin || Boolean( plugins?.has( k.plugin ) ) );
+
+// mu-plugins → известные («имя — что это», только при установленном плагине) и неизвестные (выяснить, чьи и зачем).
+export function splitMuPlugins( names, plugins = null ) {
+	const known = [];
+	const unknown = [];
+	for ( const name of names ) {
+		const k = KNOWN_MU_PLUGINS[ name ];
+		knownFor( k, plugins ) ? known.push( `${ name } — ${ k.label }` ) : unknown.push( name );
+	}
+	return { known, unknown };
+}
 
 export const MALWARE_PATTERNS = [
 	/eval\s*\(\s*base64_decode/i,

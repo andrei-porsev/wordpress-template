@@ -9,7 +9,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { diffState, ensureDeps, entryType, git, GROUP_TITLES, KIND_TITLES, loadConfig, remoteOf, repoRoot, rootsOrThrow, withClient } from './remote.mjs';
-import { checkCoreKeyFiles, coreChecksums, DEV_ROOT_HINT, rootDevFiles, rootExtraPhp, splitUploadPhp, uploadsPhpBySftp } from './security.mjs';
+import { checkCoreKeyFiles, coreChecksums, DEV_ROOT_HINT, rootDevFiles, rootExtraPhp, splitMuPlugins, splitUploadPhp, uploadsPhpBySftp } from './security.mjs';
 
 const scriptsDir = dirname( fileURLToPath( import.meta.url ) );
 
@@ -198,8 +198,12 @@ async function versionsSection( api, cfg, root, label ) {
 	const newMu = now.muPlugins.filter( ( n ) => ! prev.muPlugins.includes( n ) );
 	say( lines.length ? `Изменилось с ${ prev.checked.slice( 0, 10 ) }:` : `С ${ prev.checked.slice( 0, 10 ) } версии не менялись.` );
 	lines.forEach( ( l ) => say( l ) );
-	if ( newMu.length ) {
-		say( `⚠️ Новые mu-plugins: ${ newMu.join( ', ' ) } — проверить, кто и зачем поставил.` );
+	const mu = splitMuPlugins( newMu, new Set( Object.keys( now.plugins ) ) );
+	if ( mu.known.length ) {
+		say( `Новые mu-plugins от установленных плагинов: ${ mu.known.join( ', ' ) }.` );
+	}
+	if ( mu.unknown.length ) {
+		say( `⚠️ Новые mu-plugins: ${ mu.unknown.join( ', ' ) } — проверить, кто и зачем поставил.` );
 	}
 	if ( prev.plugins.woocommerce && now.plugins.woocommerce && prev.plugins.woocommerce !== now.plugins.woocommerce ) {
 		const ov = wooOverrides( root );

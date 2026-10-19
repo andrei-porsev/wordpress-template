@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { ensureDeps, entryType, httpGet, loadConfig, remoteOf, repoRoot, withClient } from './remote.mjs';
 import {
 	checkCoreKeyFiles, coreChecksums, DEV_ROOT_HINT, DROP_INS, htaccessFindings, MALWARE_GREP, md5, pluginChecksums,
-	rootDevFiles, rootExtraPhp, scanMalware, splitUploadPhp, tarBin, uploadsPhpBySftp, wporgInfo,
+	rootDevFiles, rootExtraPhp, scanMalware, splitMuPlugins, splitUploadPhp, tarBin, uploadsPhpBySftp, wporgInfo,
 } from './security.mjs';
 
 const scriptsDir = dirname( fileURLToPath( import.meta.url ) );
@@ -446,7 +446,9 @@ async function run( root ) {
 			...inv.plugins.filter( ( x ) => x.kind === 'похоже, свой' ).map( ( x ) => `плагин ${ x.slug }` ),
 		];
 		say( `Похоже, свой код (подтвердить у пользователя): ${ own.join( ', ' ) || 'не найден' }` );
-		inv.muPlugins.length && yellow.push( `mu-plugins: ${ inv.muPlugins.join( ', ' ) } — выяснить, чьи и зачем` );
+		const mu = splitMuPlugins( inv.muPlugins, new Set( inv.plugins.map( ( p ) => p.slug ) ) );
+		mu.known.length && notes.push( `mu-plugins известные: ${ mu.known.join( ', ' ) }` );
+		mu.unknown.length && yellow.push( `mu-plugins: ${ mu.unknown.join( ', ' ) } — выяснить, чьи и зачем` );
 
 		const sums = inv.core ? await coreChecksums( inv.core ) : null;
 		if ( wpcli ) {
