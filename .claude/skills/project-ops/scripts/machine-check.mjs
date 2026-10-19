@@ -10,6 +10,7 @@ import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homeDir, readHome, writeHome } from './home.mjs';
+import { tarBin } from './security.mjs';
 
 const STALE_DAYS = 30;
 const skillDir = join( dirname( fileURLToPath( import.meta.url ) ), '..' );
@@ -103,7 +104,8 @@ function check() {
 		key.ppk && ! key.path ? 'ключ PuTTY → OpenSSH: PuTTYgen → Load → Conversions → Export OpenSSH key → ~/.ssh/id_ed25519'
 			: `SSH-ключ (после «да»): ssh-keygen -t ed25519 -f "${ join( homedir(), '.ssh', 'id_ed25519' ) }" -N "" -C "<почта>"` );
 
-	item( 'tar', sh( 'tar', [ '--version' ] ).ok, firstLine( sh( 'tar', [ '--version' ] ).out ).split( ' - ' )[ 0 ] || 'нет', 'tar нужен для сверки тем с оригиналом (Windows 10+ — встроен)' );
+	const tar = sh( tarBin(), [ '--version' ] );
+	item( 'tar', tar.ok && ! ( win && /GNU tar/.test( tar.out ) ), firstLine( tar.out ).split( ' - ' )[ 0 ] || 'нет', 'tar с zip нужен для сверки тем с оригиналом (Windows 10+ — встроенный System32\tar.exe)' );
 
 	const wp = sh( 'wp', [ '--version' ] );
 	const localWpCli = win ? [ 'C:\\Program Files (x86)\\Local\\resources\\extraResources\\bin\\wp-cli\\wp-cli.phar', 'C:\\Program Files\\Local\\resources\\extraResources\\bin\\wp-cli\\wp-cli.phar' ].find( existsSync ) : null;

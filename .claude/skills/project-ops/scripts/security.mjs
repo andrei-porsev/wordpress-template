@@ -2,6 +2,8 @@
  * Общие проверки безопасности и запросы к wordpress.org для session-check.mjs и recon.mjs. Только чтение сервера.
  */
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { entryType, remoteOf } from './remote.mjs';
 
 // Файлы ядра, которые сверяем каждую сессию (version.php не берём — отличается у локализаций).
@@ -41,6 +43,17 @@ export const MALWARE_PATTERNS = [
 	/(system|passthru|shell_exec)\s*\(\s*\$_(POST|GET|REQUEST)/i,
 ];
 export const MALWARE_GREP = "eval\\s*\\(\\s*(base64_decode|gzinflate|str_rot13)|assert\\s*\\(\\s*\\$_(POST|GET|REQUEST)|(system|passthru|shell_exec)\\s*\\(\\s*\\$_(POST|GET|REQUEST)";
+
+// tar, который распаковывает zip: на Windows — встроенный bsdtar; GNU tar из Git Bash раньше в PATH и zip не умеет.
+export function tarBin() {
+	if ( process.platform === 'win32' ) {
+		const sys = join( process.env.SystemRoot || 'C:\Windows', 'System32', 'tar.exe' );
+		if ( existsSync( sys ) ) {
+			return sys;
+		}
+	}
+	return 'tar';
+}
 
 export function md5( buf ) {
 	return createHash( 'md5' ).update( buf ).digest( 'hex' );

@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { ensureDeps, entryType, httpGet, loadConfig, remoteOf, repoRoot, withClient } from './remote.mjs';
 import {
 	checkCoreKeyFiles, coreChecksums, DEV_ROOT_HINT, DROP_INS, htaccessFindings, MALWARE_GREP, md5, pluginChecksums,
-	rootDevFiles, rootExtraPhp, scanMalware, splitUploadPhp, uploadsPhpBySftp, wporgInfo,
+	rootDevFiles, rootExtraPhp, scanMalware, splitUploadPhp, tarBin, uploadsPhpBySftp, wporgInfo,
 } from './security.mjs';
 
 const scriptsDir = dirname( fileURLToPath( import.meta.url ) );
@@ -301,7 +301,7 @@ async function originalTheme( root, slug, version ) {
 	mkdirSync( base, { recursive: true } );
 	const zip = join( base, 'theme.zip' );
 	writeFileSync( zip, Buffer.from( await res.arrayBuffer() ) );
-	const r = spawnSync( 'tar', [ '-xf', zip, '-C', base ], { encoding: 'utf8' } );
+	const r = spawnSync( tarBin(), [ '-xf', zip, '-C', base ], { encoding: 'utf8' } );
 	return r.status === 0 && existsSync( dir ) ? dir : null;
 }
 

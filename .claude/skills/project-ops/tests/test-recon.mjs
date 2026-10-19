@@ -8,6 +8,7 @@ import { appendFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from '
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tarBin } from '../scripts/security.mjs';
 
 const SCRIPT = join( dirname( fileURLToPath( import.meta.url ) ), '..', 'scripts', 'recon.mjs' );
 const base = join( tmpdir(), 'wp-template-test-recon' );
@@ -31,7 +32,7 @@ if ( res.status !== 200 ) {
 }
 const zip = join( base, 'theme.zip' );
 writeFileSync( zip, Buffer.from( await res.arrayBuffer() ) );
-spawnSync( 'tar', [ '-xf', zip, '-C', join( remote, 'wp-content', 'themes' ) ] );
+spawnSync( tarBin(), [ '-xf', zip, '-C', join( remote, 'wp-content', 'themes' ) ] );
 
 put( remote, 'wp-includes/version.php', "<?php\n$wp_version = '7.0.3';\n" );
 appendFileSync( join( remote, 'wp-content', 'themes', THEME, 'functions.php' ), '\n// правка прошлого разработчика\n' );
