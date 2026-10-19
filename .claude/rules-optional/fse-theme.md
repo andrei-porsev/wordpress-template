@@ -13,7 +13,11 @@ paths:
 - Не предлагай classic `header.php` / `sidebar.php` как основную модель, если тема уже block theme.
 - Контентные секции — patterns; повторяемая логика UI — блоки (native или ACF), не раздувать `functions.php`.
 - Типографика и отступы в `theme.json` — по `scss-bem` → «Fluid»: заголовки — `fluid: { min, max }` всегда; текст и отступы — при разнице больше 3 px, иначе фиксированный `size`.
-  Ссылки на пресеты внутри `theme.json` — `var:preset|color|<слаг>` (не `var(--wp--preset--…)`: редактор не свяжет с палитрой); слаги — с дефисом перед цифрой (правило `site-design`).
+  Диапазон fluid — явно: `settings.typography.fluid: { "minViewportWidth": "320px", "maxViewportWidth": "1600px" }` (WP 6.4+), как у миксина `fluid` проекта (решение 049);
+  без этого верхней границей WordPress берёт `layout.wideSize`, и шрифты из `theme.json` и SCSS растут по-разному. Min и max не равны (деление на ноль в WP 6.5).
+  **Что куда:** размеры для редактора (контент, размеры автора) — пресеты `fontSizes` с `fluid: { min, max }`; элементы интерфейса — миксин `fluid-fs` в SCSS;
+  роль уже есть пресетом — SCSS берёт `var(--wp--preset--font-size--<слаг>)`, пару не повторяет.
+  Ссылки на любые пресеты внутри `theme.json` и в разметке блоков — `var:preset|<тип>|<слаг>` (`color`, `font-size`, `font-family`, `spacing`; не `var(--wp--preset--…)`: редактор не свяжет с пресетом); слаги — с дефисом перед цифрой (правило `site-design`).
   Стили контента — в `styles.blocks["core/post-content"]`, не в глобальных `styles.elements` (те же теги в интерфейсе — правило `site-design`). `settings.layout.contentSize` держать равным `$cltm-container-max-width` (1200px). Каркас секций — rule `markup-layout`.
 - Кастомную PHP-логику темы держи в `functions.php` / `inc/` на хуках; тяжёлое — в плагине.
 

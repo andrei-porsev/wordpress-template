@@ -6,7 +6,7 @@
 ```
 project-base/_starter/scss/
   abstracts/          переменные и миксины — переносится всегда
-    _variables.scss   ширина контейнера (90% / 1200px), база rem (16)
+    _variables.scss   ширина контейнера (90% / 1200px), база rem (16), диапазон fluid 320 → 1600
     _breakpoints.scss брейкпоинты, up/down/between, именованные диапазоны
     _mixin.scss       to-rem, fluid, fluid-fs (px из макета → rem + vw), fluid-var, line-clamp, анимации (keyframes на корне)
     _layout.scss      section-shell, content-container, full-parent (без CSS на выходе)

@@ -4,3 +4,7 @@ $cltm-container-max-width: 1200px !default;
 
 // База rem: шрифт браузера по умолчанию; кегли в rem растут с настройкой шрифта пользователя (решение 043).
 $cltm-rem-base: 16 !default;
+
+// Диапазон fluid по умолчанию — как у WordPress (theme.json → settings.typography.fluid: 320px → 1600px, решение 049).
+$cltm-fluid-min-vw: 320px !default;
+$cltm-fluid-max-vw: 1600px !default;

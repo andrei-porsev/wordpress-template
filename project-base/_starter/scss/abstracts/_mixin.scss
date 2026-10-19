@@ -40,8 +40,9 @@
 	@return 1;
 }
 
-// Меняет свойство линейно между брейками; снаружи диапазона — края (clamp).
-// $from — на $bp-min (планшет), $to — на $bp-max (widescreen), числа в px из макета.
+// Меняет свойство линейно между шириной $bp-min и $bp-max; снаружи диапазона — края (clamp).
+// Диапазон по умолчанию — как у fluid-типографики WordPress (320 → 1600, решение 049); свой — аргументами.
+// $from — на $bp-min, $to — на $bp-max, числа в px из макета.
 // На выходе rem + vw: растёт с настройкой шрифта браузера и при масштабе. $unit: px — для старых тем на px.
 @mixin fluid(
 	$property,
@@ -49,8 +50,8 @@
 	$to,
 	$important: false,
 	$unit: rem,
-	$bp-min: $bp-tablet-min,
-	$bp-max: $bp-widescreen-min
+	$bp-min: $cltm-fluid-min-vw,
+	$bp-max: $cltm-fluid-max-vw
 ) {
 	$imp: -imp($important);
 	$min-w: math.div($bp-min, 1px);
@@ -75,8 +76,8 @@
 	}
 }
 
-@mixin fluid-fs($from, $to, $important: false, $unit: rem) {
-	@include fluid('font-size', $from, $to, $important, $unit);
+@mixin fluid-fs($from, $to, $important: false, $unit: rem, $bp-min: $cltm-fluid-min-vw, $bp-max: $cltm-fluid-max-vw) {
+	@include fluid('font-size', $from, $to, $important, $unit, $bp-min, $bp-max);
 }
 
 // То же, что fluid(), но пара min/max — CSS-переменные с полей редактора (в px: значения печатает render.php).
@@ -86,8 +87,8 @@
 	$var-max,
 	$fallback-min,
 	$fallback-max,
-	$bp-min: $bp-tablet-min,
-	$bp-max: $bp-widescreen-min
+	$bp-min: $cltm-fluid-min-vw,
+	$bp-max: $cltm-fluid-max-vw
 ) {
 	$min: var(#{$var-min}, #{$fallback-min}px);
 	$max: var(#{$var-max}, #{$fallback-max}px);
@@ -101,8 +102,8 @@
 	);
 }
 
-@mixin fluid-fs-var($var-min, $var-max, $fallback-min, $fallback-max) {
-	@include fluid-var('font-size', $var-min, $var-max, $fallback-min, $fallback-max);
+@mixin fluid-fs-var($var-min, $var-max, $fallback-min, $fallback-max, $bp-min: $cltm-fluid-min-vw, $bp-max: $cltm-fluid-max-vw) {
+	@include fluid-var('font-size', $var-min, $var-max, $fallback-min, $fallback-max, $bp-min, $bp-max);
 }
 
 // !important бьёт width/height, которые WP вешает на img.
