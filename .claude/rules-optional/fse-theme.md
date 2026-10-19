@@ -13,6 +13,7 @@ paths:
 - Не предлагай classic `header.php` / `sidebar.php` как основную модель, если тема уже block theme.
 - Контентные секции — patterns; повторяемая логика UI — блоки (native или ACF), не раздувать `functions.php`.
 - Типографика и отступы в `theme.json` — по `scss-bem` → «Fluid»: заголовки — `fluid: { min, max }` всегда; текст и отступы — при разнице больше 3 px, иначе фиксированный `size`.
+  Ссылки на пресеты внутри `theme.json` — `var:preset|color|<слаг>` (не `var(--wp--preset--…)`: редактор не свяжет с палитрой); слаги — с дефисом перед цифрой (правило `site-design`).
   Стили контента — в `styles.blocks["core/post-content"]`, не в глобальных `styles.elements` (те же теги в интерфейсе — правило `site-design`). `settings.layout.contentSize` держать равным `$cltm-container-max-width` (1200px). Каркас секций — rule `markup-layout`.
 - Кастомную PHP-логику темы держи в `functions.php` / `inc/` на хуках; тяжёлое — в плагине.
 
