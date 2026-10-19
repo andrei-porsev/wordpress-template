@@ -1,6 +1,6 @@
 {
 	"$comment": "Версия шаблона и категории файлов для template-update.mjs (решение 032). Версию поднимает агент, когда изменения шаблона готовы для проектов.",
-	"version": "2026.10.19.9",
+	"version": "2026.10.19.10",
 	"repo": "git@github.com:andrei-porsev/wordpress-template.git",
 	"exclude": [
 		"project-base/plans/**"
