@@ -914,7 +914,9 @@ export async function cmdDeploy( cfg, root, yes, stage ) {
 			return { st, rel: toPosix( rel ) };
 		} )
 		.filter( ( c ) => inRoots( c.rel ) );
-	const toUpload = changes.filter( ( c ) => c.st !== 'D' ).map( ( c ) => c.rel );
+	// Ресурсы (стили, скрипты, сборка, шрифты, картинки) — раньше PHP и шаблонов: у посетителей не бывает разметки без стилей.
+	const asset = ( rel ) => /\.(css|js|mjs|map|woff2?|ttf|otf|eot|svg|png|jpe?g|gif|webp|avif|ico)$|\/build\//i.test( rel );
+	const toUpload = changes.filter( ( c ) => c.st !== 'D' ).map( ( c ) => c.rel ).sort( ( a, b ) => Number( asset( b ) ) - Number( asset( a ) ) );
 	const toRemove = changes.filter( ( c ) => c.st === 'D' ).map( ( c ) => c.rel );
 	const target = stage ? 'stage' : 'прод';
 	if ( ! toUpload.length && ! toRemove.length ) {
@@ -1014,7 +1016,7 @@ export async function cmdDeploy( cfg, root, yes, stage ) {
 		}
 		const authNote = status === 401 ? ' — закрыт паролем: проверка не видит сайт, добавить httpAuth в конфиг' : '';
 		console.log( `Сайт: ${ url ? ( status === null ? 'нет ответа (сеть или защита — не откатываем)' : `HTTP ${ status }${ authNote }` ) : 'URL нет в ACCESS.md — не проверен' }` );
-		console.log( `OK deploy: залито ${ toUpload.length }, удалено ${ toRemove.length }${ tag ? `, тег ${ tag } (git push --tags)` : '' }. Бэкап: .claude/.state/deploy-backup/${ stamp }` );
+		console.log( `OK deploy: залито ${ toUpload.length }, удалено ${ toRemove.length }${ tag ? `, тег ${ tag } (git push --tags)` : '' }. Бэкап: .claude/.state/backups/deploy/${ stamp }` );
 	} );
 }
 

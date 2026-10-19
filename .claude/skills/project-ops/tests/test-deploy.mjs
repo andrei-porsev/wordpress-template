@@ -57,17 +57,19 @@ run( 'compare' );
 // 2. План: изменён a, добавлен new, удалён c.
 put( proj, T + 'a.php', '<?php // a v2\n' );
 put( proj, T + 'new.php', '<?php // new\n' );
+put( proj, T + 'zz.css', '.zz{}\n' );
 rmSync( join( proj, T + 'c.php' ) );
 r = run( 'deploy' );
 check( '2 незакоммиченное — отказ', r.code === 1 && /Незакоммиченные/.test( r.out ), r.out );
 commit( 'v2' );
 r = run( 'deploy' );
-check( '2 план без --yes', r.code === 0 && /ПЛАН/.test( r.out ) && /залить 2, удалить 1/.test( r.out ), r.out );
+check( '2 план без --yes', r.code === 0 && /ПЛАН/.test( r.out ) && /залить 3, удалить 1/.test( r.out ), r.out );
+check( '2 стили раньше PHP', r.out.indexOf( 'zz.css' ) > 0 && r.out.indexOf( 'zz.css' ) < r.out.indexOf( 'a.php' ), r.out );
 check( '2 сервер не тронут планом', read( remote, T + 'a.php' ).includes( 'v1' ) );
 
 // 3. Выкатка.
 r = run( 'deploy', '--yes' );
-check( '3 выкатка прошла', r.code === 0 && /OK deploy: залито 2, удалено 1/.test( r.out ), r.out );
+check( '3 выкатка прошла', r.code === 0 && /OK deploy: залито 3, удалено 1/.test( r.out ), r.out );
 check( '3 a и new на сервере', read( remote, T + 'a.php' ).includes( 'v2' ) && read( remote, T + 'new.php' ) !== null );
 check( '3 c удалён на сервере', read( remote, T + 'c.php' ) === null );
 check( '3 тег deploy-*', /^deploy-/m.test( sh( 'git', 'tag', '--list', 'deploy-*' ).stdout ) );

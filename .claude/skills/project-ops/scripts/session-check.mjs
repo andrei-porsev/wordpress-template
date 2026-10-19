@@ -325,9 +325,13 @@ try {
 	say( '## Обновления' );
 	const sk = spawnSync( process.execPath, [ join( scriptsDir, 'skills-sync.mjs' ), 'check', '--hook' ], { cwd: root, encoding: 'utf8' } );
 	const skText = ( sk.stdout || '' ).trim();
-	say( skText ? `Скиллы: ${ skText.split( '\n' )[ 0 ] }` : 'Скиллы: обновлений нет (или проверка уже была сегодня).' );
-	say( 'Шаблон: проверка версии — после части E плана.' );
-	say( `Режим заливки: ${ accessField( root, 'Режим заливки' ) || '— (по умолчанию guarded-auto)' }` );
+	say( skText || 'Скиллы и шаблон: обновлений нет (или проверка уже была сегодня).' );
+	const mode = accessField( root, 'Режим заливки' );
+	say( `Режим заливки: ${ mode || '— (по умолчанию guarded-auto)' }` );
+	// Короткий manual на задачу (решение 045): «manual (задача …, с <дата>; после выкатки — <режим>)».
+	if ( /^manual\s*\(задача/i.test( mode ) ) {
+		say( '  → временный manual: выкатить задачу (sftp-sync.mjs deploy) и вернуть режим — или спросить пользователя, если задача ещё идёт.' );
+	}
 	console.log( out.join( '\n' ) );
 } catch ( e ) {
 	console.log( out.join( '\n' ) );
