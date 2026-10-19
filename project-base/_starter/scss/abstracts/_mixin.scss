@@ -1,41 +1,85 @@
 @use 'sass:list';
 @use 'sass:math';
 @use 'breakpoints' as *;
+@use 'variables' as *;
 
-// Меняет свойство линейно между брейками; снаружи диапазона — clamp().
-// $from — на $bp-min (планшет), $to — на $bp-max (widescreen).
+// Округление до 4 знаков — короткий CSS без хвостов 0.3392857143.
+@function -round4($n) {
+	@return math.div(math.round($n * 10000), 10000);
+}
+
+// px из макета → rem (база — $cltm-rem-base, шрифт браузера по умолчанию): padding: to-rem(24).
+@function to-rem($px) {
+	@return -round4(math.div($px, $cltm-rem-base)) * 1rem;
+}
+
+// px из макета → rem или px (старые темы на px).
+@function -in($px, $unit) {
+	@if $unit == px {
+		@return -round4($px) * 1px;
+	}
+
+	@return to-rem($px);
+}
+
+// "!important" или пусто.
+@function -imp($important) {
+	@if $important {
+		@return '!important';
+	}
+
+	@return '';
+}
+
+// Число повторов анимации: infinite или 1.
+@function -iterations($infinite) {
+	@if $infinite {
+		@return infinite;
+	}
+
+	@return 1;
+}
+
+// Меняет свойство линейно между брейками; снаружи диапазона — края (clamp).
+// $from — на $bp-min (планшет), $to — на $bp-max (widescreen), числа в px из макета.
+// На выходе rem + vw: растёт с настройкой шрифта браузера и при масштабе. $unit: px — для старых тем на px.
 @mixin fluid(
 	$property,
 	$from,
 	$to,
 	$important: false,
-	$unit: px,
+	$unit: rem,
 	$bp-min: $bp-tablet-min,
 	$bp-max: $bp-widescreen-min
 ) {
-	$imp: if($important, ' !important', '');
-	$delta-prop: $to - $from;
-	$delta-width: math.div($bp-max - $bp-min, 1px);
+	$imp: -imp($important);
+	$min-w: math.div($bp-min, 1px);
+	$max-w: math.div($bp-max, 1px);
 
-	@if $delta-width == 0 {
-		#{$property}: #{$to}#{$unit}#{$imp};
+	@if $from == $to or $max-w == $min-w {
+		#{$property}: #{-in($to, $unit)} #{$imp};
 	} @else {
-		$prop-min: math.min($from, $to);
-		$prop-max: math.max($from, $to);
+		$slope: math.div($to - $from, $max-w - $min-w);
+		$base: $from - $slope * $min-w;
+		$sign: '+';
+
+		@if $slope < 0 {
+			$sign: '-';
+		}
 
 		#{$property}: clamp(
-			#{$prop-min}#{$unit},
-			calc(#{$from}#{$unit} + #{$delta-prop} * ((100vw - #{$bp-min}) / #{$delta-width})),
-			#{$prop-max}#{$unit}
-		)#{$imp};
+			#{-in(math.min($from, $to), $unit)},
+			#{-in($base, $unit)} #{$sign} #{-round4(math.abs($slope) * 100)}vw,
+			#{-in(math.max($from, $to), $unit)}
+		) #{$imp};
 	}
 }
 
-@mixin fluid-fs($from, $to, $important: false, $unit: px) {
+@mixin fluid-fs($from, $to, $important: false, $unit: rem) {
 	@include fluid('font-size', $from, $to, $important, $unit);
 }
 
-// То же, что fluid(), но пара min/max — CSS-переменные с полей редактора.
+// То же, что fluid(), но пара min/max — CSS-переменные с полей редактора (в px: значения печатает render.php).
 @mixin fluid-var(
 	$property,
 	$var-min,
@@ -148,7 +192,7 @@ $_emitted-keyframes: ();
 	}
 
 	transform-origin: $origin;
-	animation: cltm-smooth-wave $duration linear $delay if($infinite, infinite, 1);
+	animation: cltm-smooth-wave $duration linear $delay -iterations($infinite);
 }
 
 @mixin smooth-wave-8deg($duration: 2.5s, $delay: 0s, $infinite: true, $origin: bottom center) {
@@ -182,7 +226,7 @@ $_emitted-keyframes: ();
 	}
 
 	transform-origin: $origin;
-	animation: cltm-rotate $duration $timing $delay if($infinite, infinite, 1);
+	animation: cltm-rotate $duration $timing $delay -iterations($infinite);
 }
 
 @mixin rotate-normal($duration: 4s, $delay: 0s, $infinite: true, $timing: linear, $origin: center center) {
@@ -217,5 +261,5 @@ $_emitted-keyframes: ();
 	}
 
 	transform-origin: $origin;
-	animation: cltm-stretch-x $duration $timing $delay if($infinite, infinite, 1);
+	animation: cltm-stretch-x $duration $timing $delay -iterations($infinite);
 }

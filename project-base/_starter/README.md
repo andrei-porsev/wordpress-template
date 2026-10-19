@@ -6,9 +6,9 @@
 ```
 project-base/_starter/scss/
   abstracts/          переменные и миксины — переносится всегда
-    _variables.scss   ширина контейнера (90% / 1200px)
+    _variables.scss   ширина контейнера (90% / 1200px), база rem (16)
     _breakpoints.scss брейкпоинты, up/down/between, именованные диапазоны
-    _mixin.scss       fluid, fluid-fs, fluid-var, line-clamp, анимации (keyframes на корне)
+    _mixin.scss       to-rem, fluid, fluid-fs (px из макета → rem + vw), fluid-var, line-clamp, анимации (keyframes на корне)
     _layout.scss      section-shell, content-container, full-parent (без CSS на выходе)
     _index.scss       @forward всех; резолвится как '../abstracts'
   global/
@@ -58,7 +58,7 @@ Classic и билдер — второй точки входа не нужно; 
 	}
 
 	&__lead {
-		font-size: 16px;
+		font-size: to-rem(16);
 	}
 }
 ```
@@ -165,6 +165,11 @@ grep -rn "\$bp-" .
 плавающих багов. Либо привести `_breakpoints.scss` к проектным значениям
 (и записать это в «Правила проекта»), либо не копировать его вовсе и оставить
 только `_mixin.scss`, заменив в нём `$bp-*` на проектные переменные.
+
+### Своя тема на px
+
+В проекте уже есть свой `fluid` на px или кегли в px — заготовочный `fluid` выдаёт rem (решение 043). Либо новый код в rem,
+либо единая система сайта на px: `fluid(…, $unit: px)` и пометка «отклонение» в паспорте дизайна. Смешивать в одном компоненте — нет.
 
 Значения с `!default` можно переопределить при подключении, не правя файл:
 

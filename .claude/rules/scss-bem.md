@@ -28,7 +28,7 @@ paths:
 	@include fluid('padding-block', 40, 80);
 
 	&__inner {
-		gap: 24px;
+		gap: to-rem(24);
 
 		@include tabletUp {
 			display: grid;
@@ -69,13 +69,27 @@ paths:
 	}
 
 	&__lead {
-		font-size: 16px;
+		font-size: to-rem(16);
 		line-height: 1.5;
 	}
 }
 ```
 
 Пара мин/макс в `theme.json` и в полях блока — по тому же правилу (rule `blocks`).
+
+## Единицы (решение 043)
+
+Числа в коде — px из макета; в rem переводят `to-rem()` и `fluid` / `fluid-fs` (база `$cltm-rem-base`: 16).
+
+| Единица | Где |
+|---------|-----|
+| `rem` — `to-rem(24)`, `fluid*` | кегли, `padding-block` секций, `gap`, поля компонентов |
+| `em` | привязанное к своему тексту: поля и иконка в кнопке, `letter-spacing`, отступы элементов контента (`h2 { margin-top: 1.5em; }`) |
+| без единиц | `line-height` |
+| `px` | рамки, `outline`, тени, радиусы, мелкие фиксированные детали, `max-width` контейнера, брейкпоинты |
+
+- Значения в `px` из полей редактора (`fluid-var`, `render.php`) — как есть, px.
+- Тема на px (старый сайт) — не переводить без просьбы: новое в той же системе, что сайт, в паспорте — «отклонение» (`fluid(…, $unit: px)`).
 
 ## Медиазапросы — внутри своего селектора
 
@@ -84,7 +98,7 @@ paths:
 ```scss
 .cltm-card {
 	display: grid;
-	gap: 16px;
+	gap: to-rem(16);
 
 	@include tabletUp {
 		grid-template-columns: 1fr 1fr;

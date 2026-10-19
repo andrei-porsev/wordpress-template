@@ -24,6 +24,7 @@ paths:
 
 - Кегль и `padding-block` из редактора — **пара** мин/макс по правилу `scss-bem` → «Fluid» (заголовок — всегда; остальное — разница больше 3 px). Иначе одно поле или дефолт темы, без `fluid-*`.
 - Атрибуты пары: `fontSizeMin` / `fontSizeMax`, `padMin` / `padMax`, `type: "number"`, с `default`. В инспекторе — два `NumberControl` в одной `PanelBody`.
+- Значения с полей редактора — в px (`fluid-var` / `fluid-fs-var`); остальной код темы — rem (`scss-bem` → «Единицы»).
 - Ширина колонки — два отдельных свойства, не fluid: `%` (`containerWidth`) и `max-width` px (`containerMaxWidth`). Дефолты — `$cltm-container-width` / `$cltm-container-max-width`.
 - В `render.php` значения печатаются CSS-переменными на обёртке секции; интерполяцию пары делает `fluid-var` / `fluid-fs-var`:
 
