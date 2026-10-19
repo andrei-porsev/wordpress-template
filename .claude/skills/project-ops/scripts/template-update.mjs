@@ -18,6 +18,8 @@ import { fileURLToPath } from 'node:url';
 
 const TROOT = resolve( dirname( fileURLToPath( import.meta.url ) ), '..', '..', '..', '..' );
 const SELF = 'node .claude/skills/project-ops/scripts/template-update.mjs';
+// Готовая к копированию команда для проекта: абсолютные пути шаблона и проекта (запускать можно из любой папки).
+const cmdFor = ( p, tail ) => `node "${ join( TROOT, SELF.split( ' ' ).pop() ).replace( /\\/g, '/' ) }" "${ p.root.replace( /\\/g, '/' ) }" ${ tail }`;
 const LABEL = '.claude/template.json';
 const MANIFEST = '.claude/template/manifest.json';
 const PENDING = '.claude/template/pending-settings.json';
@@ -745,7 +747,7 @@ function report( t, p, results, mig, stacks, notes, all ) {
 		}
 	}
 	console.log( `\nстеки скиллов: ${ stacks.active.join( ', ' ) || 'нет' }${ stacks.inferred ? ' (определены по подключённым скиллам и правилам)' : '' }` );
-	console.log( `защищённые (хуки, settings.json): ${ prot.length ? `изменятся ${ prot.length } — человек: ${ SELF } "<проект>" --protected` : 'без изменений' }` );
+	console.log( `защищённые (хуки, settings.json): ${ prot.length ? `изменятся ${ prot.length } — человек в своём терминале: ${ cmdFor( p, '--protected' ) }` : 'без изменений' }` );
 	for ( const r of prot ) {
 		console.log( `  ${ r.rel } — ${ ACTION_TEXT[ r.action ] }${ r.reason ? ` (${ r.reason })` : '' }` );
 	}
@@ -759,7 +761,7 @@ function report( t, p, results, mig, stacks, notes, all ) {
 			m.dropped.forEach( ( d ) => console.log( `    без места — ${ d }` ) );
 		}
 		for ( const m of pend ) {
-			console.log( `  агенту после --apply: инструкция ${ m.doc }, затем ${ SELF } "<проект>" --done ${ m.id }` );
+			console.log( `  агенту после --apply: инструкция ${ m.doc }, затем ${ cmdFor( p, `--done ${ m.id }` ) }` );
 		}
 	}
 	for ( const n of notes ) {
@@ -840,9 +842,10 @@ function cmdApply( t, p, results, mig ) {
 	const conflicts = results.filter( ( r ) => r.action === 'conflict' && r.kind !== 'protected' );
 	console.log( `\nПрименено в ветке ${ BRANCH }, откат — тег ${ tag } (git checkout main && git branch -D ${ BRANCH }).` );
 	if ( conflicts.length ) {
-		console.log( `Конфликты (${ conflicts.length }) не тронуты — решить: ${ SELF } "<проект>" --take template|project|merge <путь…>` );
+		console.log( `Конфликты (${ conflicts.length }) не тронуты — решить: ${ cmdFor( p, '--take template|project|merge <путь…>' ) }` );
 	}
-	console.log( 'Дальше: миграции (инструкция выше), --protected (человек), перезапуск Claude Code, selftest, связь, сайт.' );
+	console.log( 'Дальше: миграции (инструкция выше), --protected, перезапуск Claude Code, selftest, связь, сайт.' );
+	console.log( `Хуки и settings.json — человек в своём терминале (агент отдаёт команду как есть): ${ cmdFor( p, '--protected' ) }` );
 }
 
 function cmdTake( t, p, results, how, paths ) {
@@ -1033,7 +1036,7 @@ async function main() {
 		if ( flags.apply ) {
 			cmdApply( t, p, results, mig );
 		} else {
-			console.log( `\nЭто пробный прогон. Применить: ${ SELF } "<проект>" --apply (после «да» пользователя).` );
+			console.log( `\nЭто пробный прогон. Применить (после «да» пользователя): ${ cmdFor( p, '--apply' ) }` );
 		}
 	}
 }

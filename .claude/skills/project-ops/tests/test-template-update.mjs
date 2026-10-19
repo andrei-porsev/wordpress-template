@@ -124,6 +124,7 @@ check( '1 игнорируемые файлы не в отчёте', ! r.out.inc
 check( '1 пробный прогон', r.code === 0 && /без метки/.test( r.out ) && /объединить/.test( r.out ), r.out );
 check( '1 стек fse определён по составу', /стеки скиллов: fse \(определены/.test( r.out ), r.out );
 check( '1 хуки — шаг человека', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ) && /settings\.json — объединить \(сохранено из проекта: permissions\.allow/.test( r.out ), r.out );
+check( '1 команда --protected — готовая, с путями шаблона и проекта', /человек в своём терминале: node "[^"]+\/template-update\.mjs" "[^"]+\/proj" --protected/.test( r.out ), r.out );
 check( '1 проект не тронут', git( proj, 'status', '--porcelain' ) === '' && ! existsSync( join( proj, '.claude/template.json' ) ) );
 
 // 2. Применение.
