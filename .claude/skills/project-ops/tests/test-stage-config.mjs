@@ -54,7 +54,9 @@ r = run( 'build', 'acme', '--yes' );
 let st = json( join( proj, '.vscode', 'sftp-stage.json' ) );
 check( 'sftp-stage.json записан', st.host === 'vps.example' && st.username === 'acme_dev' && st.remotePath === '/httpdocs', JSON.stringify( st ) );
 check( 'ignore и watcher — из sftp.json проекта', JSON.stringify( st.ignore ) === JSON.stringify( ignore ) && st.watcher.files === 'x' );
-check( 'без httpAuth — подсказка про пароль на каталог, uploadOnSave выключен', ! st.httpAuth && /stage-config\.mjs auth acme/.test( r.out ) && st.uploadOnSave === false, r.out );
+check( 'без httpAuth — пустая заготовка и подсказка про пароль на каталог, uploadOnSave выключен', st.httpAuth?.user === '' && st.httpAuth?.password === '' && /stage-config\.mjs auth acme/.test( r.out ) && /не пароль подписки/.test( r.out ) && st.uploadOnSave === false, r.out );
+check( 'вход по ключу — поля password нет', ! ( 'password' in st ) && /пароль подписки и FTP не нужен/.test( r.out ), JSON.stringify( st ) );
+check( 'пустая заготовка httpAuth — playwright-mcp.json не пишется', ! existsSync( join( proj, '.vscode', 'playwright-mcp.json' ) ) );
 check( 'ssh-stage.json: cwd = remotePath', json( join( proj, '.vscode', 'ssh-stage.json' ) ).cwd === '/httpdocs' );
 check( 'неверное имя проекта — отказ', run( 'build', 'ac me' ).code === 1 );
 

@@ -57,7 +57,6 @@ function build() {
 		protocol: 'sftp',
 		port: srv.port || 22,
 		username: fill( srv.username, project ),
-		password: '',
 		privateKeyPath: srv.privateKeyPath || '',
 		remotePath: fill( srv.remotePath || '/httpdocs', project ),
 		context: '.',
@@ -67,17 +66,17 @@ function build() {
 		watcher: base.watcher || {},
 	};
 	// Вписанное человеком в прежний конфиг: пароль на каталог проекта и пароль подписки при входе без ключа.
+	// Поле password — только при входе без ключа; пустая заготовка httpAuth показывает, куда вписать пароль на каталог.
 	const prev = existsSync( vs( 'sftp-stage.json' ) ) ? readJson( vs( 'sftp-stage.json' ) ) : {};
-	if ( prev.httpAuth?.user ) {
-		sftp.httpAuth = prev.httpAuth;
+	if ( ! sftp.privateKeyPath ) {
+		sftp.password = prev.password && prev.username === sftp.username ? prev.password : '';
 	}
-	if ( ! sftp.privateKeyPath && prev.password && prev.username === sftp.username ) {
-		sftp.password = prev.password;
-	}
+	sftp.httpAuth = prev.httpAuth?.user ? prev.httpAuth : { user: '', password: '' };
+	const hasAuth = Boolean( sftp.httpAuth.user );
 	const ssh = { host: '', port: sftp.port, username: '', password: '', privateKeyPath: '', cwd: sftp.remotePath, wpCli: srv.wpCli || 'wp' };
 
 	console.log( `Stage по профилю «${ key }» (${ srv.title || srv.host }):` );
-	console.log( `  ${ sftp.username }@${ sftp.host }:${ sftp.port } · ${ sftp.remotePath } · ${ sftp.privateKeyPath ? 'вход по ключу' : 'вход по паролю — вписать в sftp-stage.json' }${ sftp.httpAuth ? ' · httpAuth есть' : '' }` );
+	console.log( `  ${ sftp.username }@${ sftp.host }:${ sftp.port } · ${ sftp.remotePath } · ${ sftp.privateKeyPath ? 'вход по ключу' : 'вход по паролю — вписать в sftp-stage.json' }${ hasAuth ? ' · httpAuth есть' : '' }` );
 	console.log( `  Stage / dev URL: ${ url || '—' }` );
 	// Копии старых конфигов — вне .vscode (он в git, а в конфигах пароли).
 	const bakDir = join( root, '.claude', '.state', 'backups', 'config', new Date().toISOString().replace( /[-:T]/g, '' ).slice( 0, 14 ) );
@@ -97,13 +96,14 @@ function build() {
 	writeJson( vs( 'sftp-stage.json' ), sftp );
 	writeJson( vs( 'ssh-stage.json' ), ssh );
 	console.log( 'OK: .vscode/sftp-stage.json, .vscode/ssh-stage.json записаны.' );
-	if ( sftp.httpAuth && url ) {
+	if ( hasAuth && url ) {
 		writePlaywrightConfig( url, sftp.httpAuth );
 	}
 	terminalCommand( srv );
 	console.log( `Дальше: ACCESS.md → «Окружения» (Stage: свой VPS, Stage-конфиг) и «Stage / dev URL: ${ url || '—' }»; проверка — connect-check.mjs --stage.` );
 	sftp.privateKeyPath || sftp.password || console.log( 'Пароль подписки — в .vscode/sftp-stage.json → password (в чат не писать).' );
-	sftp.httpAuth || console.log( `Пароль на каталог stage (свой у проекта) — в .vscode/sftp-stage.json → httpAuth { "user", "password" }, затем stage-config.mjs auth ${ project }.` );
+	sftp.privateKeyPath && console.log( 'Вход по ключу: пароль подписки и FTP не нужен и в конфиг не пишется.' );
+	hasAuth || console.log( `Пароль на каталог stage — логин и пароль из Plesk → «Защищённые паролем папки» (окно пароля в браузере; не пароль подписки и не FTP) → .vscode/sftp-stage.json → httpAuth { "user", "password" }, затем stage-config.mjs auth ${ project }.` );
 }
 
 /*
