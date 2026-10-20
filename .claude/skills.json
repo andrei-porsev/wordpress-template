@@ -161,18 +161,18 @@
 		"figma-use": {
 			"source": "figma",
 			"path": "skills/figma-use",
-			"commit": "b0bfad2ae63dfdc1af201c5542b5c8cf93778b33",
-			"tree": "3817239b29e623a7d1e630477fbabf1d061ac634",
-			"hash": "d4cc754c4c0a63fc",
-			"updated": "2026-10-14"
+			"commit": "7047cb45d6227bb42bd9ad6d35651043c0508179",
+			"tree": "c9dac0f5837fe77e27acb822e0bebff0c39b2f7d",
+			"hash": "7f4cfadd87605727",
+			"updated": "2026-10-20"
 		},
 		"figma-generate-design": {
 			"source": "figma",
 			"path": "skills/figma-generate-design",
-			"commit": "f2789420e7e8b4e2465dfeb1e12e1fc6a31397e5",
-			"tree": "5702f09e8f8ac71c56ba605055e7f29f8eb540d6",
-			"hash": "3ce4de9236d0eb6a",
-			"updated": "2026-10-15"
+			"commit": "7047cb45d6227bb42bd9ad6d35651043c0508179",
+			"tree": "38ee64d2b05a8b5c4ab5c5901f3f71270e63de0f",
+			"hash": "a1167eef4f5e0eee",
+			"updated": "2026-10-20"
 		},
 		"figma-generate-library": {
 			"source": "figma",
@@ -209,10 +209,10 @@
 		"content-strategy": {
 			"source": "marketing",
 			"path": "skills/content-strategy",
-			"commit": "b9ba399dd88b082b926e261e8ccfb843d20aa066",
-			"tree": "874a880a96da3649e1a1c93800b36e3499a70914",
-			"hash": "34f8dd854e57a79b",
-			"updated": "2026-10-08"
+			"commit": "e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b",
+			"tree": "a7ddb527614d7cf06c85e2fbe45abb7564c3cb26",
+			"hash": "ca93d57593f6b3f4",
+			"updated": "2026-10-20"
 		},
 		"copywriting": {
 			"source": "marketing",
