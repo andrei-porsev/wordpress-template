@@ -2,7 +2,8 @@
 	"core": [
 		"project-init",
 		"project-ops",
-		"project-structure"
+		"project-structure",
+		"howto"
 	],
 	"sources": {
 		"wordpress": {
