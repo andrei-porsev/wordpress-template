@@ -540,7 +540,7 @@ git — имя, почта, `core.autocrlf`; WP-CLI у LocalWP / OSPanel; бра
 
 | Где | Правка | Решение |
 |-----|--------|---------|
-| — | Ожидающих правок нет (патч `shell-edits` применён 2026-10-19, selftest 93 / 93) | — |
+| `guard-wpcli.mjs`, `selftest.mjs` | `; & \|` внутри кавычек — не составная команда (`wp eval` с PHP, разметка блока); `` ` `` и `$(` в двойных кавычках — по-прежнему составная. Патч [`guard-wpcli-quotes.patch`](guard-wpcli-quotes.patch), selftest на копии 98 / 98 | пилот SiteA, блок соцсетей 2026-10-20 |
 
 Машиночитаемый список — `.claude/template/pending-settings.json` (агент дописывает туда же); применяет человек: из папки шаблона `node .claude/skills/project-ops/scripts/template-update.mjs . --protected`, затем агент коммитит. Применённое — удалить из таблицы.
 
