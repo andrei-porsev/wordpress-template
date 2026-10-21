@@ -489,7 +489,7 @@
 					}
 				}
 			],
-			"note": "Плагин: Python 3.10+; Google API (Search Console, PageSpeed, CrUX) и Gemini для картинок — /seo setup, факт подключения в ACCESS.md → SEO. Автообновление маркетплейса включить в /plugin → Marketplaces."
+			"note": "Плагин: Python 3.10+; Google API (Search Console, PageSpeed, CrUX) и Gemini для картинок — /seo setup, факт подключения в ACCESS.md → SEO. Автообновление маркетплейса включить в /plugin → Marketplaces. Stage с паролем на каталог плагин не открывает (401): там SEO-снимки и проверки — через Playwright (project-ops → stage.md, раздел 3)."
 		}
 	},
 	"active": [],
