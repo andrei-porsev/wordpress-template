@@ -33,6 +33,21 @@ paths:
 
 После утверждения любого макета — паспорт дизайна по нему (`project-init` → `design-system.md`): дальше агент верстает по паспорту.
 
+## Скиллы дизайна: UI/UX Pro Max и Impeccable
+
+Оба — в стеке `design` рядом с `frontend-design`; при конфликте с этим правилом, `site-design`, `markup-layout`, `scss-bem`, `motion` действуют правила шаблона.
+
+- **`ui-ux-pro-max`** — направления до макета: `py -3 .claude/skills/ui-ux-pro-max/scripts/search.py "<продукт> <ключевые слова>" --design-system` (путь из SKILL.md с `CLAUDE_PLUGIN_ROOT` — этот),
+  2–3 запуска с разными ключевыми словами и `--variance` → 2–3 разных варианта первого экрана; точечно — `--domain ux|typography|color|landing|gsap`.
+  `--stack` не использовать (стека WordPress нет, `html-tailwind` уводит в Tailwind); `--persist` не использовать — итог в паспорт `system.md` и `theme.json`.
+  Шрифты из выдачи — только локально (раздел «Шрифты» ниже), не `@import` Google Fonts.
+- **`impeccable`** — справочники без движка: папки `scripts/` нет (exclude: лаунчер скачивает и запускает бинарник), лаунчер не искать и не скачивать — сразу режим «Launcher unavailable».
+  Его `PRODUCT.md` — это `.claude/product-marketing.md`, `DESIGN.md` — `project-base/design/system.md`; своих файлов в корне и `.impeccable/` не заводить, `hooks`, `live`, `generate`, `pin` не использовать.
+  - Создание макета: `reference/craft-floor.md` (планка и запреты «AI-вида»), `new-work.md` (визуальный мир, режим страницы: портфолио — Experience, лендинг — Persuade),
+    `typeset`, `colorize`, `layout`, `animate`, `delight`, `bolder`. Шаги с командами движка (`comp-spec`, `font-match`, `comp-diff`, `build-phase`) — глазами по снимкам `layout-check`.
+  - Доводка: `critique`, `audit` (без движка), `quieter`, `distill`, `polish`, `harden`.
+- Порядок: бриф → `ui-ux-pro-max` даёт разные направления → выбор пользователя → `impeccable` (+ `frontend-design`) держит планку и доводит → утверждение → вёрстка.
+
 ## Дизайн-система клиента
 
 - Одна дизайн-система на клиента в Claude Design (Settings → Design systems); имя — как слаг темы.

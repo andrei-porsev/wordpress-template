@@ -39,7 +39,8 @@ const HELP = `Скиллы проекта (манифест .claude/skills.json)
   ignore <имя…>               не напоминать про текущую версию апстрима
   activate <стек…>            подключить скиллы и правила стека в .claude/skills и .claude/rules
   deactivate <стек…> [--force] отключить стек (удаляет только неизменённые копии)
-  add <имя> --source <id> --path <путь> [--stack <стек>]  новый скилл из источника манифеста
+  add <имя> --source <id> --path <путь> [--stack <стек>] [--exclude <путь,…>]  новый скилл из источника манифеста;
+                              --exclude — пути внутри скилла, которые не копируются (и при update тоже), например scripts
 
 Пример: ${ SELF } activate fse woo content`;
 
@@ -439,6 +440,16 @@ function skillMdDiff( oldDir, newDir, maxLines = 120 ) {
 	return lines.slice( 0, maxLines ).join( '\n' ) + cut;
 }
 
+// Пути из skill.exclude (относительно папки скилла) удаляются из скачанной копии до сравнения и копирования.
+function pruneExcluded( dir, exclude = [] ) {
+	for ( const rel of exclude ) {
+		const target = resolve( dir, rel );
+		if ( target.startsWith( resolve( dir ) + ( process.platform === 'win32' ? '\\' : '/' ) ) ) {
+			rmSync( target, { recursive: true, force: true } );
+		}
+	}
+}
+
 function replaceDir( from, to ) {
 	rmSync( to, { recursive: true, force: true } );
 	cpSync( from, to, { recursive: true } );
@@ -495,6 +506,7 @@ function cmdUpdate( m, names, flags ) {
 					console.log( `Локальные правки в ${ edited.join( ', ' ) } — не трогаю. Перенеси правки или запусти с --force.` );
 					continue;
 				}
+				pruneExcluded( newDir, skill.exclude );
 				const optionalDir = join( OPTIONAL, name );
 				const changes = diffDirs( optionalDir, newDir );
 				console.log( changes.length ? changes.join( '\n' ) : 'Файлы совпадают, обновится только запись в манифесте.' );
@@ -704,10 +716,13 @@ function cmdAdd( m, name, flags ) {
 		if ( existsSync( to ) ) {
 			fail( `skills-optional/${ name } уже есть, но не в манифесте. Разберись вручную.` );
 		}
+		const exclude = typeof flags.exclude === 'string' ? flags.exclude.split( ',' ).map( ( s ) => s.trim() ).filter( Boolean ) : [];
+		pruneExcluded( from, exclude );
 		cpSync( from, to, { recursive: true } );
 		m.skills[ name ] = {
 			source: flags.source,
 			path: flags.path,
+			...( exclude.length ? { exclude } : {} ),
 			commit: fetched.commit,
 			tree: fetched.trees[ flags.path ],
 			hash: dirHash( to ),
@@ -732,7 +747,7 @@ function parseArgs( argv ) {
 		if ( a.startsWith( '--' ) ) {
 			const key = a.slice( 2 );
 			const next = argv[ i + 1 ];
-			if ( [ 'source', 'path', 'stack' ].includes( key ) && next && ! next.startsWith( '--' ) ) {
+			if ( [ 'source', 'path', 'stack', 'exclude' ].includes( key ) && next && ! next.startsWith( '--' ) ) {
 				flags[ key ] = next;
 				i++;
 			} else {

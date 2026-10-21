@@ -36,6 +36,16 @@
 			"ref": "main",
 			"license": "Apache-2.0 (LICENSE.txt в папке скилла)"
 		},
+		"uiux": {
+			"repo": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git",
+			"ref": "main",
+			"license": "MIT"
+		},
+		"impeccable": {
+			"repo": "https://github.com/pbakaus/impeccable.git",
+			"ref": "main",
+			"license": "Apache-2.0 (берём только справочники: scripts/ скачивает и запускает бинарник — exclude)"
+		},
 		"gsap": {
 			"repo": "https://github.com/greensock/gsap-skills.git",
 			"ref": "main",
@@ -310,6 +320,28 @@
 			"tree": "34dec2f051872f8d02df06de97450e448bac9c5e",
 			"hash": "d919813acee16857",
 			"updated": "2026-10-14"
+		},
+		"ui-ux-pro-max": {
+			"source": "uiux",
+			"path": ".claude/skills/ui-ux-pro-max",
+			"exclude": [
+				"scripts/tests"
+			],
+			"commit": "56ea9cf174ed86786187daa9de0e6247cb0747e4",
+			"tree": "0b6619c11598d7ce32041044cb2e6fc6adea1efc",
+			"hash": "fd92125440f267c1",
+			"updated": "2026-10-21"
+		},
+		"impeccable": {
+			"source": "impeccable",
+			"path": ".claude/skills/impeccable",
+			"exclude": [
+				"scripts"
+			],
+			"commit": "dad8dbb3aac21ad1fa236c110315ef4abece23e8",
+			"tree": "c76a80bc4e0c2040533eaca5ca795333c520aacf",
+			"hash": "e4422be04d1e17aa",
+			"updated": "2026-10-21"
 		}
 	},
 	"stacks": {
@@ -456,7 +488,9 @@
 		"design": {
 			"title": "Дизайн: эстетика, Claude Design как источник макета",
 			"skills": [
-				"frontend-design"
+				"frontend-design",
+				"ui-ux-pro-max",
+				"impeccable"
 			],
 			"rules": [
 				"design"
