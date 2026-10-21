@@ -152,7 +152,9 @@ function writePlaywrightConfig( url, auth ) {
 	const path = vs( 'playwright-mcp.json' );
 	const cfg = existsSync( path ) ? readJson( path ) : {};
 	cfg.browser = cfg.browser || {};
-	cfg.browser.contextOptions = { ...( cfg.browser.contextOptions || {} ), httpCredentials: { username: auth.user, password: auth.password || '', origin: new URL( url ).origin } };
+	// Окно развёрнуто, страница по размеру окна — как в шаблонном .vscode/playwright-mcp.json.
+	cfg.browser.launchOptions = cfg.browser.launchOptions || { args: [ '--start-maximized' ] };
+	cfg.browser.contextOptions = { viewport: null, ...( cfg.browser.contextOptions || {} ), httpCredentials: { username: auth.user, password: auth.password || '', origin: new URL( url ).origin } };
 	writeJson( path, cfg );
 	const mcp = existsSync( join( root, '.mcp.json' ) ) ? readFileSync( join( root, '.mcp.json' ), 'utf8' ) : '';
 	console.log( 'OK: .vscode/playwright-mcp.json — пароль stage для браузера (только для его адреса).' );

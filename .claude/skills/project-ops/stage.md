@@ -38,7 +38,7 @@ Stage — копия сайта для правок до прода. У клие
 
 - **Скрипты** (`deploy`, `recon`, `session-check`): `httpAuth: { "user", "password" }` в `sftp-stage.json` — иначе проверка сайта видит только HTTP 401. Повторный `stage-config build` его не затирает.
 - **Браузер агента:** `stage-config.mjs auth <project>` (или `build`, если `httpAuth` уже вписан) пишет `.vscode/playwright-mcp.json` — `httpCredentials` только для origin stage (пароль не уходит на другие сайты и не попадает в адрес).
-  Подключить: `.mcp.json` → playwright → `args` + `"--config", ".vscode/playwright-mcp.json"` (агент после «да»), затем `/mcp` → переподключить playwright (человек).
+  `.mcp.json` шаблона уже передаёт `--config .vscode/playwright-mcp.json` (там же развёрнутое окно); после `auth` — `/mcp` → переподключить playwright (человек).
   Без профиля — тот же файл вручную:
 
   ```json

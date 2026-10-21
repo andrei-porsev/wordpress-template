@@ -87,6 +87,7 @@ r = run( 'auth', 'acme' );
 const pw = json( join( proj, '.vscode', 'playwright-mcp.json' ) );
 check( 'auth: пароль stage для браузера — только для origin stage', r.code === 0 && pw.browser.contextOptions.httpCredentials.origin === 'https://acme.stage.example' && pw.browser.contextOptions.httpCredentials.username === 'stage', r.out );
 check( 'auth: секреты не в выводе', ! /secret-http/.test( r.out ), r.out );
+check( 'auth: окно развёрнуто, viewport по окну', pw.browser.launchOptions?.args?.includes( '--start-maximized' ) && pw.browser.contextOptions.viewport === null, JSON.stringify( pw.browser ) );
 
 r = run( 'build', 'acme', '--yes' );
 st = json( join( proj, '.vscode', 'sftp-stage.json' ) );

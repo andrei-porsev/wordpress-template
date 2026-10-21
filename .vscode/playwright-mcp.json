@@ -1,0 +1,12 @@
+{
+	"browser": {
+		"launchOptions": {
+			"args": [
+				"--start-maximized"
+			]
+		},
+		"contextOptions": {
+			"viewport": null
+		}
+	}
+}
