@@ -46,6 +46,7 @@ paths:
   - Создание макета: `reference/craft-floor.md` (планка и запреты «AI-вида»), `new-work.md` (визуальный мир, режим страницы: портфолио — Experience, лендинг — Persuade),
     `typeset`, `colorize`, `layout`, `animate`, `delight`, `bolder`. Шаги с командами движка (`comp-spec`, `font-match`, `comp-diff`, `build-phase`) — глазами по снимкам `layout-check`.
   - Доводка: `critique`, `audit` (без движка), `quieter`, `distill`, `polish`, `harden`.
+- Направления, палитры и шрифты показывать плашками и образцами — `site-design` → «Показ цветов и шрифтов пользователю».
 - Порядок: бриф → `ui-ux-pro-max` даёт разные направления → выбор пользователя → `impeccable` (+ `frontend-design`) держит планку и доводит → утверждение → вёрстка.
 
 ## Дизайн-система клиента
