@@ -51,6 +51,11 @@ function build() {
 		throw new Error( 'Нет .vscode/sftp.json проекта — из него берутся ignore и watcher.' );
 	}
 	const base = readJson( vs( 'sftp.json' ) );
+	// Вёрстка макета (project.json → markup) — только на stage: в ignore прода её нет.
+	const projectPath = join( root, 'project-base', 'project.json' );
+	const withMarkup = existsSync( projectPath ) && readJson( projectPath ).markup === true;
+	const baseIgnore = base.ignore || [];
+	const ignore = withMarkup && ! baseIgnore.includes( '!/markup' ) ? [ baseIgnore[ 0 ], '!/markup', '!/markup/**', ...baseIgnore.slice( 1 ) ].filter( Boolean ) : baseIgnore;
 	const sftp = {
 		name: `${ project } stage (${ key })`,
 		host: srv.host,
@@ -62,7 +67,7 @@ function build() {
 		context: '.',
 		connectTimeout: 20000,
 		uploadOnSave: false,
-		ignore: base.ignore || [],
+		ignore,
 		watcher: base.watcher || {},
 	};
 	// Вписанное человеком в прежний конфиг: пароль на каталог проекта и пароль подписки при входе без ключа.

@@ -58,6 +58,15 @@ check( 'без httpAuth — пустая заготовка и подсказк�
 check( 'вход по ключу — поля password нет', ! ( 'password' in st ) && /пароль подписки и FTP не нужен/.test( r.out ), JSON.stringify( st ) );
 check( 'пустая заготовка httpAuth — playwright-mcp.json не пишется', ! existsSync( join( proj, '.vscode', 'playwright-mcp.json' ) ) );
 check( 'ssh-stage.json: cwd = remotePath', json( join( proj, '.vscode', 'ssh-stage.json' ) ).cwd === '/httpdocs' );
+check( 'без markup — ignore как у прода', ! st.ignore.includes( '!/markup' ) );
+mkdirSync( join( proj, 'project-base' ), { recursive: true } );
+write( join( proj, 'project-base', 'project.json' ), { stem: 'acme', themes: [ 'acme' ], markup: true } );
+run( 'build', 'acme', '--yes' );
+const stMarkup = json( join( proj, '.vscode', 'sftp-stage.json' ) );
+check( 'markup: true — markup/ открыт в ignore stage сразу после /*', stMarkup.ignore[ 0 ] === '/*' && stMarkup.ignore[ 1 ] === '!/markup' && stMarkup.ignore.includes( '!/markup/**' ), JSON.stringify( stMarkup.ignore ) );
+check( 'markup: true — sftp.json прода не тронут', ! json( join( proj, '.vscode', 'sftp.json' ) ).ignore.includes( '!/markup' ) );
+rmSync( join( proj, 'project-base' ), { recursive: true, force: true } );
+run( 'build', 'acme', '--yes' );
 check( 'неверное имя проекта — отказ', run( 'build', 'ac me' ).code === 1 );
 
 // Команда для SSH Terminal: публичный ключ и PATH версии из профиля; приватный ключ не печатается; повтор не дублирует.

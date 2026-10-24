@@ -91,6 +91,7 @@ wp db export backup-baseline.sql
 | 3 | Дизайн-система | Переменные и компоненты в Figma, имена = слаги `theme.json` | `figma` (`figma-generate-library`) |
 | 4 | Макеты | Страницы в Figma: 375 / 768 / 1440 | `figma` (`figma-generate-design`) |
 | 3–4′ | Дизайн без Figma | Макет в Claude Design (ссылка в `ACCESS.md`) или утверждённый план по `frontend-design`; направления — `ui-ux-pro-max`, планка и доводка — `impeccable` (правило `design`) | `design` |
+| 4″ | Вёрстка макета (опция) | `markup/` — статичная вёрстка по утверждённому макету, SCSS общий с темой; клиент смотрит `https://<stage>/markup/` под паролем stage и утверждает; дальше посадка переносит разметку в паттерны и шаблоны | `fse` (`semantic-html`, `good-css`) |
 | 5 | Тексты и картинки | `project-base/content/<страница>.md`, картинки с `alt` | `content`, `seo` (`/seo image-gen`) |
 | 6 | Тема | `theme.json` из переменных, шаблоны, части, паттерны, блоки; анимации — после вёрстки | `fse`, `blocks`, `interactivity`, `motion` |
 | 7 | Магазин | Шаблоны Woo в блочной теме, корзина и оформление на блоках | `woo` |

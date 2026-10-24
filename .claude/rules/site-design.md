@@ -8,6 +8,7 @@ paths:
   - "**/patterns/**"
   - "**/template-parts/**/*.php"
   - "wp-content/**/*.css"
+  - "markup/**"
 ---
 
 # Дизайн сайта: паспорт и границы

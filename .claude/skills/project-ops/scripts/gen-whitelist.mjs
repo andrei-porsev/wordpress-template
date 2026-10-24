@@ -3,6 +3,7 @@
  * Запуск из корня: node .claude/skills/project-ops/scripts/gen-whitelist.mjs
  * blocks: "plugin-slug/block-slug" (блок внутри своего плагина).
  * scss: пути entry как в Live Sass ("/wp-content/themes/<slug>/assets/scss/*.scss"); пусто — includeItems не трогается.
+ * markup: true — вёрстка макета в markup/ (git и sftp-stage.json; в sftp.json прода её нет, deploy на прод не выкатывает).
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -21,6 +22,7 @@ const plugins = list( 'plugins' );
 const muPlugins = list( 'muPlugins' );
 const blocks = list( 'blocks' );
 const scss = list( 'scss' );
+const markup = project.markup === true;
 
 const slugRe = /^[A-Za-z0-9._-]+$/;
 for ( const s of [ ...themes, ...plugins, ...muPlugins ] ) {
@@ -37,9 +39,12 @@ for ( const b of blocks ) {
 }
 const own = { themes, plugins, 'mu-plugins': muPlugins };
 for ( const s of scss ) {
+	if ( markup && /^\/markup\/[^"\\]+\.scss$/.test( s ) ) {
+		continue;
+	}
 	const m = s.match( /^\/wp-content\/(themes|plugins|mu-plugins)\/([^/]+)\/[^"\\]+\.scss$/ );
 	if ( ! m || ! own[ m[ 1 ] ].includes( m[ 2 ] ) ) {
-		console.error( `scss: entry должен лежать в своей теме или плагине из project.json ("/wp-content/themes/<slug>/…/<файл>.scss"): ${ s }` );
+		console.error( `scss: entry должен лежать в своей теме или плагине из project.json ("/wp-content/themes/<slug>/…/<файл>.scss") или в /markup/ при "markup": true: ${ s }` );
 		process.exit( 1 );
 	}
 }
@@ -63,6 +68,7 @@ const gitLines = [
 	...gitBlock( 'themes', themes ),
 	...gitBlock( 'plugins', plugins ),
 	...gitBlock( 'mu-plugins', muPlugins ),
+	...( markup ? [ '!/markup/', '!/markup/**' ] : [] ),
 	MARK_END,
 ];
 
@@ -81,15 +87,11 @@ function patchGitignore() {
 	console.log( 'OK .gitignore' );
 }
 
-function patchSftp() {
-	const path = join( root, '.vscode', 'sftp.json' );
-	if ( ! existsSync( path ) ) {
-		console.warn( 'Нет .vscode/sftp.json — пропуск.' );
-		return;
-	}
-	const cfg = JSON.parse( readFileSync( path, 'utf8' ) );
+// Список ignore для sftp: всё закрыто, свои пакеты открыты; withMarkup — ещё markup/ (только для stage).
+function ignoreList( withMarkup ) {
 	const ignore = [
 		'/*',
+		...( withMarkup ? [ '!/markup', '!/markup/**' ] : [] ),
 		'!/wp-content',
 		'/wp-content/*',
 		'!/wp-content/themes',
@@ -115,7 +117,17 @@ function patchSftp() {
 		'**/vendor/',
 		'**/*.md'
 	);
-	cfg.ignore = ignore;
+	return ignore;
+}
+
+function patchSftp() {
+	const path = join( root, '.vscode', 'sftp.json' );
+	if ( ! existsSync( path ) ) {
+		console.warn( 'Нет .vscode/sftp.json — пропуск.' );
+		return;
+	}
+	const cfg = JSON.parse( readFileSync( path, 'utf8' ) );
+	cfg.ignore = ignoreList( false );
 
 	// Watcher: собранный CSS темы и плагинов, style.css блоков.
 	const parts = [
@@ -131,6 +143,18 @@ function patchSftp() {
 	}
 	writeFileSync( path, JSON.stringify( cfg, null, '\t' ) + '\n' );
 	console.log( 'OK .vscode/sftp.json' );
+}
+
+// Stage: тот же список плюс markup/ — вёрстку клиент смотрит только на stage.
+function patchSftpStage() {
+	const path = join( root, '.vscode', 'sftp-stage.json' );
+	if ( ! existsSync( path ) ) {
+		return;
+	}
+	const cfg = JSON.parse( readFileSync( path, 'utf8' ) );
+	cfg.ignore = ignoreList( markup );
+	writeFileSync( path, JSON.stringify( cfg, null, '\t' ) + '\n' );
+	console.log( `OK .vscode/sftp-stage.json${ markup ? ' (с markup/)' : '' }` );
 }
 
 // includeItems Live Sass — правка текста: в settings.json комментарии (JSONC), пересборка их бы стёрла.
@@ -157,6 +181,7 @@ function patchVscode() {
 
 patchGitignore();
 patchSftp();
+patchSftpStage();
 patchVscode();
 
 if ( ! themes.length && ! plugins.length && ! muPlugins.length ) {

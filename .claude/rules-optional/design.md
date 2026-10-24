@@ -7,6 +7,7 @@ paths:
   - "**/parts/**/*.html"
   - "**/template-parts/**/*.php"
   - "**/*.scss"
+  - "markup/**/*.html"
 ---
 
 # Дизайн: направление и источник макета

@@ -34,6 +34,9 @@
 
 Собранный CSS и `build/` создаёт Bash (compile / `npm run build`), хук их не видит: после сборки залей результат сам — `sftp-sync.mjs upload <пути>` (при `stage-auto` с флагом `--stage`; в `manual` — по команде или после «да»).
 
+Вёрстка макета (`markup/`, `project.json` → `markup: true`) — только на stage, хук её не заливает: после проверенной правки — `sftp-sync.mjs upload markup/<пути> --stage`
+(в `manual` — по команде или после «да»), затем проверка `https://<stage>/markup/…` в браузере. На прод не выкатывается: в `sftp.json` прода `markup/` нет.
+
 ## Доступы
 
 Сначала `ACCESS.md` (SSH, WP-CLI, URL сайта, админка, браузер, Figma). Заполнено или «нет» — не спрашивать снова.

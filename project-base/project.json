@@ -4,5 +4,6 @@
 	"plugins": [],
 	"muPlugins": [],
 	"blocks": [],
-	"scss": []
+	"scss": [],
+	"markup": false
 }
