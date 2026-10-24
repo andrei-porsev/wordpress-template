@@ -36,6 +36,16 @@
 			"ref": "main",
 			"license": "Apache-2.0 (LICENSE.txt в папке скилла)"
 		},
+		"schalkneethling": {
+			"repo": "https://github.com/schalkneethling/claude-toolkit.git",
+			"ref": "main",
+			"license": "MIT"
+		},
+		"good-css": {
+			"repo": "https://github.com/vojtaholik/good-css.git",
+			"ref": "main",
+			"license": "MIT"
+		},
 		"uiux": {
 			"repo": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git",
 			"ref": "main",
@@ -342,6 +352,22 @@
 			"tree": "d29d17f58d8a356cd5b63f572fa9fc6df54d0667",
 			"hash": "bf9b5bd499f31b02",
 			"updated": "2026-10-24"
+		},
+		"semantic-html": {
+			"source": "schalkneethling",
+			"path": "skills/semantic-html",
+			"commit": "e95834434a46ae179ff13d6f7760a31707e60ee9",
+			"tree": "742882396b9e12a2bcf096d0ed42a1210e287d0a",
+			"hash": "d71cf6bc1f37d4a3",
+			"updated": "2026-10-24"
+		},
+		"good-css": {
+			"source": "good-css",
+			"path": "skills/good-css",
+			"commit": "92d436ba1937d1b1407c47e35abb3e199eaace2e",
+			"tree": "716c242ae3ef01743ab8e1851222260a05050763",
+			"hash": "597f129bde8b65bb",
+			"updated": "2026-10-24"
 		}
 	},
 	"stacks": {
@@ -349,7 +375,9 @@
 			"title": "FSE / block theme",
 			"skills": [
 				"wp-block-themes",
-				"wp-patterns"
+				"wp-patterns",
+				"semantic-html",
+				"good-css"
 			],
 			"rules": [
 				"fse-theme"
@@ -373,7 +401,9 @@
 		"classic": {
 			"title": "Classic / child-тема",
 			"skills": [
-				"classic-theme"
+				"classic-theme",
+				"semantic-html",
+				"good-css"
 			],
 			"rules": [
 				"classic-theme"
