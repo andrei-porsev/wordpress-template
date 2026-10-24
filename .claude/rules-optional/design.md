@@ -41,7 +41,7 @@ paths:
   2–3 запуска с разными ключевыми словами и `--variance` → 2–3 разных варианта первого экрана; точечно — `--domain ux|typography|color|landing|gsap`.
   `--stack` не использовать (стека WordPress нет, `html-tailwind` уводит в Tailwind); `--persist` не использовать — итог в паспорт `system.md` и `theme.json`.
   Шрифты из выдачи — только локально (раздел «Шрифты» ниже), не `@import` Google Fonts.
-- **`impeccable`** — справочники без движка: папки `scripts/` нет (exclude: лаунчер скачивает и запускает бинарник), лаунчер не искать и не скачивать — сразу режим «Launcher unavailable».
+- **`impeccable`** — справочники без движка: папки `scripts/` нет (exclude: лаунчер скачивает и запускает бинарник), лаунчер не искать и не скачивать, `npx impeccable …` не запускать (обновление — только `skills-sync`) — сразу режим «Launcher unavailable».
   Его `PRODUCT.md` — это `.claude/product-marketing.md`, `DESIGN.md` — `project-base/design/system.md`; своих файлов в корне и `.impeccable/` не заводить, `hooks`, `live`, `generate`, `pin` не использовать.
   - Создание макета: `reference/craft-floor.md` (планка и запреты «AI-вида»), `new-work.md` (визуальный мир, режим страницы: портфолио — Experience, лендинг — Persuade),
     `typeset`, `colorize`, `layout`, `animate`, `delight`, `bolder`. Шаги с командами движка (`comp-spec`, `font-match`, `comp-diff`, `build-phase`) — глазами по снимкам `layout-check`.
