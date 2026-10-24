@@ -338,10 +338,10 @@
 			"exclude": [
 				"scripts"
 			],
-			"commit": "dad8dbb3aac21ad1fa236c110315ef4abece23e8",
-			"tree": "c76a80bc4e0c2040533eaca5ca795333c520aacf",
-			"hash": "e4422be04d1e17aa",
-			"updated": "2026-10-21"
+			"commit": "936867543ac2576920d663cc9803597f6044f3ac",
+			"tree": "d29d17f58d8a356cd5b63f572fa9fc6df54d0667",
+			"hash": "bf9b5bd499f31b02",
+			"updated": "2026-10-24"
 		}
 	},
 	"stacks": {
