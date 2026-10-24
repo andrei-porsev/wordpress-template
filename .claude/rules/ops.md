@@ -34,8 +34,9 @@
 
 Собранный CSS и `build/` создаёт Bash (compile / `npm run build`), хук их не видит: после сборки залей результат сам — `sftp-sync.mjs upload <пути>` (при `stage-auto` с флагом `--stage`; в `manual` — по команде или после «да»).
 
-Вёрстка макета (`markup/`, `project.json` → `markup: true`) — только на stage, хук её не заливает: после проверенной правки — `sftp-sync.mjs upload markup/<пути> --stage`
-(в `manual` — по команде или после «да»), затем проверка `https://<stage>/markup/…` в браузере. На прод не выкатывается: в `sftp.json` прода `markup/` нет.
+Вёрстка макета (`markup/`, `project.json` → `markup: true`) — только на stage, хук её не заливает: после проверенной правки — `node .claude/skills/project-ops/scripts/markup.mjs publish`
+(изменённое против снимка stage, `--all` — всё; печатает ссылку на стартовую страницу и ответ сервера; в `manual` — по команде или после «да»), затем проверка в браузере.
+Человек — `/markup`. На прод не выкатывается: в `sftp.json` прода `markup/` нет.
 
 ## Доступы
 
