@@ -24,6 +24,7 @@ SSH-ключ `ed25519` создаёт агент после «да» (`ssh-keyge
 |-----|-------|-------|-----|----------|
 | Одобрить проектные хуки | обяз. | без них нет охраны и заливки | запрос при первом запуске / `/hooks` | `selftest.mjs` |
 | Одобрить MCP `playwright` | обяз. | проверка вёрстки в браузере | `/mcp` → playwright | инструменты `mcp__playwright__*` есть |
+| `"enabledMcpjsonServers": ["playwright"]` в `~/.claude/settings.json` | обяз., один раз на машину | одобрение из `.claude/settings.json` проекта приложение на продолжении сессии не берёт: со второго хода playwright пропадает из `/mcp` (`not_configured`) | ключ на верхнем уровне личных настроек Claude Code, перезапуск приложения | после хода агента `/mcp` — playwright на месте |
 | Авторизовать MCP `figma` | при Figma | чтение и запись макета | `/mcp` → figma → Authenticate | инструменты figma есть |
 | Фрагмент `settings.json` (стек `seo`) | при SEO | подключение плагина `claude-seo` | вставить фрагмент из вывода `skills-sync activate` | `/seo` доступен |
 | `/seo setup` (ключи Google, Gemini) | при SEO | данные Search Console, PageSpeed | запустить, войти в Google | `/seo google` |
