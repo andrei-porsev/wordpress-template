@@ -4,7 +4,9 @@
  *   node .claude/skills/project-ops/scripts/markup.mjs publish [--all]   изменённое против снимка stage (--all — всё), затем ссылка
  *   node .claude/skills/project-ops/scripts/markup.mjs url               только ссылка и ответ сервера
  * На прод не заливает: работает только с sftp-stage.json. Пароль stage в вывод не попадает.
+ * Перед заливкой — stylelint по изменённым SCSS вёрстки (ошибки — стоп), как хук post-edit для темы.
  */
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -22,6 +24,18 @@ function startPage( files ) {
 		return 'markup/';
 	}
 	return files.find( ( f ) => /^markup\/[^/]+\.html$/.test( f ) ) || 'markup/';
+}
+
+// stylelint по SCSS вёрстки — как хук post-edit для темы (хук markup/ не видит). Отчёт или '' — ошибок нет / инструмента нет.
+function lintScss( root, rels ) {
+	const scss = rels.filter( ( r ) => r.endsWith( '.scss' ) );
+	const bin = join( root, '.claude', 'skills', 'project-ops', 'node_modules', 'stylelint', 'bin', 'stylelint.mjs' );
+	const config = join( root, '.stylelintrc.json' );
+	if ( ! scss.length || ! existsSync( bin ) || ! existsSync( config ) ) {
+		return '';
+	}
+	const r = spawnSync( process.execPath, [ bin, '--no-color', '--config', config, '--config-basedir', join( root, '.claude', 'skills', 'project-ops' ), ...scss ], { cwd: root, encoding: 'utf8', timeout: 120000 } );
+	return r.status === 0 ? '' : `${ r.stdout || '' }${ r.stderr || '' }`.trim();
 }
 
 async function check( url, auth ) {
@@ -52,6 +66,10 @@ try {
 	if ( cmd === 'publish' ) {
 		const snap = loadSnapshot( root, cfg ) || { files: {} };
 		const changed = all ? files : files.filter( ( rel ) => snap.files?.[ rel ]?.hash !== hashOf( readFileSync( localOf( root, rel ) ) ) );
+		const lint = lintScss( root, changed );
+		if ( lint ) {
+			throw new Error( `stylelint — исправь до заливки (правила шаблона те же, что для темы):\n${ lint.split( '\n' ).slice( 0, 20 ).join( '\n' ) }` );
+		}
 		if ( changed.length ) {
 			await cmdUpload( cfg, root, changed );
 		} else {
