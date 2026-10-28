@@ -231,26 +231,26 @@
 		"content-strategy": {
 			"source": "marketing",
 			"path": "skills/content-strategy",
-			"commit": "e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b",
-			"tree": "a7ddb527614d7cf06c85e2fbe45abb7564c3cb26",
-			"hash": "ca93d57593f6b3f4",
-			"updated": "2026-10-20"
+			"commit": "0cd9b3a0ef4c411a1d690419ce843f2a1da32cce",
+			"tree": "69ba6db5a658f94c06803bef4d022af2d565fa90",
+			"hash": "3072e46276601a76",
+			"updated": "2026-10-28"
 		},
 		"copywriting": {
 			"source": "marketing",
 			"path": "skills/copywriting",
-			"commit": "365b412152b9542499ca1439426f7fc3cc92bb65",
-			"tree": "5de411655b1692373f8950f56d50991bd5294a8e",
-			"hash": "11d447a14127604e",
-			"updated": "2026-10-15"
+			"commit": "0cd9b3a0ef4c411a1d690419ce843f2a1da32cce",
+			"tree": "ce3f78a285cf452d48813d3482b293da8b62e7cd",
+			"hash": "1369f02caa5b16f3",
+			"updated": "2026-10-28"
 		},
 		"copy-editing": {
 			"source": "marketing",
 			"path": "skills/copy-editing",
-			"commit": "365b412152b9542499ca1439426f7fc3cc92bb65",
-			"tree": "b1b144c16000ab7cfac005c73788a2e0eb719fed",
-			"hash": "f0df5093d055f097",
-			"updated": "2026-10-15"
+			"commit": "0cd9b3a0ef4c411a1d690419ce843f2a1da32cce",
+			"tree": "08ee14834684df8d8ba921f5604441bd95160064",
+			"hash": "e1093d98b14245f7",
+			"updated": "2026-10-28"
 		},
 		"accessibility": {
 			"source": "web-quality",
@@ -338,10 +338,10 @@
 			"exclude": [
 				"scripts/tests"
 			],
-			"commit": "56ea9cf174ed86786187daa9de0e6247cb0747e4",
-			"tree": "0b6619c11598d7ce32041044cb2e6fc6adea1efc",
-			"hash": "fd92125440f267c1",
-			"updated": "2026-10-21"
+			"commit": "28b3b8dee8c976df4fa3e94aed4e092ad43fcb03",
+			"tree": "829c4dab53f10cde51f0ff58b0bb13fe870f7e94",
+			"hash": "30c8dde1b921ad9f",
+			"updated": "2026-10-28"
 		},
 		"impeccable": {
 			"source": "impeccable",
@@ -349,10 +349,10 @@
 			"exclude": [
 				"scripts"
 			],
-			"commit": "936867543ac2576920d663cc9803597f6044f3ac",
-			"tree": "d29d17f58d8a356cd5b63f572fa9fc6df54d0667",
-			"hash": "bf9b5bd499f31b02",
-			"updated": "2026-10-24"
+			"commit": "8409a564d1baee90b2dde4f7a8f06288838e3921",
+			"tree": "85a9406ebda6ba3d5affdee28acf6a8c16520913",
+			"hash": "8d353c0e3e0a8e10",
+			"updated": "2026-10-28"
 		},
 		"semantic-html": {
 			"source": "schalkneethling",
