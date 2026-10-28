@@ -74,6 +74,11 @@ function check() {
 	const nodeMajor = Number( process.versions.node.split( '.' )[ 0 ] );
 	item( 'node', nodeMajor >= 20, process.version, 'Node 20+ — обновить с nodejs.org' );
 	item( 'npm-deps', existsSync( join( skillDir, 'node_modules', 'ssh2-sftp-client' ) ), 'зависимости project-ops', 'node .claude/skills/project-ops/scripts/install-deps.mjs (в каждом проекте)' );
+	// Playwright MCP и playwright-cli берут установленный Google Chrome (канал chrome), свой браузер не качают.
+	const chrome = win
+		? [ process.env.ProgramFiles, process.env[ 'ProgramFiles(x86)' ], process.env.LOCALAPPDATA ].filter( Boolean ).map( ( d ) => join( d, 'Google', 'Chrome', 'Application', 'chrome.exe' ) ).find( existsSync )
+		: [ '/Applications/Google Chrome.app', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable' ].find( existsSync );
+	item( 'chrome', Boolean( chrome ), chrome || 'нет', 'Google Chrome — для проверки вёрстки в Playwright (google.com/chrome)' );
 
 	const php = sh( 'php', [ '-v' ] );
 	if ( php.ok ) {
@@ -125,7 +130,7 @@ if ( prev && prev.ok && ageDays < STALE_DAYS && ! process.argv.includes( '--forc
 }
 const res = check();
 writeHome( 'machine.json', res );
-const titles = { node: 'Node', 'npm-deps': 'Зависимости', php: 'PHP', phpcs: 'phpcs', git: 'git', autocrlf: 'core.autocrlf', 'ssh-key': 'SSH-ключ', tar: 'tar', 'wp-cli-local': 'WP-CLI локально', servers: 'Профиль сервера' };
+const titles = { node: 'Node', 'npm-deps': 'Зависимости', chrome: 'Chrome', php: 'PHP', phpcs: 'phpcs', git: 'git', autocrlf: 'core.autocrlf', 'ssh-key': 'SSH-ключ', tar: 'tar', 'wp-cli-local': 'WP-CLI локально', servers: 'Профиль сервера' };
 for ( const [ k, v ] of Object.entries( res.items ) ) {
 	console.log( `${ v.ok ? '✅' : '⚠️ ' } ${ titles[ k ] || k }: ${ v.value }` );
 }

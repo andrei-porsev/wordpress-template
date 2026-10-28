@@ -3,6 +3,7 @@
 	"private": true,
 	"type": "module",
 	"dependencies": {
+		"@playwright/cli": "0.1.22",
 		"basic-ftp": "^5.0.5",
 		"sharp": "0.33.5",
 		"ssh2": "^1.16.0",

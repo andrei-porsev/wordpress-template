@@ -1,0 +1,12 @@
+diff --git a/.claude/settings.json b/.claude/settings.json
+index 5cc5d21..9b99952 100644
+--- a/.claude/settings.json
++++ b/.claude/settings.json
+@@ -3,6 +3,7 @@
+ 	"permissions": {
+ 		"allow": [
+ 			"Bash(node .claude/skills/project-ops/scripts/compile-scss.mjs*)",
++			"Bash(node .claude/skills/project-ops/scripts/browser.mjs*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/gen-whitelist.mjs*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs test*)",
+ 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs download*)",
