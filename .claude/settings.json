@@ -3,6 +3,7 @@
 	"permissions": {
 		"allow": [
 			"Bash(node .claude/skills/project-ops/scripts/compile-scss.mjs*)",
+			"Bash(node .claude/skills/project-ops/scripts/browser.mjs*)",
 			"Bash(node .claude/skills/project-ops/scripts/gen-whitelist.mjs*)",
 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs test*)",
 			"Bash(node .claude/skills/project-ops/scripts/sftp-sync.mjs download*)",
