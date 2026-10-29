@@ -35,12 +35,13 @@ php не в PATH (Plesk) — `~/.bashrc` на сервере (человек, `c
 | `-- <cmd>` | WP-CLI и разовые шелл-команды с INDEX → «Команды». |
 | `--stdin <файл> -- <cmd>` | Длинный текст во ввод команды: `--stdin draft.html -- wp post update 123 -` (или `wp post create - --post_title=…`). Не base64 в командной строке — Windows режет длинные строки. Файл — локальный (scratchpad), на сервер не пишется; доступы и секреты скрипт не отправит. |
 
-**Разметка блоков в содержимом записи** — экранирование `--` (два дефиса в классе внутри `<!-- wp:… -->`), `"`, `<` должно дойти до базы с обратной косой чертой, иначе блок ломается:
-- Писать через `--stdin <файл> -- wp post update <ID> -` (`wp post create -`): WP-CLI сам слеширует, `-` сохраняется (проверено на stage).
-- `wp eval` / `eval-file` с `wp_insert_post()` / `wp_update_post()` — только `wp_slash( array( … ) )`: они снимают слеши (`wp_unslash`), без `wp_slash()` `-` станет `u002d`.
-- Файл для `--stdin` с `\uXXXX` писать через Write нельзя — инструмент раскрывает `-` в `-` (в комментарии блока выйдет `--`): файл — node-скриптом в scratchpad
-  (`String.fromCharCode( 92 )` перед `u002d`) или выгрузкой `wp post get <ID> --field=post_content` с правкой; после записи — Grep `\\u002d` по файлу.
-- Проверка после записи: `wp post get <ID> --field=post_content` — `-` на месте.
+**Разметка блоков в содержимом записи.** В атрибутах `<!-- wp:… -->` WordPress экранирует дефис, кавычку и `<` как обратная косая черта + `u002d` / `u0022` / `u003c`
+(ниже — «escape»); два дефиса в классе (`prv-posts--feature`) хранятся только так. Escape должен дойти до базы с косой чертой, иначе блок ломается:
+- Писать через `--stdin <файл> -- wp post update <ID> -` (`wp post create -`): WP-CLI сам слеширует, escape сохраняется (проверено на stage).
+- `wp eval` / `eval-file` с `wp_insert_post()` / `wp_update_post()` — только `wp_slash( array( … ) )`: они снимают слеши (`wp_unslash`), без `wp_slash()` escape теряет косую черту.
+- Файл с escape не писать через Write / Edit — инструмент раскрывает escape в сам символ (в комментарии блока выйдет `--`, JSON с `"` сломается).
+  Файл — node-скриптом в scratchpad (`String.fromCharCode( 92 ) + 'u002d'`) или выгрузкой `wp post get <ID> --field=post_content` и правкой node-скриптом.
+- Проверка после записи: `wp post get <ID> --field=post_content --format=json` — у escape две косые черты (JSON), дефисов подряд внутри `<!-- wp:… -->` нет.
 
 В `ACCESS.md` SSH = `нет` — скрипт не запускать и не просить логин повторно.
 
