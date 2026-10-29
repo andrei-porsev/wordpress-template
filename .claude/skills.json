@@ -183,26 +183,26 @@
 		"figma-use": {
 			"source": "figma",
 			"path": "skills/figma-use",
-			"commit": "7047cb45d6227bb42bd9ad6d35651043c0508179",
-			"tree": "c9dac0f5837fe77e27acb822e0bebff0c39b2f7d",
-			"hash": "7f4cfadd87605727",
-			"updated": "2026-10-20"
+			"commit": "f3f264d9cbae059d9b96289ee33ce444b5c8e7e6",
+			"tree": "5cf6f28d186c603ebbb8e9f2db0df7c6eb62d128",
+			"hash": "5c2f6db5e7ff87dc",
+			"updated": "2026-10-29"
 		},
 		"figma-generate-design": {
 			"source": "figma",
 			"path": "skills/figma-generate-design",
-			"commit": "7047cb45d6227bb42bd9ad6d35651043c0508179",
-			"tree": "38ee64d2b05a8b5c4ab5c5901f3f71270e63de0f",
-			"hash": "a1167eef4f5e0eee",
-			"updated": "2026-10-20"
+			"commit": "f3f264d9cbae059d9b96289ee33ce444b5c8e7e6",
+			"tree": "6067195e51dc99533884902170699adad4ade723",
+			"hash": "e7e889738bc20e19",
+			"updated": "2026-10-29"
 		},
 		"figma-generate-library": {
 			"source": "figma",
 			"path": "skills/figma-generate-library",
-			"commit": "b0bfad2ae63dfdc1af201c5542b5c8cf93778b33",
-			"tree": "55d414053f94884e0f4c17ba3a686549f190fb17",
-			"hash": "2245529f6a81a5db",
-			"updated": "2026-10-14"
+			"commit": "f3f264d9cbae059d9b96289ee33ce444b5c8e7e6",
+			"tree": "6327dfbb5f56d8265c69f7e03024ec65c3c55349",
+			"hash": "393c18496e6efbf1",
+			"updated": "2026-10-29"
 		},
 		"figma-create-new-file": {
 			"source": "figma",
@@ -349,10 +349,10 @@
 			"exclude": [
 				"scripts"
 			],
-			"commit": "8409a564d1baee90b2dde4f7a8f06288838e3921",
-			"tree": "85a9406ebda6ba3d5affdee28acf6a8c16520913",
-			"hash": "8d353c0e3e0a8e10",
-			"updated": "2026-10-28"
+			"commit": "5e745ace7e151feb2a93d360d0281fe39448b857",
+			"tree": "56b2b5f344a44821d90b4ca3e6b3c209a371446e",
+			"hash": "c2814d3d790ee898",
+			"updated": "2026-10-29"
 		},
 		"semantic-html": {
 			"source": "schalkneethling",
