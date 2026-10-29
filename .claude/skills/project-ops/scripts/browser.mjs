@@ -1,7 +1,7 @@
 /**
  * Браузер для проверки вёрстки через playwright-cli — запасной путь, когда Playwright MCP недоступен (решение 055).
  * Запуск из корня:
- *   node .claude/skills/project-ops/scripts/browser.mjs open <url>       браузер без окна, конфиг .vscode/playwright-mcp.json (пароль stage)
+ *   node .claude/skills/project-ops/scripts/browser.mjs open <url>       видимое окно, конфиг .vscode/playwright-mcp.json (пароль stage)
  *   node .claude/skills/project-ops/scripts/browser.mjs <команда> [...]  resize, set-color-scheme, snapshot, screenshot, console, requests, eval, click…, close
  * Адреса — только домены проекта из ACCESS.md и .vscode/local.json. Сессия одна на проект (stem из project.json).
  * Снимки и скриншоты без --filename — в .claude/.state/browser/ (вне git и заливки); --filename — от корня проекта.
@@ -99,8 +99,14 @@ mkdirSync( stateDir, { recursive: true } );
 const own = rest.map( ( a ) => a.replace( /^--filename=(.+)$/, ( m, p ) => `--filename=${ resolve( root, p ) }` ) );
 const args = [ CLI, `-s=${ session }`, cmd, ...own ];
 const config = join( root, '.vscode', 'playwright-mcp.json' );
-if ( cmd === 'open' && existsSync( config ) ) {
-	args.push( `--config=${ config }` );
+if ( cmd === 'open' ) {
+	// Окно видно человеку: он смотрит, что делает агент.
+	if ( ! rest.includes( '--headed' ) ) {
+		args.push( '--headed' );
+	}
+	if ( existsSync( config ) ) {
+		args.push( `--config=${ config }` );
+	}
 }
 
 // cwd — папка состояния: туда CLI пишет .playwright-cli/.
