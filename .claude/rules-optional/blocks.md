@@ -22,7 +22,7 @@ paths:
 
 ## Размеры и отступы в блоках и настройках
 
-- Кегль и `padding-block` из редактора — **пара** мин/макс по правилу `scss-bem` → «Fluid» (значение меняется с шириной — пара при любой разнице). Значение одно — одно поле или дефолт темы, без `fluid-*`.
+- Кегль и `padding-block` из редактора — **пара** мин/макс по правилу `scss-bem` → «Fluid» (кегль — пара при любой разнице; `padding-block` — при разнице больше 3 px). Иначе одно поле или дефолт темы, без `fluid-*`.
 - Атрибуты пары: `fontSizeMin` / `fontSizeMax`, `padMin` / `padMax`, `type: "number"`, с `default`. В инспекторе — два `NumberControl` в одной `PanelBody`.
 - Значения с полей редактора — в px (`fluid-var` / `fluid-fs-var`); остальной код темы — rem (`scss-bem` → «Единицы»).
 - Ширина колонки — два отдельных свойства, не fluid: `%` (`containerWidth`) и `max-width` px (`containerMaxWidth`). Дефолты — `$cltm-container-width` / `$cltm-container-max-width`.

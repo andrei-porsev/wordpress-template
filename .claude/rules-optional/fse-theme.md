@@ -12,7 +12,7 @@ paths:
 - Источник правды: `theme.json` (settings/styles), `templates/`, `parts/`, `patterns/`.
 - Не предлагай classic `header.php` / `sidebar.php` как основную модель, если тема уже block theme.
 - Контентные секции — patterns; повторяемая логика UI — блоки (native или ACF), не раздувать `functions.php`.
-- Типографика и отступы в `theme.json` — по `scss-bem` → «Fluid»: значение меняется с шириной (любая разница) — `fluid: { min, max }`; одно значение — фиксированный `size`.
+- Типографика и отступы в `theme.json` — по `scss-bem` → «Fluid»: кегль меняется с шириной (любая разница) — `fluid: { min, max }`, один кегль — фиксированный `size`; отступы — при разнице больше 3 px, иначе одно значение.
   Диапазон fluid — явно: `settings.typography.fluid: { "minViewportWidth": "320px", "maxViewportWidth": "1600px" }` (WP 6.4+), как у миксина `fluid` проекта (решение 049);
   без этого верхней границей WordPress берёт `layout.wideSize`, и шрифты из `theme.json` и SCSS растут по-разному. Min и max не равны (деление на ноль в WP 6.5).
   **Что куда:** размеры для редактора (контент, размеры автора) — пресеты `fontSizes` с `fluid: { min, max }`; элементы интерфейса — миксин `fluid-fs` в SCSS;
