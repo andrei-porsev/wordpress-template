@@ -169,6 +169,29 @@ async () => {
 - **Клавиатура** у интерактивного элемента: Tab доходит до каждой ссылки и кнопки по порядку, `:focus-visible` виден на обоих фонах, Enter срабатывает.
   Фокус — `browser_press_key` Tab и `document.activeElement`; итог — строкой в отчёт.
 
+## Единство компонентов (решение 056)
+
+Правка компонента, который по паспорту («Компоненты» → «Где встречается») есть на двух и более страницах: на каждом адресе, 375 и 1440, — вычисленные стили (`browser_evaluate`).
+Экземпляры с одинаковыми модификаторами должны совпасть; расхождение без модификатора — постраничное переопределение или копия стилей: исправить до «готово».
+`width` разный при одинаковом `max-width` — ширина колонки, не ошибка. Адресов в паспорте нет — главная и страницы, где Grep находит класс в шаблонах.
+
+```js
+async () => {
+	const sel = '.acme-section-head__lead'; // класс компонента из правки
+	const block = sel.slice( 1 ).split( '__' )[ 0 ];
+	const props = [ 'font-size', 'line-height', 'font-weight', 'letter-spacing', 'max-width', 'color' ];
+	return [ ...document.querySelectorAll( sel ) ].map( ( el ) => {
+		const s = getComputedStyle( el );
+		const mods = [ ...el.classList, ...( el.closest( `.${ block }` )?.classList ?? [] ) ].filter( ( c ) => c.includes( '--' ) );
+		return {
+			mods: [ ...new Set( mods ) ].sort().join( ' ' ),
+			width: Math.round( el.getBoundingClientRect().width ),
+			...Object.fromEntries( props.map( ( p ) => [ p, s.getPropertyValue( p ) ] ) ),
+		};
+	} );
+}
+```
+
 ## Было → стало (решение 046)
 
 Пара снимков — для заметной правки (решение 044) и правки каркаса; мелкой — не нужна. Пары — `.claude/.state/reports/shots/<задача>/` (не в git;

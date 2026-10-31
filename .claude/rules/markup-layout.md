@@ -52,6 +52,36 @@ paths:
 Секция вёрстки — будущий паттерн или template-part: те же классы и структура, чтобы посадка переносила разметку, а не переписывала. Шапка и подвал — один раз (общий файл или копия с пометкой источника).
 Пути к шрифтам, картинкам и CSS — относительные.
 
+### Сверка компонентов (решение 056)
+
+До посадки вёрстки или экспорта макета на WordPress и при сборке паспорта по готовой вёрстке — один проход по всем страницам, чтобы переносить компоненты, а не разнобой:
+
+1. На каждой странице, 375 и 1440, — сниппет ниже (`browser_evaluate`): заголовки, абзац сразу после заголовка (lead), кнопки. Карточки и прочее — по паспорту или по снимкам.
+2. Сгруппировать по роли и виду, в отчёт — таблица «элемент — страницы — классы — значения — предлагаемый токен / компонент».
+3. Расхождение в пределах порога — кегль и межстрочный до 2 px, ширина до 40 px — сводится к одному значению общей таблицей, одно «да» на всё.
+   Больше порога — вопрос по каждому элементу: это вариант (модификатор) или ошибка.
+4. После «да» — один компонент и токены (`scss-bem` → «Структура»), строки в паспорт → «Компоненты» с адресами; новые значения — по `site-design`.
+
+```js
+async () => {
+	const props = [ 'font-size', 'line-height', 'font-weight', 'max-width' ];
+	const pick = ( el, role ) => {
+		const s = getComputedStyle( el );
+		return { role, cls: el.className, width: Math.round( el.getBoundingClientRect().width ), ...Object.fromEntries( props.map( ( p ) => [ p, s.getPropertyValue( p ) ] ) ) };
+	};
+	const out = [];
+	document.querySelectorAll( 'h1, h2, h3' ).forEach( ( h ) => {
+		const tag = h.tagName.toLowerCase();
+		out.push( pick( h, tag ) );
+		if ( h.nextElementSibling?.matches( 'p' ) ) {
+			out.push( pick( h.nextElementSibling, `${ tag } + p` ) );
+		}
+	} );
+	document.querySelectorAll( 'a[class*="btn"], a[class*="button"], button' ).forEach( ( b ) => out.push( pick( b, 'button' ) ) );
+	return { page: location.pathname, items: out };
+}
+```
+
 ## Минимум разметки
 
 Выбор элемента — скилл `semantic-html`, CSS вместо обёрток — `good-css` (с исключениями из `scss-bem` → «Скиллы вёрстки»).
