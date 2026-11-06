@@ -161,9 +161,15 @@ check( '2 после --apply хуки всё ещё к замене (опора 
 // 3. Конфликт решён, миграция отмечена, повторный прогон — без изменений.
 run( '--take', 'project', '.mcp.json' );
 run( '--done', '2026.01.01' );
-commit( proj, 'миграция' );
+check( '3 --take и --done коммитят метку сами', git( proj, 'status', '--porcelain' ) === '' && /миграция 2026\.01\.01 выполнена/.test( git( proj, 'log', '-1', '--format=%s' ) ), git( proj, 'status', '--porcelain' ) );
 r = run();
 check( '3 повторный прогон: нечего менять', ! /заменить|добавить|удалить|объединить|КОНФЛИКТ/.test( r.out.split( 'защищённые' )[ 0 ] ) && ! /миграции:/.test( r.out ), r.out );
+check( '3 «уже на версии — обновлять нечего»', /Проект уже на версии 2026\.01\.01/.test( r.out ), r.out );
+check( '3 версия поднята — без предупреждения', ! /ВНИМАНИЕ: после поднятия версии/.test( r.out ), r.out );
+git( proj, 'checkout', '-q', 'main' );
+r = run();
+check( '3 невлитая ветка прошлого обновления — в отчёте', /Ветка template-update прошлого обновления не влита в main/.test( r.out ), r.out );
+git( proj, 'checkout', '-q', 'template-update' );
 
 // 4. Новая версия: конфликт в CLAUDE.md, предок запоминается.
 git( proj, 'checkout', '-q', 'main' );
@@ -180,7 +186,17 @@ r = run();
 check( '4 конфликт виден и после применения', /CLAUDE\.md — слияние: конфликтов 1/.test( r.out ), r.out );
 run( '--take', 'template', 'CLAUDE.md' );
 check( '4 --take template', read( proj, 'CLAUDE.md' ).includes( 'шаблон v3' ) && ! JSON.parse( read( proj, '.claude/template.json' ) ).unresolved[ 'CLAUDE.md' ] );
+check( '4 --take template закоммичен', git( proj, 'status', '--porcelain' ) === '' );
 check( '4 хуки без --protected ждут и после следующего обновления', /\.claude\/hooks\/h\.mjs — заменить/.test( r.out ), r.out );
+
+// 4б. Коммит шаблона без поднятия версии — предупреждение; правка только в исключённом — нет.
+put( tpl, 'project-base/plans/x.md', 'план шаблона v2\n' );
+commit( tpl, 'только план' );
+check( '4б исключённое не считается', ! /ВНИМАНИЕ: после поднятия версии/.test( run().out ) );
+put( tpl, '.claude/rules/core.md', 'правило v3\n' );
+commit( tpl, 'правило без версии' );
+r = run();
+check( '4б версия не поднята — предупреждение', /ВНИМАНИЕ: после поднятия версии 2026\.01\.02 в шаблоне ещё коммитов: 1/.test( r.out ), r.out );
 
 // 5. settings.json: основа шаблона + добавленное проектом.
 const { settingsMerge, structuredMerge, globRe } = await import( pathToFileURL( SCRIPT ).href );

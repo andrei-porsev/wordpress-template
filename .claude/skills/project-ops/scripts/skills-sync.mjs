@@ -19,7 +19,7 @@ const RULES_OPT = join( root, '.claude', 'rules-optional' );
 const STATE = join( root, '.claude', '.state', 'skills-sync.json' );
 const TEMPLATE_LABEL = join( root, '.claude', 'template.json' );
 const TEMPLATE_MANIFEST = '.claude/template/manifest.json';
-const TEMPLATE_STATE = join( root, '.claude', '.state', 'template-check.json' );
+const TEMPLATE_BRANCH = 'template-update';
 const SELF = 'node .claude/skills/project-ops/scripts/skills-sync.mjs';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOOK_MODE = process.argv.includes( '--hook' );
@@ -324,83 +324,33 @@ function hookReport( m ) {
 	process.stdout.write( lines.join( '\n' ) + '\n' );
 }
 
-// Версии вида 2026.10.16 или 2026.10.16.2: сравнение по числам.
-function newer( a, b ) {
-	const x = String( a ).split( '.' ).map( Number );
-	const y = String( b ).split( '.' ).map( Number );
-	for ( let i = 0; i < Math.max( x.length, y.length ); i++ ) {
-		if ( ( x[ i ] || 0 ) !== ( y[ i ] || 0 ) ) {
-			return ( x[ i ] || 0 ) > ( y[ i ] || 0 );
-		}
-	}
-	return false;
-}
-
-// Манифест последней версии шаблона: из его папки, нет папки — с GitHub (раз в сутки, качает только при смене коммита).
-function latestTemplate( label, state ) {
-	const local = label.source?.path && join( label.source.path, TEMPLATE_MANIFEST );
-	if ( local && existsSync( local ) ) {
-		return readJson( local, null );
-	}
-	if ( ! label.source?.repo ) {
-		return null;
-	}
-	if ( state.checkedAt && Date.now() - state.checkedAt < DAY_MS ) {
-		return state.latest || null;
-	}
-	const head = git( [ 'ls-remote', label.source.repo, 'HEAD' ] ).split( /\s+/ )[ 0 ];
-	let latest = state.latest && state.head === head ? state.latest : null;
-	if ( ! latest && head === label.commit ) {
-		latest = { version: label.version, migrations: [] };
-	}
-	if ( ! latest ) {
-		const dir = tempDir();
-		try {
-			git( [ 'clone', '--bare', '--quiet', '--depth', '1', '--filter=blob:none', label.source.repo, dir ] );
-			latest = JSON.parse( git( [ '--git-dir', dir, 'show', `HEAD:${ TEMPLATE_MANIFEST }` ] ) );
-		} finally {
-			rmSync( dir, { recursive: true, force: true } );
-		}
-	}
-	Object.assign( state, { checkedAt: Date.now(), head, latest } );
-	return latest;
-}
-
-// SessionStart: версия шаблона и незавершённые миграции — не чаще раза в сутки (решение 032).
+// SessionStart: только начатое и не доведённое обновление шаблона; о новых версиях не сообщает — обновляет человек сам (решение 059).
 function templateReport() {
 	const label = readJson( TEMPLATE_LABEL, null );
-	const state = readJson( TEMPLATE_STATE, {} );
-	if ( state.notifiedAt && Date.now() - state.notifiedAt < DAY_MS ) {
+	if ( ! label ) {
 		return;
 	}
 	const lines = [];
-	if ( ! label ) {
-		// Без метки и без манифеста — старый проект; с манифестом — сам шаблон.
-		if ( existsSync( join( root, TEMPLATE_MANIFEST ) ) ) {
-			return;
-		}
-		lines.push( 'Шаблон: версия проекта неизвестна (нет .claude/template.json). Одной строкой предложи обновить проект по процедуре `project-ops` → `template.md`.' );
-	} else {
-		const own = readJson( join( root, TEMPLATE_MANIFEST ), { migrations: [] } );
-		const open = ( own.migrations || [] ).filter( ( m ) => ! ( label.migrations || [] ).includes( m.id ) );
-		if ( open.length ) {
-			lines.push( `Шаблон: незавершённая миграция ${ open.map( ( m ) => m.id ).join( ', ' ) } — инструкция ${ open[ 0 ].doc }, после неё \`template-update.mjs "<проект>" --done <id>\`.` );
-		}
-		const latest = latestTemplate( label, state );
-		if ( latest && newer( latest.version, label.version ) ) {
-			const pending = ( latest.migrations || [] ).filter( ( m ) => ! ( label.migrations || [] ).includes( m.id ) ).length;
-			const cmd = `node "${ label.source.path }/.claude/skills/project-ops/scripts/template-update.mjs" "${ root.replace( /\\/g, '/' ) }"`;
-			lines.push(
-				`Шаблон: доступна ${ latest.version } (у проекта ${ label.version }${ pending ? `, миграций: ${ pending }` : '' }). ` +
-					`Одной строкой предложи обновить. Пробный прогон: \`${ cmd }\`; применение — после «да» (\`project-ops\` → \`template.md\`). Отказ — напомнить завтра.`
-			);
-		}
+	const own = readJson( join( root, TEMPLATE_MANIFEST ), { migrations: [] } );
+	const open = ( own.migrations || [] ).filter( ( m ) => ! ( label.migrations || [] ).includes( m.id ) );
+	if ( open.length ) {
+		lines.push( `Шаблон: незавершённая миграция ${ open.map( ( m ) => m.id ).join( ', ' ) } — инструкция ${ open[ 0 ].doc }, после неё \`template-update.mjs "<проект>" --done <id>\`.` );
+	}
+	const unresolved = Object.keys( label.unresolved || {} );
+	if ( unresolved.length ) {
+		lines.push( `Шаблон: нерешённые конфликты обновления — ${ unresolved.join( ', ' ) } (\`project-ops\` → \`template.md\`, шаг 4).` );
+	}
+	// Метка новой версии живёт в ветке template-update, пока её не влили: без этой строки проект выглядит необновлённым.
+	if ( git( [ '-C', root, 'branch', '--list', TEMPLATE_BRANCH ] ) && ! git( [ '-C', root, 'branch', '--merged', 'HEAD', '--list', TEMPLATE_BRANCH ] ) ) {
+		const head = git( [ '-C', root, 'rev-parse', '--abbrev-ref', 'HEAD' ] );
+		lines.push(
+			`Шаблон: обновление начато в ветке ${ TEMPLATE_BRANCH } и не влито${ head === TEMPLATE_BRANCH ? ' (сессия сейчас в этой ветке)' : ` (сессия в ${ head })` }. ` +
+				'Не предлагать обновление заново; доделать или влить — по просьбе пользователя (`template.md`, шаг 9).'
+		);
 	}
 	if ( lines.length ) {
-		state.notifiedAt = Date.now();
 		process.stdout.write( lines.join( '\n' ) + '\n' );
 	}
-	writeJson( TEMPLATE_STATE, state );
 }
 
 // Сравнение двух каталогов скилла: добавленные, удалённые, изменённые файлы.

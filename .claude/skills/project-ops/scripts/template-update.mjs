@@ -233,7 +233,25 @@ function loadTemplate( worktree ) {
 		}
 	}
 	const dirty = gitText( TROOT, [ 'status', '--porcelain' ] ) !== '';
-	return { commit, tree, file, manifest, dirty, worktree: Boolean( worktree ), skills: readJson( file( '.claude/skills.json' ), { core: [], stacks: {}, skills: {} } ) };
+	return { commit, tree, file, manifest, dirty, unbumped: unbumpedCommits( commit, excluded ), worktree: Boolean( worktree ), skills: readJson( file( '.claude/skills.json' ), { core: [], stacks: {}, skills: {} } ) };
+}
+
+// Коммиты шаблона после последней правки манифеста, которые меняют файлы для проектов (версия не поднята).
+function unbumpedCommits( commit, excluded ) {
+	const bump = gitText( TROOT, [ 'log', '-1', '--format=%H', commit, '--', MANIFEST ] );
+	if ( ! bump ) {
+		return [];
+	}
+	const out = [];
+	let current = null;
+	for ( const line of gitText( TROOT, [ 'log', '--format=@%h', '--name-only', `${ bump }..${ commit }` ] ).split( '\n' ) ) {
+		if ( line.startsWith( '@' ) ) {
+			current = line.slice( 1 );
+		} else if ( line && current && ! excluded( line ) && ! out.includes( current ) ) {
+			out.push( current );
+		}
+	}
+	return out;
 }
 
 function loadProject( root, flags ) {
@@ -273,7 +291,8 @@ function loadProject( root, flags ) {
 	const files = git( root, [ 'ls-files', '-z' ] ).toString( 'utf8' ).split( '\0' ).filter( Boolean );
 	const status = gitText( root, [ 'status', '--porcelain' ] );
 	const branch = gitText( root, [ 'rev-parse', '--abbrev-ref', 'HEAD' ] );
-	return { root, label, base, baseFile, templateBase, files, clean: status === '', branch };
+	const pendingBranch = Boolean( gitText( root, [ 'branch', '--list', BRANCH ] ) ) && ! gitText( root, [ 'branch', '--merged', 'HEAD', '--list', BRANCH ] );
+	return { root, label, base, baseFile, templateBase, files, clean: status === '', branch, pendingBranch };
 }
 
 function blobAt( cwd, commit, rel ) {
@@ -729,6 +748,16 @@ function report( t, p, results, mig, stacks, notes, all ) {
 	if ( t.dirty ) {
 		console.log( t.worktree ? 'Шаблон — рабочая копия (--worktree), не коммит.' : 'В шаблоне есть незакоммиченное — берётся последний коммит.' );
 	}
+	if ( t.unbumped.length ) {
+		console.log( `ВНИМАНИЕ: после поднятия версии ${ version } в шаблоне ещё коммитов: ${ t.unbumped.length } (${ t.unbumped.slice( 0, 5 ).join( ', ' ) }${ t.unbumped.length > 5 ? ', …' : '' }).` );
+		console.log( `  Проект получит их под меткой ${ version }, и следующее обновление их не отличит — сначала поднять версию в шаблоне (${ MANIFEST }), коммит.` );
+	}
+	if ( p.label && p.label.version === version && p.label.commit === t.commit ) {
+		console.log( `Проект уже на версии ${ version } (${ t.commit.slice( 0, 7 ) }) — обновлять нечего.` );
+	}
+	if ( p.pendingBranch ) {
+		console.log( `Ветка ${ BRANCH } прошлого обновления не влита в ${ p.branch } — сначала доделать или влить её (template.md, шаг 9).` );
+	}
 	const main = results.filter( ( r ) => r.kind !== 'protected' );
 	const prot = results.filter( ( r ) => r.kind === 'protected' && ! [ 'same', 'skip' ].includes( r.action ) );
 	console.log( `\nсовпадают: ${ main.filter( ( r ) => r.action === 'same' ).length }` );
@@ -879,6 +908,10 @@ function cmdTake( t, p, results, how, paths ) {
 		console.log( `${ rel }: ${ how === 'template' ? 'взят из шаблона' : how === 'project' ? 'оставлен проектный' : 'слияние с маркерами' }` );
 	}
 	writeFile( p.root, LABEL, jsonBuf( label ) );
+	// Слияние с маркерами коммитится после правки руками (--take project); остальное — сразу, вместе с меткой.
+	if ( how !== 'merge' ) {
+		commitPaths( p.root, [ ...paths.map( ( x ) => x.replace( /\\/g, '/' ) ), LABEL ], `Шаблон: конфликт — ${ how === 'template' ? 'взят шаблонный' : 'оставлен проектный' }: ${ paths.join( ', ' ) }` );
+	}
 }
 
 function cmdDone( p, id ) {
@@ -887,7 +920,18 @@ function cmdDone( p, id ) {
 	}
 	p.label.migrations = [ ...new Set( [ ...( p.label.migrations || [] ), id ] ) ];
 	writeFile( p.root, LABEL, jsonBuf( p.label ) );
+	commitPaths( p.root, [ LABEL ], `Шаблон: миграция ${ id } выполнена (метка)` );
 	console.log( `Миграция ${ id } отмечена выполненной.` );
+}
+
+// Коммит только перечисленных путей: метка не должна остаться незакоммиченной и потеряться при смене ветки.
+function commitPaths( root, paths, message ) {
+	git( root, [ 'add', '-A', '--', ...paths ] );
+	if ( ! gitText( root, [ 'diff', '--cached', '--name-only', '--', ...paths ] ) ) {
+		return;
+	}
+	git( root, [ 'commit', '-q', '-m', message, '--', ...paths ] );
+	console.log( `Коммит: ${ message }` );
 }
 
 async function confirm( question ) {

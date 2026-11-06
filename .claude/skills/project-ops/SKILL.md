@@ -34,7 +34,7 @@ compatibility: "Этот шаблон. Разработка на сервере 
 | Компиляция SCSS → CSS | [compile-scss.md](compile-scss.md) |
 | Сборка Gutenberg-блоков (`src/` → `build/`) | [build-blocks.md](build-blocks.md) |
 | Скиллы: подключить стек, проверить и обновить из апстрима | [skills.md](skills.md) |
-| Обновить проект до версии шаблона, миграции, «Шаблон: доступна X» | [template.md](template.md), `template-update.mjs` |
+| Обновить проект до версии шаблона (только по просьбе), миграции, «Шаблон: незавершённая …» | [template.md](template.md), `template-update.mjs` |
 | Кеш сайта после заливки: команда сброса, кто сбрасывает, проверка отдаваемого CSS | [cache.md](cache.md) |
 | Снимки «было → стало»: сравнение, хранение, очистка | `shot-diff.mjs` → правило `layout-check` |
 
