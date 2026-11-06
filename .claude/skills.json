@@ -57,6 +57,11 @@
 			"ref": "main",
 			"license": "Apache-2.0 (берём только справочники: scripts/ скачивает и запускает бинарник — exclude)"
 		},
+		"humanizer": {
+			"repo": "https://github.com/blader/humanizer.git",
+			"ref": "main",
+			"license": "MIT (скилл в корне репозитория; берём SKILL.md и LICENSE, служебное — exclude)"
+		},
 		"gsap": {
 			"repo": "https://github.com/greensock/gsap-skills.git",
 			"ref": "main",
@@ -369,6 +374,35 @@
 			"tree": "716c242ae3ef01743ab8e1851222260a05050763",
 			"hash": "597f129bde8b65bb",
 			"updated": "2026-10-24"
+		},
+		"humanizer": {
+			"source": "humanizer",
+			"path": ".",
+			"exclude": [
+				".claude-plugin",
+				".cursor-plugin",
+				".github",
+				"agents",
+				"scripts",
+				"AGENTS.md",
+				"CHANGELOG.md",
+				"README.md"
+			],
+			"commit": "0ef9fe5bc3572734fd3ae6c448fe00a30cd5dcf0",
+			"tree": "3700d4523d0a736281c984c932152a15323a1834",
+			"hash": "41b79a385e6bb32e",
+			"updated": "2026-11-06"
+		},
+		"cro": {
+			"source": "marketing",
+			"path": "skills/cro",
+			"exclude": [
+				"evals"
+			],
+			"commit": "88c79f6528a9347420e57ceb1fff9a60de651768",
+			"tree": "702d6826004d08ccda0bde3e15dd26adc622bceb",
+			"hash": "30232a4802feb742",
+			"updated": "2026-11-06"
 		}
 	},
 	"stacks": {
@@ -502,7 +536,9 @@
 				"site-architecture",
 				"content-strategy",
 				"copywriting",
-				"copy-editing"
+				"copy-editing",
+				"humanizer",
+				"cro"
 			],
 			"rules": [
 				"content"

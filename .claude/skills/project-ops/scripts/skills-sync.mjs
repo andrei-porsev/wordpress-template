@@ -144,7 +144,7 @@ function remoteTrees( src, paths ) {
 		const trees = {};
 		for ( const p of paths ) {
 			try {
-				trees[ p ] = git( [ '--git-dir', dir, 'rev-parse', `HEAD:${ p }` ] );
+				trees[ p ] = git( [ '--git-dir', dir, 'rev-parse', treeRef( p ) ] );
 			} catch {
 				trees[ p ] = null;
 			}
@@ -155,21 +155,29 @@ function remoteTrees( src, paths ) {
 	}
 }
 
+// Путь скилла «.» — скилл в корне репозитория.
+const treeRef = ( p ) => ( p === '.' ? 'HEAD:' : `HEAD:${ p }` );
+
 // Рабочая копия только нужных путей. Возвращает { dir, commit, trees }; dir удалить после работы.
 function checkoutPaths( src, paths ) {
 	const dir = tempDir();
 	git( [ 'clone', '--quiet', '--depth', '1', '--filter=blob:none', '--no-checkout', '--single-branch', '--branch', src.ref, src.repo, dir ] );
-	git( [ '-C', dir, 'sparse-checkout', 'set', '--no-cone', ...paths.map( ( p ) => `/${ p }/` ) ] );
+	git( [ '-C', dir, 'sparse-checkout', 'set', '--no-cone', ...paths.map( ( p ) => ( p === '.' ? '/*' : `/${ p }/` ) ) ] );
 	git( [ '-C', dir, 'checkout', '--quiet' ] );
 	const trees = {};
 	for ( const p of paths ) {
 		try {
-			trees[ p ] = git( [ '-C', dir, 'rev-parse', `HEAD:${ p }` ] );
+			trees[ p ] = git( [ '-C', dir, 'rev-parse', treeRef( p ) ] );
 		} catch {
 			trees[ p ] = null;
 		}
 	}
-	return { dir, commit: git( [ '-C', dir, 'rev-parse', 'HEAD' ] ), trees };
+	const commit = git( [ '-C', dir, 'rev-parse', 'HEAD' ] );
+	// Скилл из корня копируется вместе с папкой — служебный .git в копию не идёт.
+	if ( paths.includes( '.' ) ) {
+		rmSync( join( dir, '.git' ), { recursive: true, force: true } );
+	}
+	return { dir, commit, trees };
 }
 
 function sourceOf( m, name ) {
