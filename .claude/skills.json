@@ -343,10 +343,10 @@
 			"exclude": [
 				"scripts/tests"
 			],
-			"commit": "28b3b8dee8c976df4fa3e94aed4e092ad43fcb03",
-			"tree": "829c4dab53f10cde51f0ff58b0bb13fe870f7e94",
-			"hash": "30c8dde1b921ad9f",
-			"updated": "2026-10-28"
+			"commit": "4f2dbb67e64969a9a30ab00742f2d55d66ddec2b",
+			"tree": "d69b734e576aa6b430bc11a435aa11d29bc92c8e",
+			"hash": "8db1e231e6934f4e",
+			"updated": "2026-11-08"
 		},
 		"impeccable": {
 			"source": "impeccable",
@@ -354,10 +354,10 @@
 			"exclude": [
 				"scripts"
 			],
-			"commit": "5e745ace7e151feb2a93d360d0281fe39448b857",
-			"tree": "56b2b5f344a44821d90b4ca3e6b3c209a371446e",
-			"hash": "c2814d3d790ee898",
-			"updated": "2026-10-29"
+			"commit": "924bbd194d02e5e15a227e75b5901fb0d7a4ecad",
+			"tree": "6a82bb36dfff3cf03b8ccf0c4ce5df0a01790350",
+			"hash": "7d1fb2a8e6189863",
+			"updated": "2026-11-08"
 		},
 		"semantic-html": {
 			"source": "schalkneethling",
