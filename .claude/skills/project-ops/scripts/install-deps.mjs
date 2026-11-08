@@ -18,8 +18,10 @@ if ( r.status !== 0 || ! process.argv.includes( '--browsers' ) ) {
 }
 
 const cli = join( skillDir, 'node_modules', '@playwright', 'cli', 'playwright-cli.js' );
+// Системные корневые сертификаты: антивирус с проверкой HTTPS (Avast, ESET, Kaspersky) подменяет сертификат CDN, Node без них загрузку отклоняет.
+const env = { ...process.env, NODE_OPTIONS: `${ process.env.NODE_OPTIONS || '' } --use-system-ca`.trim() };
 for ( const engine of [ 'webkit', 'firefox' ] ) {
-	const b = spawnSync( process.execPath, [ cli, 'install-browser', engine ], { cwd: skillDir, stdio: 'inherit' } );
+	const b = spawnSync( process.execPath, [ cli, 'install-browser', engine ], { cwd: skillDir, stdio: 'inherit', env } );
 	if ( b.status !== 0 ) {
 		console.error( `Не установлен ${ engine }.` );
 		process.exit( b.status ?? 1 );
