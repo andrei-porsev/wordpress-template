@@ -152,10 +152,10 @@
 		"wordpress-router": {
 			"source": "wordpress",
 			"path": "skills/wordpress-router",
-			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
-			"tree": "bfb75a68f108e249891f204906bb6fa953d611f8",
-			"hash": "7625bcf572b17c55",
-			"updated": "2026-10-08"
+			"commit": "7374e6f1c913b3b02b25465d266d9c0e0a04fc96",
+			"tree": "d7ededa250592612832a5e7c5465096311dc2e70",
+			"hash": "c795944e9a89926b",
+			"updated": "2026-11-08"
 		},
 		"wp-project-triage": {
 			"source": "wordpress",
