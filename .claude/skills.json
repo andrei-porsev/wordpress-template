@@ -4,7 +4,8 @@
 		"project-ops",
 		"project-structure",
 		"howto",
-		"markup"
+		"markup",
+		"qa"
 	],
 	"sources": {
 		"wordpress": {

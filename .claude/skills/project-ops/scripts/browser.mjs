@@ -3,11 +3,12 @@
  * Запуск из корня:
  *   node .claude/skills/project-ops/scripts/browser.mjs open <url>       видимое окно, конфиг .vscode/playwright-mcp.json (пароль stage)
  *   node .claude/skills/project-ops/scripts/browser.mjs <команда> [...]  resize, set-color-scheme, snapshot, screenshot, console, requests, eval, click…, close
+ *   --browser=webkit|firefox у любой команды — отдельная сессия этого браузера (skill qa, направление B); установка — install-deps.mjs --browsers
  * Адреса — только домены проекта из ACCESS.md и .vscode/local.json. Сессия одна на проект (stem из project.json).
  * Снимки и скриншоты без --filename — в .claude/.state/browser/ (вне git и заливки); --filename — от корня проекта.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -60,7 +61,25 @@ function projectHosts( dir ) {
 	return hosts;
 }
 
-const [ cmd, ...rest ] = process.argv.slice( 2 );
+const ENGINES = new Set( [ 'chromium', 'webkit', 'firefox' ] );
+
+// --browser=<движок> или --browser <движок> — вынимается из аргументов, сессию и флаг для open подставляет скрипт.
+const argv = process.argv.slice( 2 );
+let engine = 'chromium';
+for ( let i = 0; i < argv.length; i++ ) {
+	const m = argv[ i ].match( /^--browser(?:=(.*))?$/ );
+	if ( m ) {
+		const value = m[ 1 ] ?? argv[ i + 1 ] ?? '';
+		argv.splice( i, m[ 1 ] === undefined ? 2 : 1 );
+		engine = value.toLowerCase();
+		break;
+	}
+}
+if ( ! ENGINES.has( engine ) ) {
+	fail( `Браузер «${ engine }» не поддерживается: chromium (по умолчанию), webkit, firefox.` );
+}
+
+const [ cmd, ...rest ] = argv;
 if ( ! cmd ) {
 	fail( 'Команда: open <url> | goto <url> | resize <w> <h> | set-color-scheme dark | snapshot | screenshot | console | requests | eval <js> | close' );
 }
@@ -91,9 +110,24 @@ if ( ! existsSync( CLI ) ) {
 }
 
 const project = readJson( join( root, 'project-base', 'project.json' ) );
-const session = String( project?.stem || basename( root ) ).replace( /[^\w-]+/g, '-' );
+const stem = String( project?.stem || basename( root ) ).replace( /[^\w-]+/g, '-' );
+const session = engine === 'chromium' ? stem : `${ stem }-${ engine }`;
 const stateDir = join( root, '.claude', '.state', 'browser' );
 mkdirSync( stateDir, { recursive: true } );
+
+// Конфиг для WebKit и Firefox — тот же, без аргументов запуска Chromium (--start-maximized у них не работает).
+function engineConfig( path ) {
+	if ( engine === 'chromium' ) {
+		return path;
+	}
+	const cfg = readJson( path ) || {};
+	cfg.browser = { ...( cfg.browser || {} ), browserName: engine };
+	delete cfg.browser.launchOptions?.args;
+	delete cfg.browser.launchOptions?.channel;
+	const out = join( stateDir, `playwright-${ engine }.json` );
+	writeFileSync( out, JSON.stringify( cfg, null, '\t' ) );
+	return out;
+}
 
 // --filename — от корня проекта, как filename у MCP (снимки «было → стало» в .claude/.state/reports/shots/).
 const own = rest.map( ( a ) => a.replace( /^--filename=(.+)$/, ( m, p ) => `--filename=${ resolve( root, p ) }` ) );
@@ -104,8 +138,11 @@ if ( cmd === 'open' ) {
 	if ( ! rest.includes( '--headed' ) ) {
 		args.push( '--headed' );
 	}
-	if ( existsSync( config ) ) {
-		args.push( `--config=${ config }` );
+	if ( existsSync( config ) || engine !== 'chromium' ) {
+		args.push( `--config=${ engineConfig( config ) }` );
+	}
+	if ( engine !== 'chromium' ) {
+		args.push( `--browser=${ engine }` );
 	}
 }
 
@@ -114,4 +151,7 @@ const r = spawnSync( process.execPath, args, { cwd: stateDir, encoding: 'utf8' }
 const out = ( r.stdout || '' ).replace( /\]\((?!https?:)([^)]+)\)/g, ( m, p ) => `](.claude/.state/browser/${ p.replace( /\\/g, '/' ) })` );
 process.stdout.write( out );
 process.stderr.write( r.stderr || '' );
+if ( /is not installed/.test( ( r.stdout || '' ) + ( r.stderr || '' ) ) ) {
+	console.error( `\nБраузер ${ engine } не установлен. Один раз: node .claude/skills/project-ops/scripts/install-deps.mjs --browsers` );
+}
 process.exit( r.status ?? 1 );

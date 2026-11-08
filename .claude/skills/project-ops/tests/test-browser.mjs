@@ -64,6 +64,15 @@ check( 'без команды — подсказка', r.code === 1 && /Кома
 r = run( 'list' );
 check( 'list проходит проверки', ! /закрыта|не домен|не передавать/.test( r.out ), r.out );
 
+r = run( 'open', 'https://acme.example/', '--browser=opera' );
+check( 'неизвестный браузер — отказ', r.code === 1 && /«opera» не поддерживается/.test( r.out ), r.out );
+
+r = run( 'open', 'https://evil.example/', '--browser', 'webkit' );
+check( '--browser webkit: чужой домен — отказ', r.code === 1 && /evil\.example — не домен проекта/.test( r.out ), r.out );
+
+r = run( 'list', '--browser=firefox' );
+check( 'list --browser=firefox проходит проверки', ! /закрыта|не домен|не передавать|не поддерживается/.test( r.out ), r.out );
+
 rmSync( proj, { recursive: true, force: true } );
 console.log( fails ? `Провалено: ${ fails }` : 'Все проверки пройдены.' );
 process.exit( fails ? 1 : 0 );
