@@ -20,7 +20,7 @@ const ALLOWED = new Set( [
 	'open', 'goto', 'close', 'list', 'reload', 'go-back', 'go-forward',
 	'snapshot', 'find', 'screenshot', 'console', 'requests', 'eval',
 	'resize', 'set-color-scheme', 'clear-color-scheme', 'set-reduced-motion', 'clear-reduced-motion', 'set-media', 'clear-media',
-	'click', 'dblclick', 'hover', 'press', 'keydown', 'keyup', 'type', 'fill', 'select', 'check', 'uncheck', 'mousewheel',
+	'click', 'dblclick', 'hover', 'press', 'keydown', 'keyup', 'type', 'fill', 'select', 'check', 'uncheck', 'mousemove', 'mousewheel',
 	'dialog-accept', 'dialog-dismiss',
 ] );
 const NAV = new Set( [ 'open', 'goto' ] );

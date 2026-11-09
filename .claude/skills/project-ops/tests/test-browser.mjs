@@ -70,6 +70,9 @@ check( 'неизвестный браузер — отказ', r.code === 1 && /
 r = run( 'open', 'https://evil.example/', '--browser', 'webkit' );
 check( '--browser webkit: чужой домен — отказ', r.code === 1 && /evil\.example — не домен проекта/.test( r.out ), r.out );
 
+r = run( 'mousemove', '360', '450' );
+check( 'mousemove открыт (тест прокрутки qa)', ! /закрыта/.test( r.out ), r.out );
+
 r = run( 'list', '--browser=firefox' );
 check( 'list --browser=firefox проходит проверки', ! /закрыта|не домен|не передавать|не поддерживается/.test( r.out ), r.out );
 
