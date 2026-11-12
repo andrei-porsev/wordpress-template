@@ -189,18 +189,18 @@
 		"figma-use": {
 			"source": "figma",
 			"path": "skills/figma-use",
-			"commit": "f3f264d9cbae059d9b96289ee33ce444b5c8e7e6",
-			"tree": "5cf6f28d186c603ebbb8e9f2db0df7c6eb62d128",
-			"hash": "5c2f6db5e7ff87dc",
-			"updated": "2026-10-29"
+			"commit": "9d296d0768c3e29c813922b3b11e390f1e47d8aa",
+			"tree": "3234244e89814cd71395f6da3e6ef36d36aef1e1",
+			"hash": "581a5d072cf07cca",
+			"updated": "2026-11-12"
 		},
 		"figma-generate-design": {
 			"source": "figma",
 			"path": "skills/figma-generate-design",
-			"commit": "f3f264d9cbae059d9b96289ee33ce444b5c8e7e6",
-			"tree": "6067195e51dc99533884902170699adad4ade723",
-			"hash": "e7e889738bc20e19",
-			"updated": "2026-10-29"
+			"commit": "9d296d0768c3e29c813922b3b11e390f1e47d8aa",
+			"tree": "670464152a0d29e9a4cc173b726ebf7519280871",
+			"hash": "90cc613620729394",
+			"updated": "2026-11-12"
 		},
 		"figma-generate-library": {
 			"source": "figma",
@@ -229,34 +229,34 @@
 		"site-architecture": {
 			"source": "marketing",
 			"path": "skills/site-architecture",
-			"commit": "b9ba399dd88b082b926e261e8ccfb843d20aa066",
-			"tree": "64066e856d3697e6033a83f3029179b2003f58b5",
-			"hash": "780fdb8b1f021bd3",
-			"updated": "2026-10-08"
+			"commit": "1f837447b20bb6f0e72d87b80ece1c221c362c7d",
+			"tree": "de326b9e37ddbc579e9fe49f5331316c9dcf864c",
+			"hash": "7c923f38c2139eb4",
+			"updated": "2026-11-12"
 		},
 		"content-strategy": {
 			"source": "marketing",
 			"path": "skills/content-strategy",
-			"commit": "0cd9b3a0ef4c411a1d690419ce843f2a1da32cce",
-			"tree": "69ba6db5a658f94c06803bef4d022af2d565fa90",
-			"hash": "3072e46276601a76",
-			"updated": "2026-10-28"
+			"commit": "1f837447b20bb6f0e72d87b80ece1c221c362c7d",
+			"tree": "d6bf4cc907dab82bde0b567192e8678329f26abf",
+			"hash": "12ea84d3484d7ea8",
+			"updated": "2026-11-12"
 		},
 		"copywriting": {
 			"source": "marketing",
 			"path": "skills/copywriting",
-			"commit": "0cd9b3a0ef4c411a1d690419ce843f2a1da32cce",
-			"tree": "ce3f78a285cf452d48813d3482b293da8b62e7cd",
-			"hash": "1369f02caa5b16f3",
-			"updated": "2026-10-28"
+			"commit": "1f837447b20bb6f0e72d87b80ece1c221c362c7d",
+			"tree": "94ed1edf4f53c20cbc40f2ecc6f2228bcd66382f",
+			"hash": "d00d55cc68674309",
+			"updated": "2026-11-12"
 		},
 		"copy-editing": {
 			"source": "marketing",
 			"path": "skills/copy-editing",
-			"commit": "0cd9b3a0ef4c411a1d690419ce843f2a1da32cce",
-			"tree": "08ee14834684df8d8ba921f5604441bd95160064",
-			"hash": "e1093d98b14245f7",
-			"updated": "2026-10-28"
+			"commit": "1f837447b20bb6f0e72d87b80ece1c221c362c7d",
+			"tree": "971a1693d4c7e667d90191eef0de01327a5c4769",
+			"hash": "8a84774dded64476",
+			"updated": "2026-11-12"
 		},
 		"accessibility": {
 			"source": "web-quality",
@@ -355,10 +355,10 @@
 			"exclude": [
 				"scripts"
 			],
-			"commit": "924bbd194d02e5e15a227e75b5901fb0d7a4ecad",
-			"tree": "6a82bb36dfff3cf03b8ccf0c4ce5df0a01790350",
-			"hash": "7d1fb2a8e6189863",
-			"updated": "2026-11-08"
+			"commit": "b4bff1626c344067788c2679f048a20057c7cc5a",
+			"tree": "4128476cc6ce653e0108e254b3ad45b35dc06a52",
+			"hash": "3ed98bc04406dbc7",
+			"updated": "2026-11-12"
 		},
 		"semantic-html": {
 			"source": "schalkneethling",
@@ -389,10 +389,10 @@
 				"CHANGELOG.md",
 				"README.md"
 			],
-			"commit": "0ef9fe5bc3572734fd3ae6c448fe00a30cd5dcf0",
-			"tree": "3700d4523d0a736281c984c932152a15323a1834",
-			"hash": "41b79a385e6bb32e",
-			"updated": "2026-11-06"
+			"commit": "b48c832f0f809c1b5658edbb838c2521b72f2413",
+			"tree": "1fe9a61991dfc2b8906f88bedc0f32f1ef074234",
+			"hash": "4b1c8bbae57632d0",
+			"updated": "2026-11-12"
 		},
 		"cro": {
 			"source": "marketing",
@@ -400,10 +400,10 @@
 			"exclude": [
 				"evals"
 			],
-			"commit": "88c79f6528a9347420e57ceb1fff9a60de651768",
-			"tree": "702d6826004d08ccda0bde3e15dd26adc622bceb",
-			"hash": "30232a4802feb742",
-			"updated": "2026-11-06"
+			"commit": "1f837447b20bb6f0e72d87b80ece1c221c362c7d",
+			"tree": "6d0838b0f09bae5d0e9fc971d81eacf874a862df",
+			"hash": "aeaa31799af99131",
+			"updated": "2026-11-12"
 		}
 	},
 	"stacks": {
