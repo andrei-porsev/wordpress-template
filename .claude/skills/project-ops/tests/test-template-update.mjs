@@ -210,7 +210,7 @@ check( '5 settings: порядок ключей проекта, список с�
 // 6. Разметка: раздел без места в шаблоне уходит в конец.
 const sm = structuredMerge( '# T\n\n## A\n\n- X: —\n', '# P\n\n## A\n\n- X: 1\n\n## Свой\n\nтекст\n' );
 check( '6 structuredMerge: значение и свой раздел', sm.text.includes( '- X: 1' ) && sm.orphan.join() === 'Свой' && sm.text.trim().endsWith( 'текст' ), sm.text );
-check( '6 glob [!_]', globRe( 'themes/[!_]*/**' ).test( 'themes/sitea/a.md' ) && ! globRe( 'themes/[!_]*/**' ).test( 'themes/_example/a.md' ) );
+check( '6 glob [!_]', globRe( 'themes/[!_]*/**' ).test( 'themes/acme/a.md' ) && ! globRe( 'themes/[!_]*/**' ).test( 'themes/_example/a.md' ) );
 
 // 7. --protected без терминала — отказ.
 r = run( '--protected' );

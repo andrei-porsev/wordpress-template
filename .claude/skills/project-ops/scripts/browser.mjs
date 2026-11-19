@@ -1,5 +1,5 @@
 /**
- * Браузер для проверки вёрстки через playwright-cli — запасной путь, когда Playwright MCP недоступен (решение 055).
+ * Браузер для проверки вёрстки через playwright-cli — запасной путь, когда Playwright MCP недоступен (решение 039).
  * Запуск из корня:
  *   node .claude/skills/project-ops/scripts/browser.mjs open <url>       видимое окно, конфиг .vscode/playwright-mcp.json (пароль stage)
  *   node .claude/skills/project-ops/scripts/browser.mjs <команда> [...]  resize, set-color-scheme, snapshot, screenshot, console, requests, eval, click…, close

@@ -25,7 +25,7 @@
    и `ignore` / `watcher` в `.vscode/sftp.json`. Родительскую тему не добавлять.
 4. Скиллы и правила под стек и пакеты — `node .claude/skills/project-ops/scripts/skills-sync.mjs activate <стек…>`
    (таблица в `project-init` → `stack.md`, пакеты — `.claude/packages.json`; WP-CLI = да → обязательно `wpcli`), затем `check` — обновить устаревшее.
-   Подробно — `project-ops` → `skills.md`, решение 022. Ядро: `project-init`, `project-structure`, `project-ops`.
+   Подробно — `project-ops` → `skills.md`, решение 016. Ядро: `project-init`, `project-structure`, `project-ops`, `howto`, `markup`, `qa`.
 5. Режим заливки в `ACCESS.md`: `guarded-auto` / `stage-auto` / `manual` / `local` (локальная копия).
 6. Окружение и проверка (Node, зависимости, PHP, MCP, хуки, связь, тест заливки) — `project-init` → `SKILL.md` → этап 10, агент ведёт сам.
 7. Перенести SCSS-заготовку в тему/плагин по инструкции `project-base/_starter/README.md`.
@@ -113,7 +113,7 @@ wp db export backup-baseline.sql
 node .claude/skills/project-ops/scripts/session-check.mjs
 ```
 
-Скрипт только читает (на сервере ничего не меняет) и печатает отчёт по шагам 0–2:
+Скрипт только читает (на сервере ничего не меняет) и печатает отчёт по шагам 0–3:
 
 - **🖐 Сделать вручную** — открытые пункты из `INDEX.md` → «Сделать вручную»: напомнить пользователю одной строкой; «сделал» — проверить, если можно, и отметить `[x]`.
 
@@ -123,8 +123,10 @@ node .claude/skills/project-ops/scripts/session-check.mjs
    - версии WordPress, плагинов, тем, mu-plugins против прошлой сессии (через SFTP, WP-CLI не нужен); обновился WooCommerce — список переопределений в теме для сверки `@version`;
    - быстрая проверка безопасности: ключевые файлы ядра против оригинала wordpress.org, лишний PHP в корне, PHP в `uploads` (известные кеши плагинов — не тревога), новые mu-plugins.
      🟡 — назвать пользователю, полная проверка — `project-init` → `recon.md`.
-2. **Обновления** — скиллы и версия шаблона (хук `SessionStart` сообщает о них сам, раз в сутки). Есть — одной строкой предложить.
-   Скиллы: после «да» — `skills-sync.mjs update <имена> --apply` и отдельный коммит. Шаблон: процедура `project-ops` → `template.md` (решение 032).
+2. **Решения** — `decisions-check.mjs` по `DECISIONS.md`, файлам типов и `QA.md`: цепочки «уточняет», отменённое в журнале, таблица против журнала, ссылки на несуществующие файлы (решение 064).
+   Есть замечания — одной строкой сказать и предложить склейку; переписать записи — после «да».
+3. **Обновления** — скиллы (хук `SessionStart` сообщает сам, раз в сутки): есть — одной строкой предложить; после «да» — `skills-sync.mjs update <имена> --apply` и отдельный коммит.
+   Шаблон — только о начатом и не доведённом обновлении; новую версию агент не предлагает (решение 059, процедура `project-ops` → `template.md`).
 
 Дальше по отчёту:
 
@@ -179,6 +181,7 @@ git tag before-woo-update
   — запись в `project-base/DECISIONS.md`: решение, причина, следствие, статус. Редко,
   только то, о чём через полгода спросят «почему так». Агент обязан следовать
   записанному и не предлагать заново отброшенные варианты.
+  Новое решение меняет прежнее — переписать прежнюю запись, не заводить «уточняет NNN» (решение 064, `consistency` → «Решения»).
 
 ### 2.3. Коммиты
 
@@ -334,7 +337,7 @@ git checkout before-woo-update -- .
 
 Всё в `.claude/settings.json`, коммитится. Логика: агент работает самостоятельно, границы держат хуки и `deny`.
 
-**Режим:** `defaultMode: auto` (решение 031) — действия без запроса, `deny`, `ask` и хуки действуют; куда можно писать, решает `guard-paths` (свои пакеты из `project.json`).
+**Режим:** `defaultMode: auto` (решение 019) — действия без запроса, `deny`, `ask` и хуки действуют; куда можно писать, решает `guard-paths` (свои пакеты из `project.json`).
 
 **Без запроса (`allow`):** `compile-scss`, `gen-whitelist`, `skills-sync` (кроме `--apply`, он с подтверждением), `sftp-sync test|download|upload|sync-down`, `ssh-exec test`, WP-CLI на чтение
 (`plugin list`, `theme list`, `option get`, `core version`, `user list`, `post list`, `cache flush`, `rewrite flush`, `db export`, `db check`; с `--stage` и без),
@@ -355,7 +358,7 @@ git checkout before-woo-update -- .
 | `guard-wpcli` | Bash / PowerShell | Команды после `ssh-exec.mjs --`: запись на сервере и секреты — deny; изменяющий WP-CLI — ask и автодамп БД; чтение — allow |
 | `post-edit` | после Write / Edit | `phpcs`/`stylelint` (отчёт агенту), `php -l`, бэкап, заливка, проверка сайта, откат; счётчик попыток (лимит 3); журнал |
 | `stop-map` | Stop | Один раз напомнит обновить карту после структурных правок |
-| `skills-sync.mjs check --hook` | SessionStart | Раз в сутки сверяет скиллы с апстримом; есть обновления подключённых — одна строка агенту (решение 022) |
+| `skills-sync.mjs check --hook` | SessionStart | Раз в сутки сверяет скиллы с апстримом; есть обновления подключённых — одна строка агенту (решение 016) |
 
 `node .claude/hooks/selftest.mjs` — самопроверка охранников без сервера. Журнал — `.claude/.state/audit.log` (в git не идёт).
 Ограничения: хуки не видят запись из скриптов (`node script.mjs`, `npm run build`); `guard-wpcli` разбирает только вызовы `node …ssh-exec.mjs`.

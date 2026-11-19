@@ -1,5 +1,5 @@
 {
-	"$comment": "Образец профиля своих серверов. Скопировать в ~/.wp-template/servers.json (вне проектов, не в git) и заполнить. Читает только stage-config.mjs. {project} — имя проекта из команды (латиница, например siteb).",
+	"$comment": "Образец профиля своих серверов. Скопировать в ~/.wp-template/servers.json (вне проектов, не в git) и заполнить. Читает только stage-config.mjs. {project} — имя проекта из команды (латиница, например acme).",
 	"servers": {
 		"vps": {
 			"title": "Свой VPS (IONOS + Plesk) — stage и промежуточные копии",

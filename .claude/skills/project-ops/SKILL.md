@@ -26,7 +26,7 @@ compatibility: "Этот шаблон. Разработка на сервере 
 | Проверить машину (один раз): Node, PHP, phpcs, git, SSH-ключ | `machine-check.mjs` → `project-init` → этап 10 |
 | Stage по профилю своего сервера; пароль stage для браузера; после переезда stage → прод | `stage-config.mjs build <project>` / `auth <project>` / `promote` → `project-init` → `access.md`, `types.md` |
 | Проверить подключение: SSH / SFTP / FTP, ключ, путь к сайту, диагностика | `connect-check.mjs` → `project-init` → `access.md` |
-| Запуск сессии: локально, сверка, версии, безопасность, обновления | `session-check.mjs` → [sftp.md](sftp.md), `WORKFLOW.md` → 2.1 |
+| Запуск сессии: локально, сверка, версии, безопасность, решения, обновления | `session-check.mjs` → [sftp.md](sftp.md), `WORKFLOW.md` → 2.1 |
 | Разведка, полная проверка безопасности, окружение | `recon.mjs` → `project-init` → `recon.md` |
 | Скачать, сверить, sync | [sftp.md](sftp.md) |
 | Выкатить на прод | `deploy` → [sftp.md](sftp.md) |
@@ -37,6 +37,7 @@ compatibility: "Этот шаблон. Разработка на сервере 
 | Обновить проект до версии шаблона (только по просьбе), миграции, «Шаблон: незавершённая …» | [template.md](template.md), `template-update.mjs` |
 | Кеш сайта после заливки: команда сброса, кто сбрасывает, проверка отдаваемого CSS | [cache.md](cache.md) |
 | Снимки «было → стало»: сравнение, хранение, очистка | `shot-diff.mjs` → правило `layout-check` |
+| Журналы решений: цепочки, отменённое, таблица против журнала, мёртвые ссылки (решение 064) | `decisions-check.mjs [файл…] [--strict]` → правило `consistency` → «Решения» |
 
 Сначала нужный файл, потом команды из него.
 

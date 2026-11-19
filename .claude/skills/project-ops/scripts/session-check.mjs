@@ -1,6 +1,6 @@
 /**
  * Запуск сессии (WORKFLOW.md → 2.1): локальное состояние, сверка своего кода с сервером, версии WP и плагинов против прошлой сессии,
- * быстрая проверка безопасности, обновления скиллов. Только чтение: на сервере ничего не меняет, локально пишет снимки в .claude/.state/.
+ * быстрая проверка безопасности, журналы решений (decisions-check), обновления скиллов. Только чтение: на сервере ничего не меняет, локально пишет снимки в .claude/.state/.
  * Версии и проверка — через SFTP / FTP, без WP-CLI.
  *   node .claude/skills/project-ops/scripts/session-check.mjs [--stage]
  */
@@ -326,6 +326,10 @@ try {
 		await serverSection( root, 'sftp-stage.json', 'stage' );
 		say();
 	}
+	// Журналы решений: цепочки и устаревшие записи (решение 064).
+	const dc = spawnSync( process.execPath, [ join( scriptsDir, 'decisions-check.mjs' ) ], { cwd: root, encoding: 'utf8' } );
+	say( `## ${ ( dc.stdout || '' ).trim() || 'Решения: проверка не запустилась.' }` );
+	say();
 	say( '## Обновления' );
 	const sk = spawnSync( process.execPath, [ join( scriptsDir, 'skills-sync.mjs' ), 'check', '--hook' ], { cwd: root, encoding: 'utf8' } );
 	const skText = ( sk.stdout || '' ).trim();
