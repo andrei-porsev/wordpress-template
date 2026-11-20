@@ -3,7 +3,8 @@
 	"version": "2026.11.19.1",
 	"repo": "git@github.com:andrei-porsev/wordpress-template.git",
 	"exclude": [
-		"project-base/plans/**"
+		"project-base/plans/**",
+		"LICENSE"
 	],
 	"protected": [
 		".claude/hooks/**",

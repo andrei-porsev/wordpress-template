@@ -6,6 +6,7 @@
  *   … "<проект>" --done <миграция>               агентская часть миграции выполнена
  *   … "<проект>" --protected                     хуки и settings.json — запускает человек в своём терминале
  *   … . --protected                              ожидающие правки настроек самого шаблона
+ *   … "<проект>" --remap <таблица хешей>          метка проекта — на новые хеши после переписывания истории шаблона
  * Шаблон берётся из последнего коммита, проект — из рабочей копии (должна быть закоммичена).
  */
 import { execFileSync } from 'node:child_process';
@@ -924,6 +925,70 @@ function cmdDone( p, id ) {
 	console.log( `Миграция ${ id } отмечена выполненной.` );
 }
 
+// Таблица «старый хеш новый хеш» по строке (формат commit-map git filter-repo; заголовок и пустые строки пропускаются).
+function readCommitMap( file ) {
+	const map = new Map();
+	for ( const line of readFileSync( file, 'utf8' ).split( /\r?\n/ ) ) {
+		const m = line.trim().match( /^([0-9a-f]{40})\s+([0-9a-f]{40})$/ );
+		if ( m ) {
+			map.set( m[ 1 ], m[ 2 ] );
+		}
+	}
+	return map;
+}
+
+// Хеши шаблона в метке (commit, protected, protectedBase, unresolved) — на новые после переписывания истории шаблона.
+function cmdRemap( p, file ) {
+	if ( ! p.label ) {
+		fail( 'Метки нет — переназначать нечего.' );
+	}
+	if ( ! file || ! existsSync( file ) ) {
+		fail( '--remap <файл таблицы хешей> — файла нет.' );
+	}
+	const map = readCommitMap( file );
+	if ( ! map.size ) {
+		fail( `${ file }: нет строк «старый новый» (40 знаков hex).` );
+	}
+	const changed = [];
+	const unknown = new Set();
+	const walkLabel = ( node, path ) => {
+		for ( const [ k, v ] of Object.entries( node ) ) {
+			if ( k === 'files' ) {
+				continue;
+			}
+			if ( typeof v === 'string' && /^[0-9a-f]{40}$/.test( v ) ) {
+				if ( map.has( v ) ) {
+					node[ k ] = map.get( v );
+					changed.push( `${ [ ...path, k ].join( '.' ) }: ${ v.slice( 0, 7 ) } → ${ node[ k ].slice( 0, 7 ) }` );
+				} else if ( ! [ ...map.values() ].includes( v ) ) {
+					unknown.add( v );
+				}
+			} else if ( v && typeof v === 'object' ) {
+				walkLabel( v, [ ...path, k ] );
+			}
+		}
+	};
+	walkLabel( p.label, [] );
+	for ( const v of [ ...unknown ] ) {
+		try {
+			git( TROOT, [ 'cat-file', '-e', `${ v }^{commit}` ] );
+			unknown.delete( v );
+		} catch {
+			// Нет ни в таблице, ни в шаблоне — сообщить ниже.
+		}
+	}
+	if ( ! changed.length ) {
+		console.log( 'Хеши метки уже новые или их нет в таблице — менять нечего.' );
+	} else {
+		changed.forEach( ( l ) => console.log( `  ${ l }` ) );
+		writeFile( p.root, LABEL, jsonBuf( p.label ) );
+		commitPaths( p.root, [ LABEL ], 'Шаблон: метка — хеши после переписывания истории шаблона (--remap)' );
+	}
+	if ( unknown.size ) {
+		console.log( `Не найдены ни в таблице, ни в шаблоне: ${ [ ...unknown ].map( ( v ) => v.slice( 0, 7 ) ).join( ', ' ) } — предок для слияния будет запасной (файл проекта на опоре).` );
+	}
+}
+
 // Коммит только перечисленных путей: метка не должна остаться незакоммиченной и потеряться при смене ветки.
 function commitPaths( root, paths, message ) {
 	git( root, [ 'add', '-A', '--', ...paths ] );
@@ -1027,7 +1092,7 @@ function parseArgs( argv ) {
 	const flags = { positional: [] };
 	for ( let i = 0; i < argv.length; i++ ) {
 		const a = argv[ i ];
-		if ( a === '--base' || a === '--done' || a === '--take' ) {
+		if ( a === '--base' || a === '--done' || a === '--take' || a === '--remap' ) {
 			flags[ a.slice( 2 ) ] = argv[ ++i ];
 		} else if ( a.startsWith( '--' ) ) {
 			flags[ a.slice( 2 ) ] = true;
@@ -1059,6 +1124,10 @@ async function main() {
 		fail( 'Путь указывает на сам шаблон. Для его ожидающих правок — --protected.' );
 	}
 
+	if ( flags.remap ) {
+		cmdRemap( loadProject( root, flags ), resolve( flags.remap ) );
+		return;
+	}
 	const t = loadTemplate( flags.worktree );
 	const p = loadProject( root, flags );
 	if ( flags.done ) {

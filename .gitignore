@@ -11,6 +11,7 @@
 !/.stylelintrc.json
 !/phpcs.xml.dist
 !/CLAUDE.md
+!/LICENSE
 !/.mcp.json
 !/.claude/
 !/.claude/**

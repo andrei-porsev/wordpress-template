@@ -50,3 +50,15 @@ node "<шаблон>/.claude/skills/project-ops/scripts/template-update.mjs" "<�
 `settings.local.json`, `.claude/.state/`. Хуки и `settings.json` — только в `--protected`. Планы шаблона (`project-base/plans/`) в проекты не попадают.
 Подключённые скиллы и правила (`.claude/skills/<стек>`, `.claude/rules/<стек>.md`) обновляются из `*-optional` шаблона; стеки — из `skills.json` → `active`,
 у проекта без манифеста — по составу подключённых копий.
+
+## История шаблона переписана
+
+Метка проекта хранит хеши коммитов шаблона: по ним `template-update` берёт предка для слияния. После переписывания истории шаблона (`git filter-branch` / `filter-repo`)
+старые хеши исчезают — до следующего обновления каждому подключённому проекту:
+
+```bash
+node .claude/skills/project-ops/scripts/template-update.mjs "<проект>" --remap <таблица «старый новый»>
+```
+
+Скрипт меняет хеши в `.claude/template.json` (`commit`, `protected`, `protectedBase`, `unresolved`) и коммитит метку; затем пробный прогон — без лишних конфликтов.
+Хеш не найден ни в таблице, ни в шаблоне — предупреждение: предок будет запасной (файл проекта на опоре).
