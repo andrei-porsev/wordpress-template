@@ -21,3 +21,6 @@
 *.gz    binary
 *.mp4   binary
 *.phar  binary
+
+# Сторонние скиллы — не свой код: GitHub не учитывает их в языках репозитория
+.claude/skills-optional/** linguist-vendored
