@@ -74,6 +74,7 @@ commit( proj, 'правки проекта' );
 mkdirSync( tpl, { recursive: true } );
 git( tpl, 'init', '-q', '-b', 'main' );
 cpSync( SCRIPT, join( tpl, SCRIPT_REL ) );
+cpSync( join( dirname( SCRIPT ), 'skills-lib.mjs' ), join( tpl, dirname( SCRIPT_REL ), 'skills-lib.mjs' ) );
 
 // Версия шаблона, с которой переносили проект.
 put( tpl, 'CLAUDE.md', lines( 20 ) );

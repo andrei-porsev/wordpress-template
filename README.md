@@ -64,7 +64,8 @@ The template's own rules and docs are in Russian (the language I work in). Code 
   a quick core and `uploads/` integrity check.
 - BEM + SCSS starter with fluid type and spacing, a per-site design passport, Playwright checks at all breakpoints,
   screenshot diffs, and a `/qa` skill (responsive, cross-browser, pixel-perfect vs. Figma, content, languages, states, a11y, launch checklist).
-- Agent skills are enabled per stack (FSE, classic, WooCommerce, ACF, blocks, SEO, animation, design), pinned to upstream commits.
+- Agent skills are enabled per stack (FSE, classic, WooCommerce, ACF, blocks, SEO, animation, design). Third-party skills are not stored here:
+  each project downloads a reviewed, pinned version from upstream, verifies its hash and scans it before use.
 - `template-update.mjs` updates a project with a three-way merge, migrations and a rollback tag.
 
 | Path | What it is |
@@ -73,7 +74,8 @@ The template's own rules and docs are in Russian (the language I work in). Code 
 | `.claude/rules/`, `.claude/rules-optional/` | Coding, layout, safety and operations rules |
 | `.claude/hooks/` | Guard and deploy hooks with a self-test (`selftest.mjs`) |
 | `.claude/skills/` | Core skills: `project-init`, `project-ops`, `project-structure`, `qa`, `howto`, `markup` |
-| `.claude/skills-optional/` | Third-party skills by stack — see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) |
+| `.claude/skills.json` | Skill stacks and pinned third-party skill versions — see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) |
+| `.claude/skills-optional/` | The template's own optional skills (WooCommerce, ACF, classic theme, page builders) |
 | `.claude/template/` | Decisions log, version manifest, migrations |
 | `project-base/` | Project map, workflow, SCSS starter, templates for the design passport, content types and QA |
 

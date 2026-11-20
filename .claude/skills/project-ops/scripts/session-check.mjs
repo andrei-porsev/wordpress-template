@@ -362,7 +362,7 @@ try {
 	say( '## Обновления' );
 	const sk = spawnSync( process.execPath, [ join( scriptsDir, 'skills-sync.mjs' ), 'check', '--hook' ], { cwd: root, encoding: 'utf8' } );
 	const skText = ( sk.stdout || '' ).trim();
-	say( skText || 'Скиллы и шаблон: обновлений нет (или проверка уже была сегодня).' );
+	say( skText || 'Скиллы и шаблон: сообщить нечего (новые версии скиллов приходят с обновлением шаблона).' );
 	const mode = accessField( root, 'Режим заливки' );
 	say( `Режим заливки: ${ mode || '— (по умолчанию guarded-auto)' }` );
 	// Короткий manual на задачу (решение 045): «manual (задача …, с <дата>; после выкатки — <режим>)».

@@ -21,8 +21,7 @@
 		"figma": {
 			"repo": "https://github.com/figma/mcp-server-guide.git",
 			"ref": "main",
-			"license": "открытой лицензии нет — Figma Developer Terms; в шаблоне не хранится, skills-sync activate скачивает из апстрима",
-			"vendored": false
+			"license": "открытой лицензии нет — Figma Developer Terms"
 		},
 		"marketing": {
 			"repo": "https://github.com/coreyhaines31/marketingskills.git",
@@ -109,6 +108,7 @@
 			"commit": "3cf7f6f701300d80166cc0b7e6ebc667501c353d",
 			"tree": "cc74eb4667b662f5b5f25048f95f3ae48bcf3b8c",
 			"hash": "d438fb4ae1518979",
+			"accepted": "79db2bd60643ceb7",
 			"updated": "2026-10-08"
 		},
 		"wp-phpstan": {
@@ -149,6 +149,7 @@
 			"commit": "20324d25ad9a92e16ff1b5b3df4c6c6a88a24e93",
 			"tree": "de73719a1fae0215e994fe91bd392627dd1d7591",
 			"hash": "928b461b362d864a",
+			"accepted": "0f32fd65323f74c5",
 			"updated": "2026-07-08"
 		},
 		"wordpress-router": {
@@ -193,6 +194,7 @@
 			"commit": "490a73c7537123cb1f0bcaced658585f0ee32fd9",
 			"tree": "3771fa2e7246e42528c8ad38ef198d414354a52d",
 			"hash": "d4df8eb5e6eb8a07",
+			"accepted": "d1fd67f88f2124fb",
 			"updated": "2026-11-17"
 		},
 		"figma-generate-design": {
@@ -348,6 +350,7 @@
 			"commit": "e59ff376a41f7ca47b7541ad5c116495cbade3ee",
 			"tree": "b6f08c13f95a4854694f41113e0b4935c741deb1",
 			"hash": "5519fff4d0da42df",
+			"accepted": "e40a8bcb39e0c994",
 			"updated": "2026-11-17"
 		},
 		"impeccable": {
@@ -359,6 +362,7 @@
 			"commit": "d41d9860b0094dcb68030657da63461212835aaa",
 			"tree": "386a1de8d69cd10d46f327af8194251e6b0a9f67",
 			"hash": "bd6a1d075ed64d64",
+			"accepted": "f08045c0d2297f1a",
 			"updated": "2026-11-17"
 		},
 		"semantic-html": {
@@ -596,5 +600,5 @@
 		}
 	},
 	"active": [],
-	"$comment": "Источник правды по скиллам шаблона. Правится скриптом project-ops/scripts/skills-sync.mjs (update, add, activate, ignore); вручную — только sources, stacks и core. Решение 022."
+	"$comment": "Источник правды по скиллам (решение 016). Сторонние скиллы шаблон не хранит: commit, tree, hash — проверенная версия, которую скачивает activate / install; accepted — отпечаток находок проверки, принятых при разборе. Правится скриптом project-ops/scripts/skills-sync.mjs (review, update, add, activate, ignore); вручную — только sources, stacks и core."
 }

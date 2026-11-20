@@ -21,9 +21,10 @@ Examples of what I would like to hear about:
 - a destructive server or database command runs without confirmation, or without the automatic database backup first;
 - the assistant can write files on the server or connect to it bypassing the template's scripts;
 - passwords or keys can end up in chat, logs, commits or anywhere outside the project's private config;
-- the automatic rollback after a broken change fails silently.
+- the automatic rollback after a broken change fails silently;
+- a downloaded third-party skill gets enabled although its hash does not match the pinned version, or a dangerous change slips past the content check.
 
-Problems in third-party skills under `.claude/skills-optional/` belong to their own projects (see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)),
+Problems inside third-party skills belong to their own projects (see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)),
 but a note here is welcome too.
 
 ## Supported versions

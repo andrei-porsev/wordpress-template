@@ -13,7 +13,7 @@
 | WP-CLI на сервере | `ssh.md` |
 | SCSS → CSS | `compile-scss.md` |
 | `src/` блоков, `npm run build` | `build-blocks.md` |
-| Стеки скиллов, обновления из апстрима | `skills.md` |
+| Стеки скиллов, закреплённые версии, разбор новых | `skills.md` |
 | Обновить проект до версии шаблона | `template.md` |
 | Кеш сайта после заливки | `cache.md` |
 

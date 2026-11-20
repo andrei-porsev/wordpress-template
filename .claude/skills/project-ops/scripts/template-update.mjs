@@ -9,13 +9,14 @@
  *   … "<проект>" --remap <таблица хешей>          метка проекта — на новые хеши после переписывания истории шаблона
  * Шаблон берётся из последнего коммита, проект — из рабочей копии (должна быть закоммичена).
  */
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
+import { diffDirs, dirHash, fetchPinned, findingsKey, formatFindings, scanSkill } from './skills-lib.mjs';
 
 const TROOT = resolve( dirname( fileURLToPath( import.meta.url ) ), '..', '..', '..', '..' );
 const SELF = 'node .claude/skills/project-ops/scripts/template-update.mjs';
@@ -550,6 +551,106 @@ function decide( t, p, pair, ctx ) {
 		return { ...r, action: 'same' };
 	}
 	return m.conflicts ? { ...r, action: 'conflict', reason: `слияние: конфликтов ${ m.conflicts }`, merged: m.content } : { ...r, action: 'merge', theirs: m.content };
+}
+
+/**
+ * Сторонние скиллы, подключённые в проекте: шаблон их не хранит, в skills.json — закреплённая версия (решение 016).
+ * update — копия совпадает с прежней закреплённой версией, ставится новая; install — стек подключён, скилла нет;
+ * edited — копию правили в проекте (или версия неизвестна): не трогаем.
+ */
+function pinnedPlan( t, p, stacks ) {
+	const tm = t.skills;
+	const own = readJson( readFile( p.root, '.claude/skills.json' ), {} );
+	const core = new Set( tm.core || [] );
+	const inTemplate = new Set( [ ...t.tree.keys() ].filter( ( r ) => r.startsWith( '.claude/skills-optional/' ) ).map( ( r ) => r.split( '/' )[ 2 ] ) );
+	const names = new Set( listDirs( p.root, '.claude/skills' ).filter( ( n ) => ! core.has( n ) ) );
+	for ( const id of stacks.active ) {
+		( tm.stacks?.[ id ]?.skills || [] ).forEach( ( n ) => names.add( n ) );
+	}
+	const plan = [];
+	for ( const name of [ ...names ].sort() ) {
+		const pin = tm.skills?.[ name ];
+		if ( ! pin || pin.source === 'local' || inTemplate.has( name ) || ! pin.hash ) {
+			continue;
+		}
+		const dir = join( p.root, '.claude', 'skills', name );
+		const cur = existsSync( dir ) ? dirHash( dir ) : null;
+		if ( cur === pin.hash ) {
+			continue;
+		}
+		const old = own.skills?.[ name ];
+		const action = cur === null ? 'install' : old?.hash && cur === old.hash ? 'update' : 'edited';
+		plan.push( { name, action, from: action === 'update' ? old.commit : null, to: pin.commit } );
+	}
+	return plan;
+}
+
+// Отчёт по сторонним скиллам; для обновляемых — что изменится и находки проверки новой версии.
+function pinnedReport( t, p, plan ) {
+	if ( ! plan.length ) {
+		return;
+	}
+	const short = ( c ) => ( c || '—' ).slice( 0, 7 );
+	console.log( '\nсторонние скиллы (скачиваются по закреплённой версии после --apply, hash сверяется, содержимое проверяется):' );
+	const fetchable = plan.filter( ( x ) => x.action !== 'edited' ).map( ( x ) => x.name );
+	const got = fetchable.length ? fetchPinned( t.skills, fetchable ) : { ok: {}, failed: {}, cleanup() {} };
+	try {
+		for ( const x of plan ) {
+			if ( x.action === 'edited' ) {
+				console.log( `  ${ x.name } — копию правили в проекте, не трогаю (новая закреплённая версия ${ short( x.to ) }; заменить — skills-sync.mjs install ${ x.name } --force)` );
+				continue;
+			}
+			console.log( `  ${ x.name } — ${ x.action === 'update' ? `обновится ${ short( x.from ) } → ${ short( x.to ) }` : `подключён стеком, в проекте нет — скачается ${ short( x.to ) }` }` );
+			if ( got.failed[ x.name ] ) {
+				console.log( `    ✖ ${ got.failed[ x.name ] } — не подключится` );
+				continue;
+			}
+			if ( x.action === 'update' ) {
+				const files = diffDirs( join( p.root, '.claude', 'skills', x.name ), got.ok[ x.name ] );
+				console.log( `    файлы: ${ files.length ? files.slice( 0, 20 ).join( ', ' ) + ( files.length > 20 ? `, … ещё ${ files.length - 20 }` : '' ) : 'без изменений' }` );
+			}
+			const scan = scanSkill( got.ok[ x.name ] );
+			const known = scan.findings.length > 0 && findingsKey( scan.findings ) === t.skills.skills[ x.name ].accepted;
+			if ( ! scan.findings.length ) {
+				console.log( '    проверка: чисто' );
+			} else {
+				console.log( `    проверка: находок ${ scan.findings.length }${ known ? ', приняты при разборе в шаблоне' : ' — НЕ принимались в шаблоне, без «да» не подключится' }` );
+				console.log( formatFindings( scan.findings, known ? 5 : 40 ).map( ( l ) => '  ' + l ).join( '\n' ) );
+			}
+		}
+	} finally {
+		got.cleanup();
+	}
+}
+
+// После --apply: закреплённые версии — через skills-sync проекта (уже новой версии), отдельным коммитом.
+function pinnedApply( p, plan ) {
+	const run = ( names, extra ) => {
+		if ( ! names.length ) {
+			return 0;
+		}
+		const r = spawnSync( process.execPath, [ join( p.root, '.claude/skills/project-ops/scripts/skills-sync.mjs' ), 'install', ...names, ...extra ], {
+			cwd: p.root,
+			encoding: 'utf8',
+			env: { ...process.env, CLAUDE_PROJECT_DIR: p.root, SKILLS_SYNC_ROLE: 'project' },
+		} );
+		process.stdout.write( ( r.stdout || '' ) + ( r.stderr || '' ) );
+		return r.status;
+	};
+	const updates = plan.filter( ( x ) => x.action === 'update' ).map( ( x ) => x.name );
+	const installs = plan.filter( ( x ) => x.action === 'install' ).map( ( x ) => x.name );
+	if ( ! updates.length && ! installs.length ) {
+		return;
+	}
+	console.log( '\nСторонние скиллы:' );
+	const status = Math.max( run( updates, [ '--force' ] ), run( installs, [] ) );
+	if ( gitText( p.root, [ 'status', '--porcelain', '--', '.claude/skills' ] ) ) {
+		git( p.root, [ 'add', '-A', '--', '.claude/skills' ] );
+		git( p.root, [ 'commit', '-q', '-m', 'Шаблон: сторонние скиллы по закреплённым версиям (skills-sync install)' ] );
+	}
+	if ( status ) {
+		console.log( 'Часть скиллов не подключена (причина выше): показать пользователю; после его «да» — skills-sync.mjs install <имена> --accept в проекте, коммит.' );
+	}
 }
 
 // skills.json: манифест шаблона + подключённые стеки и отложенные обновления проекта.
@@ -1145,9 +1246,14 @@ async function main() {
 		await cmdProtectedProject( t, p, results );
 	} else {
 		const mig = migrationResults( t, p );
+		const pinned = pinnedPlan( t, p, stacks );
 		report( t, p, results, mig, stacks, notes, flags.all );
+		if ( ! flags.apply ) {
+			pinnedReport( t, p, pinned );
+		}
 		if ( flags.apply ) {
 			cmdApply( t, p, results, mig );
+			pinnedApply( p, pinned );
 		} else {
 			console.log( `\nЭто пробный прогон. Применить (после «да» пользователя): ${ cmdFor( p, '--apply' ) }` );
 		}

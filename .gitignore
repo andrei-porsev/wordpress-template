@@ -36,9 +36,6 @@
 /wp-content/mu-plugins/*
 # <<< project.json
 
-# Скиллы без открытой лицензии (skills.json → sources → vendored: false): не хранятся, skills-sync activate скачивает
-/.claude/skills-optional/figma-*/
-
 # Локальное состояние агента
 /.claude/.state/
 /.claude/settings.local.json

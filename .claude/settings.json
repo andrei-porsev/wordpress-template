@@ -53,6 +53,8 @@
 			"Bash(node .claude/skills/project-ops/scripts/ssh-exec.mjs --stage -- wp db check*)",
 			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs check*)",
 			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs list*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs review*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs install*)",
 			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs update*)",
 			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs ignore*)",
 			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs activate*)",
@@ -144,6 +146,7 @@
 			"Bash(cmd:*)",
 			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs *--apply*)",
 			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs *--force*)",
+			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs *--accept*)",
 			"Bash(node .claude/skills/project-ops/scripts/skills-sync.mjs add*)",
 			"PowerShell(Remove-Item*-Force*)"
 		]

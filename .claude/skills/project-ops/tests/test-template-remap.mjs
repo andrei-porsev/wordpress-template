@@ -45,6 +45,7 @@ const label = () => JSON.parse( readFileSync( join( proj, '.claude/template.json
 // Шаблон: два коммита — «новые» хеши после переписывания.
 init( tpl );
 cpSync( SCRIPT, join( tpl, SCRIPT_REL ) );
+cpSync( join( dirname( SCRIPT ), 'skills-lib.mjs' ), join( tpl, dirname( SCRIPT_REL ), 'skills-lib.mjs' ) );
 put( tpl, 'a.md', 'v1\n' );
 commit( tpl, 'v1' );
 const new1 = git( tpl, 'rev-parse', 'HEAD' );
