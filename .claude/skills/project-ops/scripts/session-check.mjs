@@ -80,6 +80,35 @@ function localState( root ) {
 		say( `  … ещё ${ dirty.length - 15 }` );
 	}
 	say( ahead === null ? 'Remote не настроен — `git push` некуда.' : ahead ? `Не запушено коммитов: ${ ahead }.` : 'Всё запушено.' );
+	publicRepo( root );
+}
+
+const githubSlug = ( url ) => ( String( url ).match( /github\.com[:/]([^/\s]+\/[^/\s]+?)(?:\.git)?\/?$/i ) || [] )[ 1 ]?.toLowerCase() || '';
+
+// Репозиторий проекта с доступами (ACCESS.md, .vscode/*.json) должен быть приватным (решения 002, 065): анонимный ls-remote прошёл — открыт.
+function publicRepo( root ) {
+	const origin = spawnSync( 'git', [ 'remote', 'get-url', 'origin' ], { cwd: root, encoding: 'utf8' } ).stdout?.trim() || '';
+	const slug = githubSlug( origin );
+	if ( ! slug ) {
+		return;
+	}
+	let templateSlug = '';
+	try {
+		templateSlug = githubSlug( JSON.parse( readFileSync( join( root, '.claude', 'template', 'manifest.json' ), 'utf8' ) ).repo );
+	} catch {
+		// Нет манифеста — не шаблон.
+	}
+	if ( slug === templateSlug ) {
+		return;
+	}
+	const r = spawnSync( 'git', [ '-c', 'credential.helper=', 'ls-remote', '--heads', `https://github.com/${ slug }.git` ], {
+		encoding: 'utf8',
+		timeout: 10000,
+		env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GIT_ASKPASS: '', SSH_ASKPASS: '' },
+	} );
+	if ( r.status === 0 ) {
+		say( `🔴 Репозиторий ${ slug } открыт для всех, а в нём доступы (ACCESS.md, .vscode/*.json) — сделать приватным: GitHub → Settings → Danger Zone → Change visibility. Сказать пользователю первым делом.` );
+	}
 }
 
 const header = ( text, key ) => {

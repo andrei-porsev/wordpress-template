@@ -16,12 +16,13 @@
 		"woocommerce": {
 			"repo": "https://github.com/woocommerce/woocommerce.git",
 			"ref": "trunk",
-			"license": "GPL-3.0-or-later"
+			"license": "GPL-2.0-or-later"
 		},
 		"figma": {
 			"repo": "https://github.com/figma/mcp-server-guide.git",
 			"ref": "main",
-			"license": "см. репозиторий"
+			"license": "открытой лицензии нет — Figma Developer Terms; в шаблоне не хранится, skills-sync activate скачивает из апстрима",
+			"vendored": false
 		},
 		"marketing": {
 			"repo": "https://github.com/coreyhaines31/marketingskills.git",

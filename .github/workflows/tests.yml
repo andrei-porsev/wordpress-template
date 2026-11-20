@@ -1,0 +1,53 @@
+# Тесты скриптов project-ops и самопроверка хуков — на каждый push и pull request.
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: .claude/skills/project-ops/package-lock.json
+
+      - name: Git identity for test repositories
+        run: |
+          git config --global user.name "CI"
+          git config --global user.email "ci@example.com"
+          git config --global init.defaultBranch main
+
+      - name: Install project-ops dependencies
+        working-directory: .claude/skills/project-ops
+        run: npm ci
+
+      - name: Hook self-test
+        run: node .claude/hooks/selftest.mjs
+
+      - name: project-ops tests
+        run: |
+          failed=0
+          for t in .claude/skills/project-ops/tests/test-*.mjs; do
+            echo "::group::$(basename "$t")"
+            node "$t" || failed=$((failed + 1))
+            echo "::endgroup::"
+          done
+          echo "Failed test files: $failed"
+          test "$failed" -eq 0
+
+      - name: Decisions log check
+        run: node .claude/skills/project-ops/scripts/decisions-check.mjs --strict

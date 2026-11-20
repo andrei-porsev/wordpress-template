@@ -532,6 +532,12 @@ function cmdActivate( m, ids ) {
 	}
 	const plugins = [];
 	const notes = [];
+	// Скиллы, которые шаблон не хранит (источник без открытой лицензии, `vendored: false`), — скачать из апстрима перед подключением.
+	const missing = [ ...new Set( ids.flatMap( ( id ) => stackOf( m, id ).skills ) ) ].filter( ( name ) => ! existsSync( join( OPTIONAL, name ) ) && m.skills[ name ] && sourceOf( m, name ) );
+	if ( missing.length ) {
+		console.log( `Нет в skills-optional/ — скачиваю из апстрима: ${ missing.join( ', ' ) }` );
+		cmdUpdate( m, missing, { apply: true, force: true } );
+	}
 	for ( const id of ids ) {
 		const stack = stackOf( m, id );
 		for ( const name of stack.skills ) {

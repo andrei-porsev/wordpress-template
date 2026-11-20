@@ -1,5 +1,5 @@
 # Whitelist: всё запрещено, разрешено только необходимое.
-# Репозиторий приватный: ACCESS.md, всё `.vscode/` и `project-base/` коммитим.
+# Репозиторий проекта — только приватный: ACCESS.md, всё `.vscode/` и `project-base/` коммитим (в них доступы).
 # SSH-ключ (~/.ssh/…) в git не кладём.
 # Слаги темы/плагинов/mu-плагинов — из project-base/project.json:
 #   node .claude/skills/project-ops/scripts/gen-whitelist.mjs
@@ -12,6 +12,10 @@
 !/phpcs.xml.dist
 !/CLAUDE.md
 !/LICENSE
+!/README.md
+!/THIRD-PARTY-NOTICES.md
+!/.github/
+!/.github/**
 !/.mcp.json
 !/.claude/
 !/.claude/**
@@ -30,6 +34,9 @@
 !/wp-content/mu-plugins/
 /wp-content/mu-plugins/*
 # <<< project.json
+
+# Скиллы без открытой лицензии (skills.json → sources → vendored: false): не хранятся, skills-sync activate скачивает
+/.claude/skills-optional/figma-*/
 
 # Локальное состояние агента
 /.claude/.state/
