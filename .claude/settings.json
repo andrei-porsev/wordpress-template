@@ -1,5 +1,4 @@
 {
-	"language": "russian",
 	"permissions": {
 		"allow": [
 			"Bash(node .claude/skills/project-ops/scripts/compile-scss.mjs*)",
