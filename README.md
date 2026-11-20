@@ -66,7 +66,7 @@ The template's own rules and docs are in Russian (the language I work in). Code 
   screenshot diffs, and a `/qa` skill (responsive, cross-browser, pixel-perfect vs. Figma, content, languages, states, a11y, launch checklist).
 - Agent skills are enabled per stack (FSE, classic, WooCommerce, ACF, blocks, SEO, animation, design). Third-party skills are not stored here:
   each project downloads a reviewed, pinned version from upstream, verifies its hash and scans it before use.
-- `template-update.mjs` updates a project with a three-way merge, migrations and a rollback tag.
+- `template-update.mjs` updates a project straight from GitHub with a three-way merge, migrations and a rollback tag.
 
 | Path | What it is |
 |------|------------|
@@ -82,6 +82,11 @@ The template's own rules and docs are in Russian (the language I work in). Code 
 **Getting started:** Claude Code, Node.js 22, Git (optional: PHP, PHPCS with WordPress Coding Standards, WP-CLI on the server).
 Create a **private** repository from this template — it will hold server access details — run `npm install` in
 `.claude/skills/project-ops/`, open the folder in Claude Code and say **«старт проекта»** ("start project").
+The project remembers which template version it was created from.
+
+**Updating a project:** in the project, ask the assistant to update the template. It downloads the latest template from GitHub,
+shows what will change and applies exactly that after your approval, in a separate branch with a rollback tag; the project's own changes are kept.
+No local copy of the template is needed. A fork updates from its own repository (`.claude/template/manifest.json` → `repo`).
 Tests: `node .claude/hooks/selftest.mjs` and `node .claude/skills/project-ops/tests/test-<name>.mjs`.
 
 ## License

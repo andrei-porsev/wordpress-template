@@ -1,13 +1,15 @@
 /**
- * Обновление проекта до текущей версии шаблона (решение 032). Запуск из папки шаблона:
- *   node .claude/skills/project-ops/scripts/template-update.mjs "<проект>" [--base <коммит>]   пробный прогон, отчёт
- *   … "<проект>" --apply                         применить в ветке template-update (кроме хуков и settings.json)
- *   … "<проект>" --take template|project|merge <путь…>   решить конфликт после --apply
- *   … "<проект>" --done <миграция>               агентская часть миграции выполнена
- *   … "<проект>" --protected                     хуки и settings.json — запускает человек в своём терминале
- *   … . --protected                              ожидающие правки настроек самого шаблона
- *   … "<проект>" --remap <таблица хешей>          метка проекта — на новые хеши после переписывания истории шаблона
- * Шаблон берётся из последнего коммита, проект — из рабочей копии (должна быть закоммичена).
+ * Обновление проекта до текущей версии шаблона (решение 032). Шаблон — только с GitHub (manifest.json → repo): скрипт клонирует его
+ * во временную папку и запускает свежую версию себя оттуда. Запуск из папки проекта:
+ *   node .claude/skills/project-ops/scripts/template-update.mjs . [--base <коммит>]   пробный прогон, отчёт; коммит шаблона запоминается
+ *   … . --apply                         применить ровно показанный коммит в ветке template-update (кроме хуков и settings.json)
+ *   … . --take template|project|merge <путь…>   решить конфликт после --apply
+ *   … . --done <миграция>               агентская часть миграции выполнена
+ *   … . --protected                     хуки и settings.json — запускает человек в своём терминале
+ *   … . --init-label                    метка версии нового проекта (project-init, последний шаг)
+ *   … . --remap <таблица хешей>          метка проекта — на новые хеши после переписывания истории шаблона
+ * Из папки шаблона: … "<проект>" --local [--worktree] — пробный прогон по этой папке (автор проверяет правки до пуша);
+ *   … . --protected — ожидающие правки настроек самого шаблона. Проект берётся из рабочей копии (должна быть закоммичена).
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -20,8 +22,10 @@ import { diffDirs, dirHash, fetchPinned, findingsKey, formatFindings, scanSkill 
 
 const TROOT = resolve( dirname( fileURLToPath( import.meta.url ) ), '..', '..', '..', '..' );
 const SELF = 'node .claude/skills/project-ops/scripts/template-update.mjs';
-// Готовая к копированию команда для проекта: абсолютные пути шаблона и проекта (запускать можно из любой папки).
-const cmdFor = ( p, tail ) => `node "${ join( TROOT, SELF.split( ' ' ).pop() ).replace( /\\/g, '/' ) }" "${ p.root.replace( /\\/g, '/' ) }" ${ tail }`;
+// Готовая к копированию команда: скрипт, которым запустили обновление (клон шаблона временный), и путь проекта — запускать из любой папки.
+const cmdFor = ( p, tail ) => `node "${ ( process.env.TEMPLATE_UPDATE_LAUNCHER || join( p.root, SELF.split( ' ' ).pop() ) ).replace( /\\/g, '/' ) }" "${ p.root.replace( /\\/g, '/' ) }" ${ tail }`;
+// Коммит шаблона из пробного прогона — в служебной папке git проекта: не попадает в рабочую копию и коммиты.
+const stateFile = ( root ) => join( resolve( root, gitText( root, [ 'rev-parse', '--git-dir' ] ) ), 'template-update.json' );
 const LABEL = '.claude/template.json';
 const MANIFEST = '.claude/template/manifest.json';
 const PENDING = '.claude/template/pending-settings.json';
@@ -916,7 +920,7 @@ function buildLabel( t, p, results ) {
 		$comment: `Метка версии шаблона (решение 032). Пишет ${ SELF.split( ' ' ).pop() }, вручную не править.`,
 		version: t.manifest.version,
 		commit: t.commit,
-		source: { path: TROOT.replace( /\\/g, '/' ), repo: t.manifest.repo },
+		source: { repo: t.manifest.repo },
 		updated: new Date().toISOString().slice( 0, 10 ),
 		migrations: p.label?.migrations || [],
 		protected: p.label?.protected || null,
@@ -1206,35 +1210,156 @@ function parseArgs( argv ) {
 
 export { globRe, settingsMerge, structuredMerge };
 
+const githubSlug = ( url ) => ( String( url ).match( /github\.com[:/]([^/\s]+\/[^/\s]+?)(?:\.git)?\/?$/i ) || [] )[ 1 ]?.toLowerCase() || '';
+
+// Репозиторий самого шаблона: origin совпадает с manifest.json → repo (у проекта origin — свой репозиторий).
+function isTemplateRepo( root ) {
+	try {
+		const repo = githubSlug( readJson( readFile( root, MANIFEST ) )?.repo );
+		return Boolean( repo ) && githubSlug( gitText( root, [ 'remote', 'get-url', 'origin' ] ) ) === repo;
+	} catch {
+		return false;
+	}
+}
+
+// Последний коммит шаблона с этой версией в манифесте: перед следующим поднятием версии (или вершина, если поднятий больше не было).
+function commitOfVersion( version ) {
+	const bumps = gitText( TROOT, [ 'log', '--format=%H', '--', MANIFEST ] ).split( '\n' ).filter( Boolean );
+	for ( let i = 0; i < bumps.length; i++ ) {
+		let v = null;
+		try {
+			v = readJson( git( TROOT, [ 'show', `${ bumps[ i ] }:${ MANIFEST }` ] ) )?.version;
+		} catch {}
+		if ( v === version ) {
+			return i === 0 ? gitText( TROOT, [ 'rev-parse', 'HEAD' ] ) : gitText( TROOT, [ 'rev-parse', `${ bumps[ i - 1 ] }^` ] );
+		}
+	}
+	return null;
+}
+
+// Метка нового проекта: версия шаблона, с которой он создан (project-init), — первое обновление идёт от неё, без угадывания опоры.
+function cmdInitLabel( p ) {
+	if ( p.label ) {
+		console.log( `Метка уже есть: версия ${ p.label.version } (${ String( p.label.commit ).slice( 0, 7 ) }).` );
+		return;
+	}
+	const own = readJson( readFile( p.root, MANIFEST ) );
+	if ( ! own?.version ) {
+		fail( `В проекте нет ${ MANIFEST } с версией — проект не на шаблоне.` );
+	}
+	const commit = commitOfVersion( own.version );
+	if ( ! commit ) {
+		fail( `Версии ${ own.version } нет в истории шаблона — метку не записать; первое обновление пойдёт от коммита переноса.` );
+	}
+	const label = {
+		$comment: `Метка версии шаблона (решение 032). Пишет ${ SELF.split( ' ' ).pop() }, вручную не править.`,
+		version: own.version,
+		commit,
+		source: { repo: own.repo },
+		updated: new Date().toISOString().slice( 0, 10 ),
+		migrations: ( own.migrations || [] ).map( ( m ) => m.id ),
+		protected: { version: own.version, commit },
+		unresolved: {},
+		files: {},
+	};
+	writeFile( p.root, LABEL, jsonBuf( label ) );
+	commitPaths( p.root, [ LABEL ], `Шаблон: метка версии ${ own.version } (проект создан на ней)` );
+	console.log( `Метка: шаблон ${ own.version }, коммит ${ commit.slice( 0, 7 ) }.` );
+}
+
+/**
+ * Запуск из проекта (решение 032): шаблон — клон с GitHub по manifest.repo во временную папку, дальше работает свежий скрипт из клона.
+ * Пробный прогон — вершина ветки, коммит запоминается; --apply — ровно этот коммит; --take, --protected — коммит из метки.
+ * --local — папка шаблона, где лежит скрипт, только пробный прогон (автор проверяет правки до пуша).
+ */
+async function launch( root, flags, argv ) {
+	const own = readJson( readFile( root, MANIFEST ) ) || readJson( readFile( TROOT, MANIFEST ) );
+	const repo = own?.repo;
+	if ( ! repo ) {
+		fail( `Нет адреса шаблона: ${ MANIFEST } → repo.` );
+	}
+	const label = readJson( readFile( root, LABEL ) );
+	const state = readJson( existsSync( stateFile( root ) ) ? readFileSync( stateFile( root ) ) : null );
+	let at = null;
+	if ( flags.apply ) {
+		at = state?.commit;
+		if ( ! at ) {
+			fail( 'Сначала пробный прогон: --apply применяет ровно тот коммит шаблона, который был показан.' );
+		}
+	} else if ( flags.take || flags.protected ) {
+		at = label?.commit;
+		if ( ! at ) {
+			fail( 'Метки нет — сначала пробный прогон и --apply.' );
+		}
+	}
+	const dir = mkdtempSync( join( tmpdir(), 'template-update-' ) );
+	try {
+		console.log( `Шаблон с ${ repo }${ at ? `, коммит ${ at.slice( 0, 7 ) }` : '' } …` );
+		try {
+			git( tmpdir(), [ 'clone', '--quiet', '--no-checkout', repo, dir ] );
+			git( dir, [ '-c', 'advice.detachedHead=false', 'checkout', '--quiet', at || 'HEAD' ] );
+		} catch ( e ) {
+			fail( `Шаблон не скачан (${ String( e.stderr || e.message ).trim().split( '\n' ).pop() }). Нужен доступ к ${ repo }.` );
+		}
+		const script = join( dir, '.claude/skills/project-ops/scripts/template-update.mjs' );
+		const args = argv.map( ( a, i ) => ( argv[ i - 1 ] === '--remap' ? resolve( a ) : a === flags.target ? root : a ) );
+		const r = spawnSync( process.execPath, [ script, ...args ], {
+			cwd: root,
+			stdio: 'inherit',
+			env: { ...process.env, TEMPLATE_UPDATE_CLONE: repo, TEMPLATE_UPDATE_LAUNCHER: fileURLToPath( import.meta.url ) },
+		} );
+		process.exitCode = r.status ?? 1;
+	} finally {
+		rmSync( dir, { recursive: true, force: true } );
+	}
+}
+
 async function main() {
-	const flags = parseArgs( process.argv.slice( 2 ) );
+	const argv = process.argv.slice( 2 );
+	const flags = parseArgs( argv );
 	const target = flags.positional.shift();
 	if ( ! target ) {
 		fail( readFileSync( fileURLToPath( import.meta.url ), 'utf8' ).split( '*/' )[ 0 ].replace( /^\/\*\*?|^ \* ?/gm, '' ).trim() );
 	}
+	flags.target = target;
 	const root = resolve( target );
+	const inClone = Boolean( process.env.TEMPLATE_UPDATE_CLONE );
 
 	if ( flags.protected && ! ( process.stdin.isTTY && process.stdout.isTTY ) ) {
 		fail( '--protected запускает человек в своём терминале (нужен интерактивный ввод). Агент эту команду не выполняет.' );
 	}
-	if ( flags.protected && relative( root, TROOT ) === '' ) {
-		await cmdProtectedTemplate();
+	if ( relative( root, TROOT ) === '' && ! inClone && isTemplateRepo( root ) ) {
+		if ( flags.protected ) {
+			await cmdProtectedTemplate();
+			return;
+		}
+		fail( 'Путь указывает на сам шаблон. Для его ожидающих правок — --protected.' );
+	}
+	if ( flags.done ) {
+		cmdDone( loadProject( root, flags ), flags.done );
 		return;
 	}
-	if ( relative( root, TROOT ) === '' ) {
-		fail( 'Путь указывает на сам шаблон. Для его ожидающих правок — --protected.' );
+	if ( flags.local ) {
+		if ( flags.apply || flags.take || flags.protected || flags.remap || flags[ 'init-label' ] ) {
+			fail( '--local — только пробный прогон по папке шаблона. Применять — без --local: шаблон берётся с GitHub.' );
+		}
+	} else if ( ! inClone ) {
+		await launch( root, flags, argv );
+		return;
+	} else if ( flags.worktree ) {
+		fail( '--worktree — только с --local.' );
 	}
 
 	if ( flags.remap ) {
 		cmdRemap( loadProject( root, flags ), resolve( flags.remap ) );
 		return;
 	}
-	const t = loadTemplate( flags.worktree );
-	const p = loadProject( root, flags );
-	if ( flags.done ) {
-		cmdDone( p, flags.done );
+	if ( flags[ 'init-label' ] ) {
+		cmdInitLabel( loadProject( root, flags ) );
 		return;
 	}
+	const t = loadTemplate( flags.worktree );
+	const p = loadProject( root, flags );
 	const stacks = activeStacks( t, p );
 	const { list, notes } = pairs( t, p, stacks );
 	const core = new Set( t.skills.core || [] );
@@ -1254,8 +1379,12 @@ async function main() {
 		if ( flags.apply ) {
 			cmdApply( t, p, results, mig );
 			pinnedApply( p, pinned );
+			rmSync( stateFile( p.root ), { force: true } );
+		} else if ( flags.local ) {
+			console.log( '\nПробный прогон по локальной папке шаблона (--local). Применять — без --local, после пуша шаблона.' );
 		} else {
-			console.log( `\nЭто пробный прогон. Применить (после «да» пользователя): ${ cmdFor( p, '--apply' ) }` );
+			writeFileSync( stateFile( p.root ), jsonBuf( { commit: t.commit, version: t.manifest.version, at: new Date().toISOString() } ) );
+			console.log( `\nЭто пробный прогон (коммит шаблона ${ t.commit.slice( 0, 7 ) } запомнен). Применить (после «да» пользователя): ${ cmdFor( p, '--apply' ) }` );
 		}
 	}
 }

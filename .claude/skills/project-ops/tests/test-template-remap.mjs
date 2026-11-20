@@ -37,7 +37,7 @@ const commit = ( cwd, msg ) => {
 	git( cwd, 'commit', '-q', '-m', msg );
 };
 const run = ( ...args ) => {
-	const r = spawnSync( process.execPath, [ join( tpl, SCRIPT_REL ), proj, ...args ], { encoding: 'utf8', input: '' } );
+	const r = spawnSync( process.execPath, [ join( tpl, SCRIPT_REL ), proj, ...args ], { encoding: 'utf8', input: '', env: { ...process.env, TEMPLATE_UPDATE_CLONE: 'test' } } );
 	return { code: r.status, out: ( r.stdout || '' ) + ( r.stderr || '' ) };
 };
 const label = () => JSON.parse( readFileSync( join( proj, '.claude/template.json' ), 'utf8' ) );

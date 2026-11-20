@@ -38,7 +38,8 @@ const commit = ( cwd, msg ) => {
 };
 const SCRIPT_REL = '.claude/skills/project-ops/scripts/template-update.mjs';
 const run = ( ...args ) => {
-	const r = spawnSync( process.execPath, [ join( tpl, SCRIPT_REL ), proj, ...args ], { encoding: 'utf8', input: '' } );
+	// Шаблон-папка теста играет роль клона с GitHub: скрипт работает в ней напрямую.
+	const r = spawnSync( process.execPath, [ join( tpl, SCRIPT_REL ), proj, ...args ], { encoding: 'utf8', input: '', env: { ...process.env, TEMPLATE_UPDATE_CLONE: 'test' } } );
 	return { code: r.status, out: ( r.stdout || '' ) + ( r.stderr || '' ) };
 };
 const block = ( lines ) => `# >>> project.json (генерируется, не править вручную)\n${ lines }\n# <<< project.json\n`;

@@ -302,7 +302,7 @@ function templateReport() {
 	const own = readJson( join( root, TEMPLATE_MANIFEST ), { migrations: [] } );
 	const open = ( own.migrations || [] ).filter( ( m ) => ! ( label.migrations || [] ).includes( m.id ) );
 	if ( open.length ) {
-		lines.push( `Шаблон: незавершённая миграция ${ open.map( ( m ) => m.id ).join( ', ' ) } — инструкция ${ open[ 0 ].doc }, после неё \`template-update.mjs "<проект>" --done <id>\`.` );
+		lines.push( `Шаблон: незавершённая миграция ${ open.map( ( m ) => m.id ).join( ', ' ) } — инструкция ${ open[ 0 ].doc }, после неё \`node .claude/skills/project-ops/scripts/template-update.mjs . --done <id>\`.` );
 	}
 	const unresolved = Object.keys( label.unresolved || {} );
 	if ( unresolved.length ) {
