@@ -1,7 +1,7 @@
 # Security
 
-This template lets an AI assistant work on live WordPress sites, so its safety checks matter. If you find a way around them,
-please tell me privately before sharing it publicly.
+This toolkit is used on live WordPress sites, with a coding assistant helping inside strict limits, so its safety checks matter.
+If you find a way around them, please tell me privately before sharing it publicly.
 
 ## Reporting a problem
 

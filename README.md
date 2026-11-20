@@ -1,16 +1,15 @@
-# WordPress project template for Claude Code
+# WordPress development and maintenance toolkit
 
 [![Tests](https://github.com/andrei-porsev/wordpress-template/actions/workflows/tests.yml/badge.svg)](https://github.com/andrei-porsev/wordpress-template/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-This is how I build and maintain WordPress sites with an AI assistant ([Claude Code](https://claude.com/claude-code)) —
-fast, but without putting a live site at risk.
+This is the toolkit I use to build and maintain WordPress sites for my clients — business websites, online stores,
+blogs and multilingual sites.
 
-An AI assistant can write code quickly, but on a real website speed alone is not enough: one careless change can take the site down,
-touch the wrong files or lose someone else's work. This template gives the assistant clear rules, safety checks and a fixed way of working,
-so every change is careful, checked and easy to undo.
-
-I use it every day on client sites — business websites, online stores, blogs and multilingual sites.
+I plan the work, make the decisions and review every result. Routine parts — searching the code, repetitive edits,
+checks on different screen sizes, uploads — are sped up by a coding assistant ([Claude Code](https://claude.com/claude-code)),
+the same way a developer uses an IDE or build tools. The toolkit sets strict limits on what the assistant may touch and puts every
+change through automatic safety checks, so the speed never comes at the cost of a live site.
 
 ## What it means for your site
 
@@ -18,8 +17,8 @@ I use it every day on client sites — business websites, online stores, blogs a
   comes back automatically within seconds.
 - **Changes can go to a test copy first.** Bigger work is done and reviewed on a private staging copy of your site, and goes live
   in one step when it is ready.
-- **Nothing outside the job is touched.** The assistant works only on the site's own theme and plugins. WordPress itself,
-  third-party plugins, server files and passwords are off-limits — this is enforced, not just promised.
+- **Nothing outside the job is touched.** Work happens only in the site's own theme and plugins. WordPress itself,
+  third-party plugins, server files and passwords are off-limits for the tools — this is enforced, not just promised.
 - **Your data is protected.** Before any change to the database, a backup is made automatically. Risky commands are blocked.
 - **The site looks right on every screen.** Each visual change is checked in a real browser on phone, tablet and desktop sizes,
   with before/after screenshots. Before handover, a full quality check covers layouts, browsers, the design mockup, texts,
@@ -31,18 +30,18 @@ I use it every day on client sites — business websites, online stores, blogs a
 
 ## How a typical change works
 
-1. You describe the task.
-2. For anything noticeable, the assistant first shows a short plan and waits for your OK.
-3. It makes the change on a local copy of the code.
-4. The change is checked automatically and published — to the live site or to the test copy, as agreed.
-5. The assistant opens the page in a browser, checks it on different screen sizes and reports back with screenshots.
+1. You describe the task; I agree with you what will change and how.
+2. For anything noticeable, I write down a short plan first — what, where and in what order it goes live.
+3. The change is made on a local copy of the code, never directly on the server.
+4. Automatic checks run, and the change is published — to the live site or to the test copy, as agreed.
+5. I check the result in a browser on phone, tablet and desktop sizes and send you a short report with screenshots.
 6. Every step is saved in the project history, so any change can be traced and undone.
 
 ## Starting a new project
 
-When a project starts, the template walks through a short setup: what kind of project it is (new site, redesign, support, move to
-a new host, SEO and speed), a brief about the business, server access, and a security check of an existing site before anything
-is downloaded. The result is a project profile that the assistant follows from then on.
+At the start I go through a short setup: what kind of project it is (new site, redesign, support, move to a new host,
+SEO and speed), a brief about your business, server access, and a security check of an existing site before anything is downloaded.
+The result is a project profile, so the work stays consistent from the first task to the last.
 
 ## Always improving
 
