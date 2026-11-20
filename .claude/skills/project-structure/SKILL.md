@@ -1,7 +1,7 @@
 ---
 name: project-structure
-description: "Use after SFTP download or when asked to build/update project docs: create project-base as a drill-down map in Russian — INDEX lists files and roles with links; detail files list functions/hooks/classes and what each does — so agent and user navigate without rescanning the whole repo."
-compatibility: "WordPress themes/plugins via SFTP. Documentation language: Russian."
+description: "Use after SFTP download or when asked to build/update project docs: create project-base as a drill-down map in the project's documentation language (INDEX.md → «Языки работы») — INDEX lists files and roles with links; detail files list functions/hooks/classes and what each does — so agent and user navigate without rescanning the whole repo."
+compatibility: "WordPress themes/plugins via SFTP. Documentation language: project profile (INDEX.md → «Языки работы» → «Документация»)."
 ---
 
 # Иерархическая карта проекта (файл → функции)
@@ -100,7 +100,7 @@ Gutenberg-блок часто оба слоя: регистрация → `back/
 
 ### 1) `project-base/INDEX.md` (уровень «пакеты»)
 
-На русском. Шапка проекта — как раньше. Таблицы файлов сюда **не** тащить: они живут в INDEX темы/плагина.
+На языке документации проекта (`INDEX.md` → «Языки работы»; примеры ниже — для русского). Шапка проекта — как раньше. Таблицы файлов сюда **не** тащить: они живут в INDEX темы/плагина.
 
 ```markdown
 ## Свои темы
@@ -122,7 +122,7 @@ Gutenberg-блок часто оба слоя: регистрация → `back/
 
 `themes/{theme-slug}/INDEX.md` или `plugins/{plugin-slug}/INDEX.md`.
 
-На русском:
+На языке документации проекта:
 
 ```markdown
 # Тема `theme-child`
@@ -215,7 +215,7 @@ Gutenberg-блок часто оба слоя: регистрация → `back/
 - [ ] Корневой INDEX: каждая своя тема и каждый свой плагин — строка со слоями и ссылкой на `{slug}/`
 - [ ] INDEX каждого пакета лежит в `themes/{slug}/` или `plugins/{slug}/`; файлы по фронт/бэк; пустого слоя нет
 - [ ] Инструкции слоя — только своё пакета, без копипаста `.claude/rules/`
-- [ ] Детальные md лежат в `front/` или `back/` своего пакета: функции/хуки/классы с ролями на русском
+- [ ] Детальные md лежат в `front/` или `back/` своего пакета: функции/хуки/классы с ролями на языке документации проекта
 - [ ] Нет простыней кода и разбора чужих плагинов
 - [ ] Можно пройти путь «нужна фича X» → пакет → слой → файл → функция без полного скана репо
 - [ ] В репозитории не появилось парсера / скрипта обхода / JSON-индекса исходников

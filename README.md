@@ -10,7 +10,8 @@ automatically if something breaks. Server access, deploys and database changes g
 I use it every day on client sites (classic themes, block/FSE themes, page builders, WooCommerce). The template is updated in the open:
 each improvement is recorded as a decision with its reasoning and shipped to existing projects by an update script.
 
-> The rules and the agent's documentation are written in Russian (the language I work in). Code, scripts and this overview are in English.
+> The template's own rules and docs are in Russian (the language I work in). For each project you choose the language of its documentation,
+> code comments and commit messages (English, Ukrainian, Russian or any other); the agent talks to you in the language set in Claude Code.
 
 ## What it does
 

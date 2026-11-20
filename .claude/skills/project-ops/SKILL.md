@@ -1,7 +1,7 @@
 ---
 name: project-ops
 description: "Canonical project operations: SFTP/FTP download/upload/sync, SSH and remote WP-CLI, compile SCSS, Gutenberg npm run build, agent skills (stacks, upstream updates via skills-sync). Remembers credentials in ACCESS.md. Use when connecting to the server, SSH, WP-CLI on host, syncing, uploading, compiling styles, building blocks, or updating/activating skills. Triggers: SSH, WP-CLI, синхронизация, залить, скачать, доступы, подключение к серверу, SFTP, компилировать стили, обновить скиллы, подключить стек."
-compatibility: "Этот шаблон. Разработка на сервере по SFTP/FTP. Язык — русский."
+compatibility: "Этот шаблон. Разработка на сервере по SFTP/FTP."
 ---
 
 # Операции проекта

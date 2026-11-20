@@ -1,7 +1,7 @@
 ---
 name: project-init
 description: "Use at the very start of a WordPress project built on this template, or to change its setup later: ask the project type first (new site needing design / new site with ready design / existing site: support, redesign, migration, SEO and speed), then follow that route through 10 stages — brief, server access and environments, recon and security check before download, stack, service packages, site and browser, upload mode — show one summary, write INDEX.md profile, ACCESS.md, project.json and skill stacks, and check the environment. Triggers on 'старт проекта', 'новый проект', 'инициализация проекта', 'настрой шаблон под проект', 'поменяй настройки проекта'."
-compatibility: "Этот шаблон. Язык — русский."
+compatibility: "Этот шаблон."
 ---
 
 # Инициализация проекта
@@ -11,7 +11,7 @@ compatibility: "Этот шаблон. Язык — русский."
 
 ## Язык
 
-Опрос, вопросы, уведомления и итоги — только по-русски (`CLAUDE.md` → «Язык»).
+Опрос, вопросы, уведомления и итоги — на языке общения с пользователем (`CLAUDE.md` → «Язык»). Языки документации, комментариев в коде и коммитов проекта — вопрос этапа 2 (`brief.md` → «Языки работы»).
 
 ## Принципы
 
@@ -146,7 +146,7 @@ compatibility: "Этот шаблон. Язык — русский."
 1. `project-base/project.json` (`stem`, `themes`, `plugins`, `muPlugins`, `blocks`, `scss`; родительскую тему не добавлять; нет — пустой массив) →
    `node .claude/skills/project-ops/scripts/gen-whitelist.mjs` (`.gitignore` между маркерами, `ignore` / `watcher` в `sftp.json`, `includeItems` в `.vscode/settings.json`; руками не править).
    `.vscode/sftp-ftp.json.example` — слаги подставить руками; рабочий `sftp-ftp.json` не трогать.
-2. `INDEX.md` → «Профиль проекта» и «Стек»; «Обязательные проверки» — главные действия посетителя, проверка в браузере по `Публичный URL`, `handoff` пакетов;
+2. `INDEX.md` → «Профиль проекта», «Стек» и «Языки работы»; документы проекта дальше — на языке «Документация»; «Обязательные проверки» — главные действия посетителя, проверка в браузере по `Публичный URL`, `handoff` пакетов;
    «Команды» — при WP-CLI рабочими строками через `ssh-exec.mjs -- wp …` (не голый `wp`); «Правила проекта» — только отклонения от общих, не копировать `CLAUDE.md` и правила.
 3. `ACCESS.md` — все разделы по ответам (без паролей — они уже в json); «Режим заливки» — итоговый вместо `manual (идёт инициализация)`.
 4. Наборы скиллов: `node .claude/skills/project-ops/scripts/skills-sync.mjs activate <стеки этапа 5 и пакетов…>`, затем `check` — устаревшее показать, обновить после «да» (`project-ops` → `skills.md`).
