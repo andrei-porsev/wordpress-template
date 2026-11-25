@@ -4,6 +4,7 @@
 	"type": "module",
 	"dependencies": {
 		"@playwright/cli": "0.1.22",
+		"ag-psd": "34.2.3",
 		"basic-ftp": "^5.0.5",
 		"sharp": "0.33.5",
 		"ssh2": "^1.16.0",

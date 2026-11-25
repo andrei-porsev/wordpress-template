@@ -559,7 +559,7 @@
 			]
 		},
 		"design": {
-			"title": "Дизайн: эстетика, Claude Design как источник макета",
+			"title": "Дизайн: эстетика, Claude Design и PSD как источник макета",
 			"skills": [
 				"frontend-design",
 				"ui-ux-pro-max",
@@ -568,7 +568,7 @@
 			"rules": [
 				"design"
 			],
-			"note": "Макет из Claude Design: ссылку и экспорт — в ACCESS.md → Дизайн (решение 023)."
+			"note": "Макет из Claude Design: ссылку и экспорт — в ACCESS.md → Дизайн; PSD — в project-base/design/client/, читает psd.mjs (решение 023)."
 		},
 		"motion": {
 			"title": "Анимации (GSAP)",
